@@ -159,4 +159,7 @@ uint16_t bc3601_getAutoCycleCounter(BC3601Driver *dev);
 
 
 void dev_bc3601Init(BC3601Driver *dev,const bc3601_config_t *config);
+void irq_config(BC3601Driver *dev, uint8_t enable);
+uint8_t bc3601_irqState(BC3601Driver *dev);
+
 #endif

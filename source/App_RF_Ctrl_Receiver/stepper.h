@@ -12,7 +12,7 @@
 #define STEP_CONTROL_CYCLE_US   100
 #define STEP_CONTROL_CYCLE_CNTR STEP_CONTROL_CYCLE_US*STEP_CONTROL_BASE_CLOCK/1000000
 
-#define STEP_SPEED_MAX          2000
+#define STEP_SPEED_MAX          1000
 #define STEP_SPEED_MIN          500
 #define STEP_SPEED_MAX_CNTR     STEP_CONTROL_BASE_CLOCK/STEP_SPEED_MIN
 #define STEP_SPEED_MIN_CNTR     STEP_CONTROL_BASE_CLOCK/STEP_SPEED_MAX
@@ -31,6 +31,14 @@ struct _ang_speed_map_s{
   int16_t speed_high;
 };
 
+struct _stepper_control_s{
+  struct _adc_step_conv_s stepConv[4];
+  struct _ang_speed_map_s angSpeed[4];
+  float pulsePerDegree;
+  uint16_t max_pps;
+  uint16_t min_pps;
+};
+
 typedef struct{
   void (*stepLow)(void);
   void (*stepHigh)(void);
@@ -38,8 +46,9 @@ typedef struct{
   void (*dirHigh)(void);
   void (*stepEn)(void);
   void (*stepDis)(void);
-  struct _adc_step_conv_s stepConv[4];
-  struct _ang_speed_map_s angSpeed[3];  
+  struct _stepper_control_s stepperCtrl;
+//  struct _adc_step_conv_s stepConv[4];
+//  struct _ang_speed_map_s angSpeed[3];  
 }_stepper_ctrl_t;
 
 

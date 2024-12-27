@@ -24,7 +24,7 @@
  * Board identifier.
  */
 #define BOARD_AT32F4
-#define BOARD_NAME              "REMOTE_IO"
+#define BOARD_NAME              "REMOTE_IO Transmitter"
 #define BOARD_ID                0x06080002
 #define FW_VERSION              0x21062101
 

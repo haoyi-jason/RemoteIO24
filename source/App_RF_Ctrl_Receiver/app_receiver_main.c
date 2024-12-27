@@ -4,6 +4,10 @@
 #include "../drivers/bc3601.h"
 #include "rf_task.h"
 #include "stepper_task.h"
+#include "usbcdc_task.h"
+#include "shell.h"
+#include "shell_command.h"
+#include "../drivers/usbcfg.h"
 
 #define ADC_GRP1_NUM_CHANNELS   2
 #define ADC_GRP1_BUF_DEPTH      8
@@ -38,7 +42,32 @@ static const ADCConversionGroup adcgrpcfg = {
   ADC_SQR3_SQ1_N(ADC_CHANNEL_IN0) | ADC_SQR3_SQ2_N(ADC_CHANNEL_IN1)
 };
 
+static const ShellCommand commands[] = {
+  //{"write", cmd_write},
+  //{"writeX", cmd_writeHex},
+  //{"read", cmd_read},
+  {"ppr", cmd_ppr},
+  {"dest", cmd_addr},
+  {"sadr", cmd_selfaddr},
+  {"power", cmd_power},
+  {"freq", cmd_freq},
+  {"rate", cmd_rate},
+  {"mode", cmd_mode},
+  {"save", cmd_save},
+  {"pattern", cmd_default_io_pattern},
+  {"polt", cmd_poll_interval},
+  {"polc", cmd_poll_count},
+  {"idn", cmd_idn},
+  {"vrmap", cmd_vrMap},
+  {"spdmap", cmd_spdMap},
+  {"txsim",cmd_txsim},
+  {NULL, NULL}
+};
 
+static const ShellConfig shell_cfg = {
+  (BaseSequentialStream *)&SDU1,
+  commands
+};
 
 static void processTX1();
 static void processTX2();
@@ -231,10 +260,10 @@ static void processRX_DO(uint16_t value)
   for(uint8_t i=0;i<10;i++){
     mask = (1 << i);
     if((mask & value) == 0){
-      palSetPad(digital_out_rx[i].port,digital_out_rx[i].line);
+      palClearPad(digital_out_rx[i].port,digital_out_rx[i].line);
     }
     else{
-      palClearPad(digital_out_rx[i].port,digital_out_rx[i].line);
+      palSetPad(digital_out_rx[i].port,digital_out_rx[i].line);
     }
   }
 }
@@ -297,11 +326,13 @@ int main()
   //PWR->CR |= PWR_CR_CLWUF | PWR_CR_CLSBF;
   halInit();
   chSysInit();
+  AFIO->MAPR |= (AFIO_MAP_SWJTAG_CONF_JTAGDISABLE);
   
 //  PWR->CR |= PWR_CR_CLSBF;
   chRegSetThreadName("Main");
   rf_task_init();
-  stepper_task_init();
+  
+  usbcdc_task_init((void*)&shell_cfg);
   
   if(rf_op_mode() == 3){
     // start ADC
@@ -311,6 +342,10 @@ int main()
     palSetPad(GPIOA,2);
 //    palSetLineCallback(PAL_LINE(GPIOB, 7), drdy_handler,NULL);
 //    palEnableLineEvent(PAL_LINE(GPIOB, 7),PAL_EVENT_MODE_FALLING_EDGE);
+  }
+  
+  if(rf_op_mode() == 4){
+    stepper_task_init((void*)control_struct());
   }
   
   bool bStop = false;
@@ -351,21 +386,14 @@ int main()
       }    
     }
     if(evt & EV_TX_DONE){
-      remoteio_stop_task() ;   
+      rf_task_stop_manual_mode() ; 
+      palClearPad(GPIOA,2);
       bStop = true;
     }
   }
-  
-//  DBGMCU->CR |= DBGMCU_CR_DBG_SLEEP | DBGMCU_CR_DBG_STOP;
       /*
         config exti PB7 falling edge trigger to wakeup 
-        
-
       */
-//      palSetLineCallback(PAL_LINE(GPIOB, 7), drdy_handler,NULL);
-      //chSysLock();
-      //NVIC_ClearPendingIRQ();
-      //RCC->APB1ENR |= RCC_APB1ENR_PWREN;
       PWR->CR |= PWR_CR_CLWUF | PWR_CR_CLSBF;
       //PWR->CR |= (PWR_CR_PDDS);
       SCB->SCR |= (SCB_SCR_SLEEPDEEP_Msk);
@@ -377,29 +405,14 @@ int main()
       EXTI->RTSR = 0;
       AFIO->EXTICR[1] &= 0x0FFF;
       AFIO->EXTICR[1] |= AFIO_EXTIC2_EXTINT7_PTB;
-      //palEnableLineEvent(PAL_LINE(GPIOB, 7),PAL_EVENT_MODE_FALLING_EDGE);
-      
-      //SCB->SCR &= ~SCB_SCR_SLEEPONEXIT_Msk;
-      //PWR->CSR &= ~(PWR_CRSTS_WUF);
       chSysDisable();
-      //NVIC_SystemReset();
-      //NVIC_EnableIRQ(EXTI9_5_IRQn);
-      //palSetLineCallback(PAL_LINE(GPIOB, 7), drdy_handler,NULL);
-      //palEnableLineEvent(PAL_LINE(GPIOB, 7),PAL_EVENT_MODE_FALLING_EDGE);
-      //SysTick->CTRL &= ~0x01;
-      //__DSB();
-      //stStopAlarm();
       __disable_irq();
       
       __SEV();
       __WFE();  
       __WFE();  
       __enable_irq();
-      //__ISB();
-//      SysTick->CTRL |= 0x01;
-      NVIC_SystemReset();
-//      while(1){}; 
-  
+      NVIC_SystemReset(); 
   
   return 0;
 }

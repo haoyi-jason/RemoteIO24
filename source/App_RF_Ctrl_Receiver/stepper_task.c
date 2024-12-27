@@ -2,6 +2,7 @@
 #include "hal.h"
 #include "stepper_task.h"
 #include "stepper.h"
+#include <string.h>
 
 
 #define STEPPER_PUL_LINE        PAL_LINE(GPIOA,10)
@@ -102,18 +103,18 @@ _stepper_ctrl_t stepperCtrl = {
   dir_high,
   NULL,
   NULL,
-  {
-    {100,0},
-    {500,60},
-    {1500,120},
-    {2500,180}
-    
-  },
-  {
-    {30, 0, 200},
-    {120,200,500},
-    {180,500,1000}
-  },
+//  {
+//    {100,0},
+//    {500,60},
+//    {1500,120},
+//    {2500,180}
+//    
+//  },
+//  {
+//    {30, 0, 200},
+//    {120,200,500},
+//    {180,500,1000}
+//  },
 };
 
 
@@ -156,11 +157,12 @@ static THD_FUNCTION(procStepperTask,p)
   }
 }
 
-void stepper_task_init()
+void stepper_task_init(void *vrmap)
 {
   gptInit();
   gptStart(PULSE_CTRL_TIMER, &gptcfg);
   gptStart(STEPPER_POLL_TIMER, &gptcfg_poll);
+  memcpy((void*)&stepperCtrl.stepperCtrl,(void*)vrmap,sizeof(struct _stepper_control_s));
   stepperRuntime.self = chThdCreateStatic(waStepperTask,sizeof(waStepperTask),NORMALPRIO+1,procStepperTask,&stepperCtrl);
 }
 

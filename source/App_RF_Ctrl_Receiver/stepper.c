@@ -33,21 +33,21 @@ struct pps_map_s{
 } ppsMap[3];
 
 struct runTime_s{
-  int16_t currPos;
-  int16_t tarPos;
-  int16_t stepLeft;
-  int16_t stepMoved;
-  int16_t stepToMove;
+  //int32_t currPos;
+  int32_t tarPos;
+//  int16_t stepLeft;
+//  int16_t stepMoved;
+//  int16_t stepToMove;
   int8_t direction;
   int16_t stepState;
-  int16_t stepDelay;
-  int16_t pulseCount;
-  int16_t stepPulse;
-  int16_t accSteps;
-  int16_t daccSteps;
-  int16_t pulseState;
-  int16_t stepBuffer[4];
-  int16_t stepIndex;
+  //int16_t stepDelay;
+  //int16_t pulseCount;
+  //int16_t stepPulse;
+  //int16_t accSteps;
+  //int16_t daccSteps;
+  //int16_t pulseState;
+  //int16_t stepBuffer[4];
+  //int16_t stepIndex;
   int8_t moveHome;
   float ppd;
   _stepper_ctrl_t *dev;
@@ -70,27 +70,28 @@ struct runTime_s{
 void stepper_init(void *arg)
 {
   if(arg == NULL) return;
+  _stepper_ctrl_t *dev = (_stepper_ctrl_t*)arg;
   
-  step_runtime.currPos = 0;
+  //step_runtime.currPos = 0;
   step_runtime.dev = arg;
-  step_runtime.ppd = (float)(STEPS_PER_REV)/360.;
+//  step_runtime.ppd = (float)(STEPS_PER_REV)/360.;
+  step_runtime.ppd = dev->stepperCtrl.pulsePerDegree;
 
-  step_runtime.stepDelay = 100;
-  step_runtime.stepLeft = 0;
+  //step_runtime.stepDelay = 100;
+  //step_runtime.stepLeft = 0;
   step_runtime.direction = 0;
   step_runtime.stepState = SS_STOPPED;
   //step_runtime.dev->dirLow();
   //step_runtime.dev->stepLow();
   
-  _stepper_ctrl_t *dev = step_runtime.dev;
   
-  step_runtime.vrSlop[0] = (dev->stepConv[2].ang - dev->stepConv[1].ang);
-  step_runtime.vrSlop[0] /= (dev->stepConv[2].vr - dev->stepConv[1].vr);
-  step_runtime.vrSlop[1] = (dev->stepConv[3].ang - dev->stepConv[2].ang);
-  step_runtime.vrSlop[1] /= (dev->stepConv[3].vr - dev->stepConv[2].vr);
+  step_runtime.vrSlop[0] = (dev->stepperCtrl.stepConv[2].ang - dev->stepperCtrl.stepConv[1].ang);
+  step_runtime.vrSlop[0] /= (dev->stepperCtrl.stepConv[2].vr - dev->stepperCtrl.stepConv[1].vr);
+  step_runtime.vrSlop[1] = (dev->stepperCtrl.stepConv[3].ang - dev->stepperCtrl.stepConv[2].ang);
+  step_runtime.vrSlop[1] /= (dev->stepperCtrl.stepConv[3].vr - dev->stepperCtrl.stepConv[2].vr);
   
-  step_runtime.minReload = STEP_SPEED_MIN_CNTR;
-  step_runtime.maxReload = STEP_SPEED_MAX_CNTR;
+  step_runtime.minReload = STEP_CONTROL_BASE_CLOCK/dev->stepperCtrl.max_pps;
+  step_runtime.maxReload = STEP_CONTROL_BASE_CLOCK/dev->stepperCtrl.min_pps;
   step_runtime.reloadStep = STEP_RELOAD_SIZE;
   step_runtime.direction = DIR_POS;
   //step_runtime.deltaReload = step_runtime.reloadStep;
@@ -102,21 +103,21 @@ void stepper_move_to(int16_t pos)
   float deg;
   tmp = pos;
   if(step_runtime.dev == NULL) return; 
-  if(tmp <= step_runtime.dev->stepConv[0].vr){
+  if(tmp <= step_runtime.dev->stepperCtrl.stepConv[0].vr){
     deg = 0;
     stepMoveHome();
     return;
   }
-  else if((tmp > step_runtime.dev->stepConv[0].vr) && (tmp <= step_runtime.dev->stepConv[1].vr)){
-    deg = step_runtime.dev->stepConv[1].ang;
+  else if((tmp > step_runtime.dev->stepperCtrl.stepConv[0].vr) && (tmp <= step_runtime.dev->stepperCtrl.stepConv[1].vr)){
+    deg = step_runtime.dev->stepperCtrl.stepConv[1].ang;
   }
-  else if((tmp > step_runtime.dev->stepConv[1].vr) && (tmp <= step_runtime.dev->stepConv[2].vr)){
-    deg = step_runtime.vrSlop[0]*(tmp - step_runtime.dev->stepConv[1].vr);
-    deg += step_runtime.dev->stepConv[1].ang;
+  else if((tmp > step_runtime.dev->stepperCtrl.stepConv[1].vr) && (tmp <= step_runtime.dev->stepperCtrl.stepConv[2].vr)){
+    deg = step_runtime.vrSlop[0]*(tmp - step_runtime.dev->stepperCtrl.stepConv[1].vr);
+    deg += step_runtime.dev->stepperCtrl.stepConv[1].ang;
   }
-  else if((tmp > step_runtime.dev->stepConv[2].vr) && (tmp <= step_runtime.dev->stepConv[3].vr)){
-    deg = step_runtime.vrSlop[1]*(tmp - step_runtime.dev->stepConv[2].vr);
-    deg += step_runtime.dev->stepConv[2].ang;
+  else if((tmp > step_runtime.dev->stepperCtrl.stepConv[2].vr) && (tmp <= step_runtime.dev->stepperCtrl.stepConv[3].vr)){
+    deg = step_runtime.vrSlop[1]*(tmp - step_runtime.dev->stepperCtrl.stepConv[2].vr);
+    deg += step_runtime.dev->stepperCtrl.stepConv[2].ang;
   }
   else{
     deg = 180;
@@ -138,8 +139,10 @@ void stepMoveHome()
 //  for(i=0;i<4;i++) step_runtime.stepBuffer[i] = 0;
 //  step_runtime.stepIndex = 0;
 //  
-//  step_runtime.moveHome = 1;
-  step_runtime.tarPos = 0;
+  if(step_runtime.moveHome == 0){
+    step_runtime.moveHome = 1;
+    step_runtime.tarPos = -500;
+  }
 }
 
 //int16_t stepPoll(void)
@@ -291,6 +294,10 @@ int32_t stepPoll(void)
     else{
       step_runtime.currReload = 0;
       step_runtime.stepState = SS_STOPPED;
+      if(step_runtime.tarPos < 0){
+        step_runtime.tarPos = 0;
+        step_runtime.curPos = 0;
+      }
     }
     
     break;

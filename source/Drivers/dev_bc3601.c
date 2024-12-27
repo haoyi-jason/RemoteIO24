@@ -3,6 +3,7 @@
 #include "dev_bc3601.h"
 #include "bc3601_def.h"
 #include "bc3601.h"
+#include <string.h>
 
 #define  _IRQ_ENABLE_   (1)
 #define _IRQ_LINE_  (1)		
@@ -478,7 +479,7 @@ static uint32_t bc3601_getDataRate(BC3601Driver *dev, uint8_t dr)
 static void bc3601_enableDirectTx(BC3601Driver *dev)
 {
   uint8_t reg;
-  bc3061_lightSleepMode(dev);
+  BC3601_LITE_SLEEP(dev);
 
   BC3601_REG_READ(dev,CONFIG_REGS,&reg); 
   reg |= 0x10;
@@ -490,14 +491,14 @@ static void bc3601_enableDirectTx(BC3601Driver *dev)
   reg |= 0x03;
   BC3601_REG_WRITE(dev,OPERATION_CTL_REGS,&reg); 
   reg |= 0x40;
-  chThdSleepMilliSeconds(1);
+  chThdSleepMilliseconds(1);
   BC3601_REG_WRITE(dev,OPERATION_CTL_REGS,&reg);   
 }
                                               
 static void bc3601_enableDirectRx(BC3601Driver *dev)
 {
   uint8_t reg;
-  bc3061_lightSleepMode(dev);
+  BC3601_LITE_SLEEP(dev);
 
   BC3601_REG_READ(dev,CONFIG_REGS,&reg); 
   reg |= 0x10;
@@ -509,7 +510,7 @@ static void bc3601_enableDirectRx(BC3601Driver *dev)
   reg |= 0x01;
   BC3601_REG_WRITE(dev,OPERATION_CTL_REGS,&reg); 
   reg |= 0x40;
-  chThdSleepMilliSeconds(1);
+  chThdSleepMilliseconds(1);
   BC3601_REG_WRITE(dev,OPERATION_CTL_REGS,&reg);   
 }
 
@@ -525,7 +526,7 @@ static void bc3601_disableDirectRx(BC3601Driver *dev)
   BC3601_REG_READ(dev,OPERATION_CTL_REGS,&reg); 
   reg &= ~0x01;
   BC3601_REG_WRITE(dev,OPERATION_CTL_REGS,&reg); 
-  chThdSleepMilliSeconds(1);
+  chThdSleepMilliseconds(1);
 
   BC3601_REG_READ(dev,OPERATION_CTL_REGS,&reg); 
   reg &= ~0x10;

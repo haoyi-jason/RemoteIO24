@@ -40,14 +40,17 @@ static bc3601_config_t config = {
 
 static BC3601Driver bc3601;
 
-struct _deviceConfig{
+
+
+struct _deviceConfig {
   uint8_t flag;
   uint16_t selfAddr;
   uint16_t destAddr;
   uint8_t opMode;  // 1: rf switch tx, 2: rf switch rx, 3: rf i/o tx, 4: rf i/o rx
   uint8_t txIntervalMs; // tx interval, in ms
   uint16_t txCounts; // number of times to transmit packet
-  uint8_t reserved[55]; // reserve total 64-bytes for this struct
+  struct _rx_control_config rx_control;
+  uint8_t reserved[13]; // reserve total 64-bytes for this struct
 };
 
 struct _rfConfig{
@@ -56,6 +59,7 @@ struct _rfConfig{
   float frequency; 
   uint8_t reserved[58]; // reserve 64-bytes for this struct
 };
+
 
 
 struct _nvm{
@@ -80,6 +84,7 @@ static struct{
   uint16_t dio_state;
   uint16_t ain_value;
   uint8_t rfLinkFail;
+  uint8_t userMode;
 }runTime;
 
 typedef struct {
@@ -120,6 +125,18 @@ static void load_settings()
  
     nvmParam.tx_dio = 0xC000; // default tx pattern
     
+    nvmParam.deviceConfig.rx_control.vr_map[0].angle = 0;
+    nvmParam.deviceConfig.rx_control.vr_map[0].raw = 200;
+    nvmParam.deviceConfig.rx_control.vr_map[1].angle = 60;
+    nvmParam.deviceConfig.rx_control.vr_map[1].raw = 600;
+    nvmParam.deviceConfig.rx_control.vr_map[2].angle = 180;
+    nvmParam.deviceConfig.rx_control.vr_map[2].raw = 2000;
+    nvmParam.deviceConfig.rx_control.vr_map[3].angle = 200;
+    nvmParam.deviceConfig.rx_control.vr_map[3].raw = 2500;
+    
+    nvmParam.deviceConfig.rx_control.pulsePerDegree = (200*10)/360.;
+    nvmParam.deviceConfig.rx_control.min_pps = 500;
+    nvmParam.deviceConfig.rx_control.max_pps = 1000;
     nvm_flash_write(OFFSET_NVM_BOARD,(uint8_t*)&nvmParam,nvmSz);
   }
 }
@@ -146,10 +163,11 @@ static void set_rf_addr()
 }
 
 #define STAGE_START 2   //0:tx, 2:rx
-static THD_WORKING_AREA(waRemoteIO,1024);
+static THD_WORKING_AREA(waRemoteIO,4096);
 static THD_FUNCTION(procRemoteIO ,p)
 {
   BaseSequentialStream *stream = (BaseSequentialStream*)p;
+  _rfPacket *rfp = (_rfPacket*)(&txPacket.data[0]);
   BC3601Driver *dev = &bc3601;
   uint8_t rx[64];
   uint8_t reg = 0;
@@ -157,10 +175,12 @@ static THD_FUNCTION(procRemoteIO ,p)
   uint8_t wait = 0;
   eventmask_t evt;
   bool txPending = false;
-  txPacket.sz = 0;
+  txPacket.sz = sizeof(_rfPacket)+1;
+  rfp->srcAddr = nvmParam.deviceConfig.selfAddr;
+  rfp->dstAddr = nvmParam.deviceConfig.destAddr;
   while(1){
     
-    evt = chEvtWaitAnyTimeout(ALL_EVENTS,10);
+    evt = chEvtWaitAnyTimeout(ALL_EVENTS,50);
     if(evt & EV_TX){
       txPending = true;
       stage = 0;
@@ -173,28 +193,32 @@ static THD_FUNCTION(procRemoteIO ,p)
     switch(stage){
     case 0:
       //  tx
-      BC3601_LITE_SLEEP(&bc3601);
-      irq_config(&bc3601,IRQ2_TXCMPIE);
+      rfp->dio = runTime.dio_state;
+      rfp->advalue = runTime.ain_value;
+      rfp->checksum = checksum((uint8_t*)rfp,sizeof(_rfPacket)-1);
+//      BC3601_LITE_SLEEP(&bc3601);
+//      irq_config(&bc3601,IRQ2_TXCMPIE);
       BC3601_RESET_TXFIFO(dev);
       reg = 0;
       BC3601_SET_TX_PAYLOAD_SADDR(dev,&reg);  
 //      BC3601_SET_TX_PAYLOAD_WIDTH(dev,&txPacket.sz);
-      BC3601_FIFO_WRITE(dev,txPacket.data,txPacket.sz+1);
+      BC3601_FIFO_WRITE(dev,(uint8_t*)&txPacket,txPacket.sz);
       BC3601_TX_MODE(dev);
       
-      txPending = false;
-      txPacket.sz = 0;
+     // txPending = false;
+      //txPacket.sz = 0;
       
 //      bc3601_refresh_registers(&bc3601);
       stage++;
       break;
     case 1: // check irq state
-      reg = bc3601_irqState(&bc3601);
-      if(reg & IRQ3_TXCMPIF){
-        
-        BC3601_LITE_SLEEP(&bc3601);
-        stage = 2;
-      }
+      stage = 0;
+//      reg = bc3601_irqState(&bc3601);
+//      if(reg & IRQ3_TXCMPIF){
+//        
+//        BC3601_LITE_SLEEP(&bc3601);
+//        stage = 2;
+//      }
       break;
     case 2:
 //      irq_config(dev,IRQ2_RXERRIE | IRQ2_RXCMPIE);
@@ -224,6 +248,7 @@ static THD_FUNCTION(procRemoteIO ,p)
         //chprintf((BaseSequentialStream*)&SDU1,"\n");
         stage = 99;
       }      
+        stage = 0;
 //      wait++;
 //      if(wait > 100){
 //        wait = 0;
@@ -238,7 +263,7 @@ static THD_FUNCTION(procRemoteIO ,p)
       stage = STAGE_START;
       break;
     }
-    chThdSleepMilliseconds(200);
+    //chThdSleepMilliseconds(200);
   }
 }
 
@@ -414,12 +439,12 @@ static THD_FUNCTION(procTX2 ,p)
   rfp->checksum = checksum((uint8_t*)&rfp,sizeof(_rfPacket)-1);
   uint8_t reg;
   uint8_t pktSz = sizeof(_rfPacket);
-  uint8_t cycles = 0;
+  uint16_t cycles = 0;
   txPacket.sz = pktSz+1;
   //memcpy(txPacket.data,(uint8_t*)&rfp, pktSz);
   bool bStop = false;
   while(!bStop){
-    cycles++;
+    //cycles++;
     BC3601_RESET_TXFIFO(dev);
     reg = 0;
     // read analog input and i/o state
@@ -429,7 +454,7 @@ static THD_FUNCTION(procTX2 ,p)
     else{
       cycles = 0;
     }
-    if(cycles > 50){
+    if((cycles > 500) && (runTime.userMode == 0)){
       chEvtSignal(runTime.mainThread,EV_TX_DONE);
     }
     rfp->dio = runTime.dio_state;
@@ -441,7 +466,9 @@ static THD_FUNCTION(procTX2 ,p)
     BC3601_FIFO_WRITE(dev,(uint8_t*)&txPacket,txPacket.sz);
     BC3601_TX_MODE(dev);
 //    rfp.advalue++;
-    chEvtSignal(runTime.mainThread,EV_TX_DATA_REQUEST);
+    if(runTime.userMode == 0){
+      chEvtSignal(runTime.mainThread,EV_TX_DATA_REQUEST);
+    }
     chThdSleepMilliseconds(nvmParam.deviceConfig.txIntervalMs);
     if(chThdShouldTerminateX()){
       bStop = true;
@@ -569,7 +596,7 @@ static THD_FUNCTION(procRX2 ,p)
 
 
 
-void remoteio_send(uint8_t *d, uint8_t n)
+void rf_send(uint8_t *d, uint8_t n)
 {
   if(txPacket.sz == 0){
     txPacket.sz = n;
@@ -578,28 +605,28 @@ void remoteio_send(uint8_t *d, uint8_t n)
   }
 }
 
-void remoteio_setDestAddr(uint16_t addr)
+void rf_setDestAddr(uint16_t addr)
 {  
   nvmParam.deviceConfig.destAddr = addr;
 }
 
-uint16_t remoteio_getDestAddr()
+uint16_t rf_getDestAddr()
 {
   return nvmParam.deviceConfig.destAddr;
 }
 
-uint16_t remoteio_getSelfAddr()
+uint16_t rf_getSelfAddr()
 {
   return nvmParam.deviceConfig.selfAddr;
 }
 
-void remoteio_setSelfAddr(uint16_t addr)
+void rf_setSelfAddr(uint16_t addr)
 {
   nvmParam.deviceConfig.selfAddr = addr;
   set_rf_addr();
 }
 
-void remoteio_setPower(uint8_t value)
+void rf_setPower(uint8_t value)
 {
   uint8_t reg = 0;
   bc3601.txPower = value;
@@ -607,99 +634,115 @@ void remoteio_setPower(uint8_t value)
   nvmParam.rfConfig.txPower = value;
 }
 
-uint8_t remoteio_getPower()
+uint8_t rf_getPower()
 {
   return nvmParam.rfConfig.txPower;
 }
 
-void remoteio_setFreq(float value)
+void rf_setFreq(float value)
 {
   bc3601.frequency = value;
   bc3601_freqConfig(&bc3601,bc3601.frequency);
   nvmParam.rfConfig.frequency = value;
 }
 
-uint16_t remteio_getFreq()
+float rf_getFreq()
 {
-  return (uint16_t)(nvmParam.rfConfig.frequency/1000000);
+  return (nvmParam.rfConfig.frequency);
 }
 
-void remoteio_setDataRate(uint8_t value)
+void rf_setDataRate(uint8_t value)
 {
   bc3601.dataRate = value;
   bc3601_datarateConfig(&bc3601,bc3601.dataRate);
   nvmParam.rfConfig.dataRate = value;
 }
 
-uint8_t getDataRate()
+uint8_t rf_getDataRate()
 {
   return nvmParam.rfConfig.dataRate;
 }
 
-void remoteio_setMode(uint8_t mode)
+void rf_setMode(uint8_t mode)
 {
   nvmParam.deviceConfig.opMode = mode;
 }
 
-uint8_t remoteio_getMode()
+uint8_t rf_getMode()
 {
   return nvmParam.deviceConfig.opMode;
 }
 
-void remoteio_saveParam()
+void rf_saveParam()
 {
   chEvtSignal(runTime.self,EV_SAVE);
 }
 
-void remoteio_set_io_pattern(uint16_t val)
+void rf_set_io_pattern(uint16_t val)
 {
   nvmParam.tx_dio = val;
 }
 
-uint16_t remoteio_get_io_pattern()
+uint16_t rf_get_io_pattern()
 {
   return nvmParam.tx_dio;
 }
 
-void remoteio_set_pollInterval(uint16_t val)
+void rf_set_pollInterval(uint16_t val)
 {
   nvmParam.deviceConfig.txIntervalMs = val;
 }
 
-uint16_t remoteio_get_pollInterval()
+uint16_t rf_get_pollInterval()
 {
   return nvmParam.deviceConfig.txIntervalMs;
 }
 
-void remoteio_set_pollCount(uint16_t val)
+void rf_set_pollCount(uint16_t val)
 {
   nvmParam.deviceConfig.txCounts = val;
 }
 
-uint16_t remoteio_get_pollCount()
+uint16_t rf_get_pollCount()
 {
   return nvmParam.deviceConfig.txCounts;
 }
 
 // tasks for USB Interface exist
-void remoteio_start_task(BaseSequentialStream *stream)
+void rf_task_start_manual_mode(BaseSequentialStream *stream)
 {
-  if(runTime.self != NULL){
-    chThdTerminate(runTime.self);
-    chThdWait(runTime.self);
-    runTime.self = NULL;
-  }
-  
-  runTime.self = chThdCreateStatic(waRemoteIO,sizeof(waRemoteIO),NORMALPRIO,procRemoteIO,stream);
+  runTime.userMode = 1;
+//  if(runTime.self != NULL){
+//    chThdTerminate(runTime.self);
+//    chThdWait(runTime.self);
+//    runTime.self = NULL;
+//  }
+//  
+//  runTime.self = chThdCreateStatic(waRemoteIO,sizeof(waRemoteIO),NORMALPRIO,procRemoteIO,stream);
 }
 
-void remoteio_stop_task()
+void rf_task_stop_manual_mode()
 {
-  if(runTime.self != NULL){
-    chThdTerminate(runTime.self);
-    chThdWait(runTime.self);
-    runTime.self = NULL;
-  }
+  runTime.userMode = 0;
+//  if(runTime.self != NULL){
+//    chThdTerminate(runTime.self);
+//    chThdWait(runTime.self);
+//    runTime.self = NULL;
+//  }
+}
+
+void rf_set_ppd(float value,uint16_t minp, uint16_t maxp)
+{
+  nvmParam.deviceConfig.rx_control.pulsePerDegree = value;
+  nvmParam.deviceConfig.rx_control.min_pps = minp;
+  nvmParam.deviceConfig.rx_control.max_pps = maxp;
+}
+
+void rf_get_ppd(float *value, uint16_t *minp, uint16_t *maxp)
+{
+  *value = nvmParam.deviceConfig.rx_control.pulsePerDegree;
+  *minp = nvmParam.deviceConfig.rx_control.min_pps;
+  *maxp = nvmParam.deviceConfig.rx_control.max_pps;
 }
 
 
@@ -724,10 +767,13 @@ int8_t rf_task_init()
 //    nvmParam.deviceConfig.opMode = 1;
 //  }
 //  nvmParam.deviceConfig.opMode = 1; // force tx mode
-  
+  runTime.userMode = 0;
   set_rf_addr();
-//  nvmParam.deviceConfig.opMode = 3;  // transmitter
+ //nvmParam.deviceConfig.opMode = 3;  // transmitter
  nvmParam.deviceConfig.opMode = 4;
+ 
+ runTime.mainThread = chRegFindThreadByName("Main");
+ 
   switch(nvmParam.deviceConfig.opMode){
   case 1:
     runTime.self = chThdCreateStatic(waSwitchTX,sizeof(waSwitchTX),NORMALPRIO,procSwitchTX,NULL);
@@ -749,8 +795,8 @@ int8_t rf_task_init()
     break;
   }
   
-  chThdSleepMilliseconds(20);
-  runTime.mainThread = chRegFindThreadByName("Main");
+  //chThdSleepMilliseconds(20);
+  //runTime.mainThread = chRegFindThreadByName("Main");
 
   
   return 0;
@@ -798,4 +844,9 @@ uint16_t read_analog_state(uint8_t channel)
 uint8_t rf_op_mode()
 {
   return nvmParam.deviceConfig.opMode;
+}
+
+struct _rx_control_config *control_struct()
+{
+  return &nvmParam.deviceConfig.rx_control;
 }

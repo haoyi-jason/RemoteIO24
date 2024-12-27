@@ -95,4 +95,6 @@ void bc3601ReadRegister(BC3601Driver *dev, uint8_t regAddr, uint8_t *v);
 uint8_t registerRead(BC3601Driver *devp, uint8_t regAddr, uint8_t *d,uint8_t n);
 uint8_t registerWrite(BC3601Driver *devp, uint8_t regAddr, uint8_t *d, uint16_t n);
 uint8_t cmdStrobe(BC3601Driver *devp, uint8_t cmd);
+void bc3601_refresh_registers(BC3601Driver *dev);
+uint8_t bc3601_readRSSI(BC3601Driver *dev);
 #endif

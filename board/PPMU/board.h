@@ -24,13 +24,9 @@
  * Board identifier.
  */
 #define BOARD_AT32F4
-#define BOARD_NAME              "REMOTE_IO"
-#define BOARD_ID                0x06080002
-#define FW_VERSION              0x21062101
-
-#define NOF_MAX_CELL_PER_MODULE         12
-#define NOF_MAX_AUXIO                   5
-#define NOF_CANFRAME_HANDLER             9
+#define BOARD_NAME              "PPMU_IO"
+#define BOARD_ID                0x24021000
+#define FW_VERSION              0x24122501
 
 /*
  * Board frequencies.
@@ -116,13 +112,13 @@
 /*
  * Port A setup.
  */
-#define VAL_GPIOACRL    (PIN_ANALOG(0)       | /* On Board NTC */  \
+#define VAL_GPIOACRL    (PIN_OUTPUT_PP_50(0)       | /* On Board NTC */  \
                          PIN_INPUT_PUD(1)    | /* ADXL_INT1 */  \
                          PIN_INPUT_PUD(2)    | /* ADXL_INT2 */  \
-                         PIN_INPUT_PUD(3)    | /* ADXL DRDY */  \
+                         PIN_OUTPUT_PP_50(3)    | /* ADXL DRDY */  \
                          PIN_OUTPUT_PP_50(4)    | /* SPI1_CS (ADXL)*/            \
                          PIN_ALTERNATE_PP_50(5) | /* SPI1_SCK.          */  \
-                         PIN_ALTERNATE_PP_50(6) | /* SPI1_MISO.         */  \
+                         PIN_INPUT(6) | /* SPI1_MISO.         */  \
                          PIN_ALTERNATE_PP_50(7))  /* SPI1_MOSI.         */
 #define VAL_GPIOACRH    (PIN_OUTPUT_PP_50(8) | /* I2C2.SCL              */  \
                          PIN_ALTERNATE_PP_50(9) | /* USART1_TX.         */  \
@@ -140,13 +136,13 @@
 #define VAL_GPIOBCRL    (PIN_INPUT_PUD(0)    | /* BMI160_CS  */  \
                          PIN_INPUT_PUD(1)      | /* BMI160 INT2*/  \
                          PIN_INPUT_PUD(2)      | /* BMI160 INT1*/  \
-                         PIN_OUTPUT_PP_2(3)           | /* TDO.               */  \
+                         PIN_INPUT_PUD(3)           | /* TDO.               */  \
                          PIN_INPUT_PUD(4)           | /* TRST.              */  \
-                         PIN_ALTERNATE_PP_50(5)       | /* CAN2_RX  */  \
-                         PIN_OUTPUT_PP_2(6) | /* I2C1_SCL          */  \
-                         PIN_OUTPUT_PP_2(7))  /* I2C1_SDA.          */
+                         PIN_OUTPUT_PP_2(5)       | /* CAN2_RX  */  \
+                         PIN_INPUT_PUD(6) | /* I2C1_SCL          */  \
+                         PIN_INPUT_PUD(7))  /* I2C1_SDA.          */
 #define VAL_GPIOBCRH    (PIN_INPUT_PUD(8)           | /* CAN_RX.            */  \
-                         PIN_OUTPUT_PP_2(9) | /* SSD1362 RES            */  \
+                         PIN_ALTERNATE_PP_50(9) | /* SSD1362 RES            */  \
                          PIN_ALTERNATE_PP_50(10)| /* SmartCard IO.      */  \
                          PIN_OUTPUT_PP_2(11)|           /* SPI2.CS     */  \
                          PIN_OUTPUT_PP_2(12)|           /* SPI2.CLK     */  \
