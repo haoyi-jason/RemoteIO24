@@ -7264,10 +7264,19 @@
                 <name>$PROJ_DIR$\source\App_PPMu\app_ppmu.c</name>
             </file>
             <file>
+                <name>$PROJ_DIR$\source\App_PPMu\nvm_config.h</name>
+            </file>
+            <file>
                 <name>$PROJ_DIR$\source\App_PPMu\shell_command.c</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\source\App_PPMu\shell_command.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\source\App_PPMu\task_ppmu.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\source\App_PPMu\task_ppmu.h</name>
             </file>
         </group>
         <group>
@@ -7277,6 +7286,9 @@
             </excluded>
             <file>
                 <name>$PROJ_DIR$\source\App_RF_Ctrl_Receiver\app_receiver_main.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\source\App_RF_Ctrl_Receiver\nvm_config.h</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\source\App_RF_Ctrl_Receiver\rf_task.h</name>
@@ -7326,6 +7338,9 @@
                 <name>$PROJ_DIR$\source\App_RF_Switch\main_switch.c</name>
             </file>
             <file>
+                <name>$PROJ_DIR$\source\App_RF_Switch\nvm_config.h</name>
+            </file>
+            <file>
                 <name>$PROJ_DIR$\source\App_RF_Switch\remoteio.c</name>
             </file>
             <file>
@@ -7358,9 +7373,6 @@
             <file>
                 <name>$PROJ_DIR$\source\Drivers\nvm.h</name>
             </file>
-            <file>
-                <name>$PROJ_DIR$\source\Drivers\nvm_config.h</name>
-            </file>
         </group>
         <group>
             <name>RF</name>
@@ -7386,10 +7398,10 @@
         <group>
             <name>USB_HID</name>
             <file>
-                <name>$PROJ_DIR$\source\App_RF_Ctrl_Receiver\usbcdc_task.c</name>
+                <name>$PROJ_DIR$\source\Drivers\usbcdc_task.c</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\source\App_RF_Ctrl_Receiver\usbcdc_task.h</name>
+                <name>$PROJ_DIR$\source\Drivers\usbcdc_task.h</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\source\Drivers\usbcfg.c</name>

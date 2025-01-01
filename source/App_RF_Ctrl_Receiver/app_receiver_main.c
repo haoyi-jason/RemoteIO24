@@ -4,7 +4,7 @@
 #include "../drivers/bc3601.h"
 #include "rf_task.h"
 #include "stepper_task.h"
-#include "usbcdc_task.h"
+#include "../drivers/usbcdc_task.h"
 #include "shell.h"
 #include "shell_command.h"
 #include "../drivers/usbcfg.h"
@@ -39,7 +39,7 @@ static const ADCConversionGroup adcgrpcfg = {
   ADC_SMPR2_SMP_AN0(ADC_SAMPLE_239P5) | ADC_SMPR2_SMP_AN1(ADC_SAMPLE_239P5),
   ADC_SQR1_NUM_CH(ADC_GRP1_NUM_CHANNELS),
   0,
-  ADC_SQR3_SQ1_N(ADC_CHANNEL_IN0) | ADC_SQR3_SQ2_N(ADC_CHANNEL_IN1)
+  ADC_SQR3_SQ1_N(ADC_CHANNEL_IN4) | ADC_SQR3_SQ2_N(ADC_CHANNEL_IN1)
 };
 
 static const ShellCommand commands[] = {
@@ -339,7 +339,8 @@ int main()
     adcStart(&ADCD1,NULL);
     adcStartConversion(&ADCD1,&adcgrpcfg,samples,ADC_GRP1_BUF_DEPTH);  
     ADCD1.adc->CR2 |= 0x0;
-    palSetPad(GPIOA,2);
+    palClearPad(GPIOA,2);
+    palClearPad(GPIOB,9);
 //    palSetLineCallback(PAL_LINE(GPIOB, 7), drdy_handler,NULL);
 //    palEnableLineEvent(PAL_LINE(GPIOB, 7),PAL_EVENT_MODE_FALLING_EDGE);
   }
@@ -387,24 +388,36 @@ int main()
     }
     if(evt & EV_TX_DONE){
       rf_task_stop_manual_mode() ; 
-      palClearPad(GPIOA,2);
+      // change output pin to input mode
+      palSetPadMode(GPIOB,2,PAL_MODE_INPUT_PULLUP);
+      palSetPadMode(GPIOB,11,PAL_MODE_INPUT_PULLUP);
+      palSetPadMode(GPIOA,2,PAL_MODE_INPUT);
+      palSetPadMode(GPIOB,9,PAL_MODE_INPUT);
+
+
+//      palSetPad(GPIOA,2);
+//      palSetPad(GPIOB,9);
       bStop = true;
     }
   }
-      /*
-        config exti PB7 falling edge trigger to wakeup 
+    /*
+        config exti PA0 falling edge trigger to wakeup 
       */
+      EXTI->PR = EXTI_INTEN_LN0;
+      EXTI->IMR = EXTI_INTEN_LN0;
+      EXTI->EMR = EXTI_EVTEN_LN0;
+      EXTI->FTSR = EXTI_FTRSEL_LN0;
+      EXTI->RTSR = EXTI_FTRSEL_LN0;
+      AFIO->EXTICR[0] &= 0x0FFF;
+      AFIO->EXTICR[0] |= AFIO_EXTIC1_EXTINT0_PTA;
+
       PWR->CR |= PWR_CR_CLWUF | PWR_CR_CLSBF;
-      //PWR->CR |= (PWR_CR_PDDS);
+      PWR->CR &= ~PWR_CR_PVDS;
+      
+      PWR->CR |= (PWR_CR_PDDS); //Standby(0), Sleep(1)
+      PWR->CSR |= PWR_CRSTS_WUPEN;
       SCB->SCR |= (SCB_SCR_SLEEPDEEP_Msk);
       
-      EXTI->PR = EXTI_INTEN_LN7;
-      EXTI->IMR = EXTI_INTEN_LN7;
-      EXTI->EMR = EXTI_EVTEN_LN7;
-      EXTI->FTSR = EXTI_FTRSEL_LN7;
-      EXTI->RTSR = 0;
-      AFIO->EXTICR[1] &= 0x0FFF;
-      AFIO->EXTICR[1] |= AFIO_EXTIC2_EXTINT7_PTB;
       chSysDisable();
       __disable_irq();
       

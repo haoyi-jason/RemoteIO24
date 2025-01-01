@@ -5,7 +5,7 @@
 #include "../drivers/dev_bc3601.h"
 //#include "usbcfg.h"
 #include "../drivers/nvm.h"
-#include "../drivers/nvm_config.h"
+#include "nvm_config.h"
 
 
 
@@ -454,28 +454,27 @@ static THD_FUNCTION(procTX2 ,p)
     else{
       cycles = 0;
     }
-    if((cycles > 500) && (runTime.userMode == 0)){
-      chEvtSignal(runTime.mainThread,EV_TX_DONE);
+    if((cycles > nvmParam.deviceConfig.txCounts) && (runTime.userMode == 0)){
+      bStop = true;
     }
     rfp->dio = runTime.dio_state;
     rfp->advalue = runTime.ain_value;
     rfp->checksum = checksum((uint8_t*)rfp,sizeof(_rfPacket)-1);
+    chEvtSignal(runTime.mainThread,EV_TX_DATA_REQUEST);
     
     BC3601_SET_TX_PAYLOAD_SADDR(dev,&reg);
     //BC3601_SET_TX_PAYLOAD_WIDTH(dev,&pktSz);
     BC3601_FIFO_WRITE(dev,(uint8_t*)&txPacket,txPacket.sz);
     BC3601_TX_MODE(dev);
 //    rfp.advalue++;
-    if(runTime.userMode == 0){
-      chEvtSignal(runTime.mainThread,EV_TX_DATA_REQUEST);
-    }
     chThdSleepMilliseconds(nvmParam.deviceConfig.txIntervalMs);
-    if(chThdShouldTerminateX()){
+    if(chThdShouldTerminateX() && (runTime.userMode == 0)){
       bStop = true;
     }
   }
   BC3601_STBY(dev);
   BC3601_DEEP_SLEEP(dev);
+  chEvtSignal(runTime.mainThread,EV_TX_DONE);
   chThdExit(0);
   
 //  if(!bStop){
@@ -769,8 +768,8 @@ int8_t rf_task_init()
 //  nvmParam.deviceConfig.opMode = 1; // force tx mode
   runTime.userMode = 0;
   set_rf_addr();
- //nvmParam.deviceConfig.opMode = 3;  // transmitter
- nvmParam.deviceConfig.opMode = 4;
+ nvmParam.deviceConfig.opMode = 3;  // transmitter
+ //nvmParam.deviceConfig.opMode = 4;
  
  runTime.mainThread = chRegFindThreadByName("Main");
  
