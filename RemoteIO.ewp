@@ -5719,7 +5719,7 @@
                 <option>
                     <name>CCIncludePath2</name>
                     <state>$PROJ_DIR$\</state>
-                    <state>$PROJ_DIR$\\board\PPMU</state>
+                    <state>$PROJ_DIR$\board\PPMU</state>
                     <state>$PROJ_DIR$\include\PPMU_V01</state>
                     <state>$PROJ_DIR$\source\at32_comm</state>
                     <state>D:\SourceRespo\ChibiOS\chibios203\os\common\abstractions\cmsis_os</state>

@@ -36,13 +36,13 @@ static THD_FUNCTION(procUSBTask,p)
     if(SDU1.config->usbp->state == USB_ACTIVE){
       if(usbcdc_runtime.shellThread == NULL){
         usbcdc_runtime.shellThread = chThdCreateStatic(waShell,sizeof(waShell),NORMALPRIO,shellThread,p);
-        rf_task_start_manual_mode((BaseSequentialStream*)&SDU1);
+        //rf_task_start_manual_mode((BaseSequentialStream*)&SDU1);
       }
       chEvtWaitAny(EVENT_MASK(0));
       if(chThdTerminatedX(usbcdc_runtime.shellThread)){
         chThdRelease(usbcdc_runtime.shellThread);
         usbcdc_runtime.shellThread = NULL;
-        rf_task_stop_manual_mode();
+        //rf_task_stop_manual_mode();
       }
     }
     chThdSleepMilliseconds(50);

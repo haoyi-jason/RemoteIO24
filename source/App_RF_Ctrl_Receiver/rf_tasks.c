@@ -116,12 +116,12 @@ static void load_settings()
     nvmParam.deviceConfig.selfAddr = 0x01;
     nvmParam.deviceConfig.destAddr = 0x01;
     nvmParam.deviceConfig.opMode = 1;
-    nvmParam.deviceConfig.txIntervalMs = 100;
+    nvmParam.deviceConfig.txIntervalMs = 50;
     nvmParam.deviceConfig.txCounts = 90;
     
     nvmParam.rfConfig.dataRate = 2; // 10k
     nvmParam.rfConfig.frequency = 915.;
-    nvmParam.rfConfig.txPower = 2; // 10 dbm
+    nvmParam.rfConfig.txPower = 3; // 10 dbm
  
     nvmParam.tx_dio = 0xC000; // default tx pattern
     

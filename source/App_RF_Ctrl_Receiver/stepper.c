@@ -103,6 +103,7 @@ void stepper_move_to(int16_t pos)
   float deg;
   tmp = pos;
   if(step_runtime.dev == NULL) return; 
+  step_runtime.reloadStep = STEP_RELOAD_SIZE;
   if(tmp <= step_runtime.dev->stepperCtrl.stepConv[0].vr){
     deg = 0;
     stepMoveHome();
@@ -143,69 +144,8 @@ void stepMoveHome()
     step_runtime.moveHome = 1;
     step_runtime.tarPos = -500;
   }
+  step_runtime.reloadStep = STEP_RELOAD_SIZE>>1;
 }
-
-//int16_t stepPoll(void)
-//{
-//  if(step_runtime.dev == NULL) return -1; 
-//  _stepper_ctrl_t *dev = step_runtime.dev;
-//  int16_t difference;
-//  int16_t reload = 0;
-//  switch(step_runtime.pulseState){
-//  case PS_IDLE:
-//    if(step_runtime.tarPos != step_runtime.currPos){
-//      if(step_runtime.tarPos > step_runtime.currPos){
-//        step_runtime.dev->dirHigh();
-//        step_runtime.curPos++;
-//        difference = 1500 - step_runtime.currPos;
-//        if(step_runtime.currPos <= ppsMap[0].basePos){
-//          reload = ppsMap[0].baseReload + ppsMap[0].slop * currPos;
-//        }
-//        else if((step_runtime.currPos > ppsMap[0].basePos) && (step_runtime.currPos <= ppsMap[1].basePos)){
-//          reload = ppsMap[1].baseReload + ppsMap[1].slop * (currPos - ppsMap[0].basePos);
-//        }
-//        else if((step_runtime.currPos > pRange[1]){
-//          reload = ppsMap[2].baseReload + ppsMap[2].slop * (currPos - ppsMap[1].basePos);
-//        }
-//      }
-//      else{
-//        dev->dirLow();
-//        step_runtime.currPos--;
-//        difference = step_runtime.currPos - step_runtime.tarPos;
-//        if(step_runtime.currPos <= ppsMap[0].basePos){
-//          reload = ppsMap[0].baseReload + ppsMap[0].slop * currPos;
-//        }
-//        else if((step_runtime.currPos > ppsMap[0].basePos) && (step_runtime.currPos <= ppsMap[1].basePos)){
-//          reload = ppsMap[1].baseReload + ppsMap[1].slop * (currPos - ppsMap[0].basePos);
-//        }
-//        else if((step_runtime.currPos > pRange[1])){
-//          reload = ppsMap[2].baseReload + ppsMap[2].slop * (currPos - ppsMap[1].basePos);
-//        }
-//        
-//        if(step_runtime.moveHome == 1){
-//          reload = 300;
-//        }
-//                                                               
-//      }
-//      dev->stepHigh();
-//      step_runtime.pulseState = PS_IDLE;
-//    }
-//                 
-//         
-//    break;
-//  case PS_BLANK:
-//    break;
-//  case PS_HIGH:
-//    break;
-//  case PS_DELAY_HIGH:
-//    break;
-//  case PS_LOW:
-//    break;
-//  default:break;
-//  }
-//  
-//  return 0;
-//}
 
 int32_t stepPoll(void)
 {

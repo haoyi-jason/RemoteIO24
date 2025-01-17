@@ -210,10 +210,10 @@ void cmd_interval(BaseSequentialStream *chp, int argc, char *argv[])
     else{
       addr = (uint16_t)strtol(argv[0],NULL,10);
     }
-    rf_setDestAddr(addr);
+    rf_set_pollInterval(addr);
   }
   else if(argc == 0){
-    chprintf(chp,"DEST=%d\n",rf_getDestAddr());
+    chprintf(chp,"INTERVAL(ms)=%d\n",rf_getDestAddr());
   }
 }
 

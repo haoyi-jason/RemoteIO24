@@ -10,7 +10,14 @@ enum PMU_ID_e{
   PMU_CHANNEL_2,
   PMU_CHANNEL_3,
 };
-#define PMU_REG_SELECT(x)   (1 << (23+x))
+
+enum BIT_STATE_e{
+  BIT_DISABLE,
+  BIT_ENABLE
+};
+
+#define PMU_REG_SELECT(x)   (1 << (24+x))
+#define PMU_CHANNEL_SELECT(x)   (1 << (24+x))
 
 enum PMU_MODE_e{
   PMU_MODE_WR_SYS_REG,
@@ -51,14 +58,21 @@ enum PMU_MODE_e{
 #define PMU_SYS_REG_CL_EN(x)            (1 << (x + 18))
 
 // PMU registers
-#define PMU_PMU_REG_RESET               (1 << 6)
+#define PMU_PMU_REG_RESET(x)               (x << 6)
 #define PMU_PMU_REG_CMP(x)              (x << 7)
 #define PMU_PMU_REG_CMP_VOLT            (1)
 #define PMU_PMU_REG_CMP_CURR            (0)
-#define PMU_PMU_REG_CPOLH               (1 << 8)
-#define PMU_PMU_REG_CL_ENABLE           (1 << 9)
+#define PMU_PMU_REG_CPOLH(x)               (x << 8)
+#define PMU_PMU_REG_CL(x)               (x << 9)
 // SS/SF0 undefined
-#define PMU_PMU_REG_FORCE_IN            (1 << 12)
+
+#define PMU_PMU_REG_SYS_FORCE(x)        (x << 10)
+#define PMU_PMU_REG_SYS_FORCE_HZ        0
+#define PMU_PMU_REG_SYS_FORCE_SENSE     1
+#define PMU_PMU_REG_SYS_FORCE_FORCE     2
+#define PMU_PMU_REG_SYS_FORCE_ALL       3
+
+#define PMU_PMU_REG_FORCE_IN(x)            (x << 12)
 
 #define PMU_PMU_REG_MEAS(x)             (x << 13)
 #define PMU_PMU_REG_MEAS_IIN            (0)
@@ -74,16 +88,17 @@ enum PMU_MODE_e{
 #define PMU_PMU_REG_CRANGE_EXT          (4)
 
 #define PMU_PMU_REG_FORCE(x)            (x << 19)
-#define PMU_PMU_REG_FORCE_FVCI          (0)
-#define PMU_PMU_REG_FORCE_FICV          (1)
+#define PMU_PMU_REG_FORCE_FVMI          (0)
+#define PMU_PMU_REG_FORCE_FIMV          (1)
 #define PMU_PMU_REG_FORCE_FVHZ          (2)
 #define PMU_PMU_REG_FORCE_FCHZ          (3)
 
 #define PMU_PMU_REG_CHANNEL_EN          (1 << 21)
-
+#define PMU_PMU_REG_CHANNEL_EN_(x)      (x << 21)
 
 // DAC register address
 #define DAC_OFFSET_X                    0x0
+#define DAC_ADDRESS(x)                  (x << 16)
 enum DAC_REGISTER_ADDRESS_e{
   DAC_ADDRESS_OFFSET_X = 0x0,
   DAC_ADDRESS_I_5UA = 0x08,
@@ -109,7 +124,33 @@ enum DAC_REGISTER_ADDRESS_e{
   DAC_ADDRESS_I_CPH_EXT,
   DAC_ADDRESS_V_CPH,
 };
-#define NOF_DAC_ADDRESS 23
+
+enum DAC_REGISTER_ID_e{
+  DAC_ID_OFFSET_X = 0x0,
+  DAC_ID_I_5UA ,
+  DAC_ID_I_20UA,
+  DAC_ID_I_200UA,
+  DAC_ID_I_2MA,
+  DAC_ID_I_EXT,
+  DAC_ID_V,
+  DAC_ID_I_CLL,
+  DAC_ID_V_CLL,
+  DAC_ID_I_CLH,
+  DAC_ID_V_CLH,
+  DAC_ID_I_CPL_5UA,
+  DAC_ID_I_CPL_20UA,
+  DAC_ID_I_CPL_200UA,
+  DAC_ID_I_CPL_2MA,
+  DAC_ID_I_CPL_EXT,
+  DAC_ID_V_CPL,
+  DAC_ID_I_CPH_5UA,
+  DAC_ID_I_CPH_20UA,
+  DAC_ID_I_CPH_200UA,
+  DAC_ID_I_CPH_2MA,
+  DAC_ID_I_CPH_EXT,
+  DAC_ID_V_CPH,
+  NOF_DAC_ADDRESS
+};
 
 enum DAC_REGISTER_MODE_e{
   DAC_REGISTER_M = 0x01,

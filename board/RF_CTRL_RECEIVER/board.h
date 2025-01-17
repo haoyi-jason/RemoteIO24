@@ -125,7 +125,7 @@
                          PIN_ALTERNATE_PP_50(6) | /* SPI1_MISO.         */  \
                          PIN_ALTERNATE_PP_50(7))  /* SPI1_MOSI.         */
 #define VAL_GPIOACRH    (PIN_OUTPUT_OD_50(8) | /* I2C2.SCL              */  \
-                         PIN_ALTERNATE_PP_50(9) | /* USART1_TX.         */  \
+                         PIN_OUTPUT_OD_50(9) | /* USART1_TX.         */  \
                          PIN_OUTPUT_OD_50(10)          | /* USART1_RX.         */  \
                          PIN_ALTERNATE_PP_50(11)      | /* USB_DM            */  \
                          PIN_ALTERNATE_PP_50(12)      | /* USB_DP            */  \
@@ -147,7 +147,7 @@
                          PIN_OUTPUT_OD_50(7))  /* I2C1_SDA.          */
 #define VAL_GPIOBCRH    (PIN_OUTPUT_OD_50(8)           | /* CAN_RX.            */  \
                          PIN_OUTPUT_PP_2(9) | /* SSD1362 RES            */  \
-                         PIN_ALTERNATE_PP_50(10)| /* SmartCard IO.      */  \
+                         PIN_OUTPUT_OD_50(10)| /* SmartCard IO.      */  \
                          PIN_OUTPUT_PP_2(11)|           /* SPI2.CS     */  \
                          PIN_OUTPUT_PP_2(12)|           /* SPI2.CLK     */  \
                          PIN_ALTERNATE_PP_50(13)|       /* SPI2.MOSI */                    \
@@ -164,10 +164,10 @@
                          PIN_OUTPUT_PP_2(3)       |                           \
                          PIN_INPUT_PUD(4)          | /* Ethernet IRQ.     */  \
                          PIN_OUTPUT_PP_2(5)       |                           \
-                         PIN_UNDEFINED(6)    | /* SmartCard CMDVCC.  */  \
+                         PIN_OUTPUT_OD_50(6)    | /* SmartCard CMDVCC.  */  \
                          PIN_OUTPUT_PP_2(7))            /* SmartCard OFF.     */
 #define VAL_GPIOCCRH    (PIN_OUTPUT_OD_50(8) | /* SDIO D0.           */  \
-                         PIN_ALTERNATE_OD_10(9) | /* I2C2.SDA           */  \
+                         PIN_OUTPUT_OD_50(9) | /* I2C2.SDA           */  \
                          PIN_OUTPUT_OD_50(10)| /* UART4.TX          */  \
                          PIN_INPUT_PUD(11)| /* UART4.RX         */  \
                          PIN_ALTERNATE_PP_50(12)| /* UART5.TX          */  \

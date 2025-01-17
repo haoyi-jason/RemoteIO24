@@ -118,7 +118,7 @@
                          PIN_OUTPUT_PP_50(3)    | /* ADXL DRDY */  \
                          PIN_OUTPUT_PP_50(4)    | /* SPI1_CS (ADXL)*/            \
                          PIN_ALTERNATE_PP_50(5) | /* SPI1_SCK.          */  \
-                         PIN_INPUT(6) | /* SPI1_MISO.         */  \
+                         PIN_INPUT_PUD(6) | /* SPI1_MISO.         */  \
                          PIN_ALTERNATE_PP_50(7))  /* SPI1_MOSI.         */
 #define VAL_GPIOACRH    (PIN_OUTPUT_PP_50(8) | /* I2C2.SCL              */  \
                          PIN_ALTERNATE_PP_50(9) | /* USART1_TX.         */  \

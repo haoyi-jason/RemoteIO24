@@ -12,6 +12,9 @@
 #define ADC_GRP1_NUM_CHANNELS   2
 #define ADC_GRP1_BUF_DEPTH      8
 
+#define LINE_TX_ACT    PAL_LINE(GPIOB,2)
+#define LINE_TX_LBT     PAL_LINE(GPIOB,11)
+
 static adcsample_t samples[ADC_GRP1_NUM_CHANNELS*ADC_GRP1_BUF_DEPTH];
 
 static void adccallback(ADCDriver *adcp);
@@ -74,140 +77,6 @@ static void processTX2();
 static void processRX1();
 static void processRX2();
 
-//static BC3601Driver bc3601;
-//static const SPIConfig spicfg = {
-//  false,
-//  NULL,
-//  NULL,//GPIOB,
-//  NULL,//GPIOB_SPI1_CS,
-//  SPI_CR1_BR_2  
-//};
-//
-//static bc3601_config_t config = {
-//  &SPID2,
-//  &spicfg,
-//  GPIOB,
-//  12
-//};
-
-//struct _deviceConfig{
-//  uint8_t flag;
-//  uint16_t selfAddr;
-//  uint16_t destAddr;
-//  uint8_t opMode;  // 1: rf switch tx, 2: rf switch rx
-//  uint8_t txIntervalMs; // tx interval, in ms
-//  uint16_t txCounts; // number of times to transmit packet
-//  uint8_t reserved[55]; // reserve total 64-bytes for this struct
-//};
-//
-//struct _rfConfig{
-//  uint8_t dataRate; // 0 to 6, 2/5/10/25/50/125/250K
-//  uint8_t txPower;
-//  float frequency; 
-//  uint8_t reserved[58]; // reserve 64-bytes for this struct
-//};
-//
-//
-//struct _nvm{
-//  struct _deviceConfig deviceConfig;
-//  struct _rfConfig rfConfig;
-//  uint16_t tx_dio;
-//};
-
-//static struct{
-//  thread_t *self;
-//  thread_t *usbtrx;
-//  thread_reference_t ref;
-//  uint8_t rssi;
-//  uint16_t rf_ctrl;
-//  uint16_t cycles;
-//  uint8_t stage;
-//  uint16_t rxLost;
-//  uint8_t taskFinished;
-//}runTime;
-
-//typedef struct {
-//  uint8_t sz;
-//  uint8_t data[64];
-//}_txPacket;
-//
-//static _txPacket txPacket;
-//typedef struct{
-//  uint16_t dio; // bit 0~9 for action, bit 15 for switch
-//  uint16_t advalue;
-//  uint16_t srcAddr;
-//  uint16_t dstAddr;
-//  uint8_t rsv1;
-//  uint8_t checksum;
-//}_rfPacket;
-
-//static void load_settings()
-//{
-//  uint16_t nvmSz = sizeof(nvmParam);
-////  if(nvmSz > SZ_NVM_CONFIG){
-////    // error
-////    while(1);
-////  }
-//  nvm_flash_read(OFFSET_NVM_BOARD,(uint8_t*)&nvmParam,nvmSz);
-//  if(nvmParam.deviceConfig.flag != NVM_FLAG){
-//    nvmParam.deviceConfig.flag = NVM_FLAG;
-//    nvmParam.deviceConfig.selfAddr = 0x01;
-//    nvmParam.deviceConfig.destAddr = 0x01;
-//    nvmParam.deviceConfig.opMode = 1;
-//    nvmParam.deviceConfig.txIntervalMs = 100;
-//    nvmParam.deviceConfig.txCounts = 90;
-//    
-//    nvmParam.rfConfig.dataRate = 2; // 10k
-//    nvmParam.rfConfig.frequency = 915.;
-//    nvmParam.rfConfig.txPower = 2; // 10 dbm
-// 
-//    nvmParam.tx_dio = 0xC000; // default tx pattern
-//    
-//    nvm_flash_write(OFFSET_NVM_BOARD,(uint8_t*)&nvmParam,nvmSz);
-//  }
-//}
-
-//uint8_t checksum(uint8_t *d, uint8_t n)
-//{
-//  uint8_t sum = 0;
-//  for(uint8_t i=0;i<n;i++){
-//    sum += *d++;
-//  }
-//  return sum;
-//}
-
-//static void set_rf_addr()
-//{
-//  uint8_t reg = 0;
-//  // set address, 14-bit format
-//  reg = nvmParam.deviceConfig.selfAddr & 0x3F;
-//  BC3601_REG_WRITE(&bc3601,HEADER_ADDR0_REGS,&reg); 
-//  BC3601_REG_READ(&bc3601,HEADER_ADDR0_REGS,&reg); 
-//  reg = (nvmParam.deviceConfig.selfAddr>>8);
-//  BC3601_REG_WRITE(&bc3601,HEADER_ADDR1_REGS,&reg); 
-//  BC3601_REG_READ(&bc3601,HEADER_ADDR1_REGS,&reg);
-//}
-
-
-
-
-
-
-
-
-
-
-
-
-//void receiver_task_init()
-//{
-//  bc3601.txPower = 1;
-//  bc3601.dataRate = 0;
-//  bc3601.frequency = 915;
-//  bc3601.destAddr = 1;
-//  bc3601Start(&bc3601,&config);
-//  
-//}
 
 typedef struct{
   ioportid_t port;
@@ -228,22 +97,22 @@ _dio_def_t digital_in_tx[] = {
 };
 
 _dio_def_t digital_out_tx[] = {
-  {GPIOB,2},
-  {GPIOB,11},
+  {GPIOB,2}, // tx
+  {GPIOB,11}, // lbt
 };
 
 _dio_def_t digital_out_rx[] = {
   {GPIOB,7},
   {GPIOB,8},
-  {GPIOB,5},
+  {GPIOA,9},
   {GPIOB,6},
   {GPIOB,3},
   {GPIOB,4},
-  {GPIOA,1},
-  {GPIOA,0},
-  {GPIOA,3},
-  {GPIOA,2},
-  {GPIOA,5},
+  {GPIOC,6},
+  {GPIOC,9},
+  {GPIOB,12},
+  {GPIOB,10},
+  {GPIOB,11},
   {GPIOA,10},
   {GPIOA,8},
   {GPIOC,8},
@@ -254,9 +123,21 @@ _dio_def_t digital_in_rx[] = {
   {GPIOB,10},
 };
 
+static void processTX_DO()
+{
+  
+  
+}
+
 static void processRX_DO(uint16_t value)
 {
   uint16_t mask;
+  if(value != 0x0){
+    palSetPad(digital_out_rx[10].port,digital_out_rx[10].line);
+  }
+  else{
+    palClearPad(digital_out_rx[10].port,digital_out_rx[10].line);
+  }
   for(uint8_t i=0;i<10;i++){
     mask = (1 << i);
     if((mask & value) == 0){
@@ -300,6 +181,22 @@ static void processTX2()
   ch_sum[0] /= ADC_GRP1_BUF_DEPTH;
   ch_sum[1] /= ADC_GRP1_BUF_DEPTH;
   rf_write_analog_state(ch_sum[0]);
+  
+  // check if low battery
+  /*
+    lbt voltage         code
+    5.0                 5/10.56*4096 = 1940
+    4.0                 1552
+  */
+  
+  if(ch_sum[1] < 1552){
+    palClearLine(LINE_TX_LBT);
+  }
+  else{
+    palSetLine(LINE_TX_LBT);
+  }
+  
+  palToggleLine(LINE_TX_ACT);
   
 //  adcStartConversion(&ADCD1,&adcgrpcfg,samples,ADC_GRP1_BUF_DEPTH);  
 }
@@ -369,6 +266,12 @@ int main()
       default:break;
       }    
     }
+    if(evt & EV_RX_ERROR){
+      if(rf_op_mode() == 4){
+        processRX_DO(0x0);
+        stepMoveHome();
+      }
+    }
     if(evt & EV_TX_DATA_REQUEST){
       switch(rf_op_mode()){
       case 1:
@@ -394,9 +297,7 @@ int main()
       palSetPadMode(GPIOA,2,PAL_MODE_INPUT);
       palSetPadMode(GPIOB,9,PAL_MODE_INPUT);
 
-
-//      palSetPad(GPIOA,2);
-//      palSetPad(GPIOB,9);
+      palClearLine(LINE_TX_ACT);
       bStop = true;
     }
   }
