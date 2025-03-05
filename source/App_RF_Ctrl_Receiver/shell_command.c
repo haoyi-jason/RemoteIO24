@@ -279,7 +279,7 @@ void cmd_vrMap(BaseSequentialStream *chp, int argc, char *argv[])
   struct _rx_control_config *cfg = control_struct();
   char *edptr;
   if(argc == 0){
-    chprintf(chp,"ID RAW ANGLE\r\n");
+    chprintf(chp,"\nID RAW ANGLE");
     for(uint8_t i=0;i<4;i++){
       chprintf(chp,"#%2d %4d %4d\r\n",i, cfg->vr_map[i].raw, cfg->vr_map[i].angle); 
     }

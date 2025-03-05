@@ -9,7 +9,7 @@
 #define STEPPER_DIR_LINE        PAL_LINE(GPIOA,8)
 #define STEPPER_HFC_LINE        PAL_LINE(GPIOC,8)
 #define STEPPER_PUL_REVERSE         1
-#define STEPPER_DIR_REVERSE             0
+#define STEPPER_DIR_REVERSE             1
 
 #define PULSE_CTRL_TIMER        &GPTD1
 #define STEPPER_POLL_TIMER      &GPTD3

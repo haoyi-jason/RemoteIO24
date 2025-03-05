@@ -297,10 +297,10 @@ void ad5522_wr_pmu_dac_register(AD5522Driver *dev,uint8_t pmu_id, uint8_t dac_ad
 void ad5522_load(AD5522Driver *dev, uint8_t state)
 {
   if(state){
-    palSetPad(dev->config->loadport,dev->config->loadpad);
+    palClearPad(dev->config->loadport,dev->config->loadpad);
   }
   else{
-    palClearPad(dev->config->loadport,dev->config->loadpad);
+    palSetPad(dev->config->loadport,dev->config->loadpad);
   }
     
 }
@@ -327,17 +327,17 @@ void ad5522_init(AD5522Driver *dev,const AD5522Config *config )
   }
   if(!DBG_CHECK(dev->config->loadport)){
     palSetPadMode(dev->config->loadport, dev->config->loadpad,PAL_MODE_OUTPUT_PUSHPULL);
-    palSetPad(dev->config->loadport, dev->config->loadpad);
+    if(dev->use_sync == 1)
+      palSetPad(dev->config->loadport, dev->config->loadpad);
+    else
+      palClearPad(dev->config->loadport, dev->config->loadpad);
   }
   
-  
-  //uint8_t test[4] = {0x12,0x34,0x56,0x78};
-  //registerWrite(dev,test);  
-  // reset
-  
-  palClearPad(dev->config->rstport,dev->config->rstpad);
-  delay(1000);
-  palSetPad(dev->config->rstport,dev->config->rstpad);
+  if(dev->grp_reset == 0){
+    palClearPad(dev->config->rstport,dev->config->rstpad);
+    delay(1000);
+    palSetPad(dev->config->rstport,dev->config->rstpad);
+  }
   
   for(uint8_t i=0;i< NOF_PMU_CHANNEL;i++){
     ad5522_reset(dev, i);
@@ -345,27 +345,5 @@ void ad5522_init(AD5522Driver *dev,const AD5522Config *config )
   
   // write registers
   ad5522_rd_sysconfig(dev);
-  // read back dac fin
-//  for(uint8_t p=1;p<5;p++){
-//    for(uint8_t i=1;i<NOF_DAC_ADDRESS;i++){
-//      ad5522_rd_pmu_dac_register(dev,p,i,PMU_MODE_WR_DAC_X1);
-//    }
-//  }
-  
-//  for(uint8_t p=0;p<4;p++){
-//    for(uint8_t i=0;i<NOF_DAC_ADDRESS;i++){
-//      if(i == 0){
-//        ad5522_wr_pmu_dac_register(dev,p,i,PMU_MODE_WR_DAC_OFFSET,dev->PMU[p].dac[i].c);
-//      }
-//      else{
-//        ad5522_wr_pmu_dac_register(dev,p,i,PMU_MODE_WR_DAC_GAIN,dev->PMU[p].dac[i].m);
-//        ad5522_wr_pmu_dac_register(dev,p,i,PMU_MODE_WR_DAC_OFFSET,dev->PMU[p].dac[i].c);
-//        // set initial output (x1) to 0
-//        dev->PMU[p].dac[i].x1 = 0x7FFF;
-//        ad5522_wr_pmu_dac_register(dev,p,i,PMU_MODE_WR_DAC_X1,dev->PMU[p].dac[i].x1);
-//      }
-//    }
-//  }
-  
 }
 

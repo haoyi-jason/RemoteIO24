@@ -7823,6 +7823,15 @@
         </group>
         <group>
             <name>APP_PPMU</name>
+            <group>
+                <name>Protocol</name>
+                <file>
+                    <name>$extsource$\ylib\protocol\bin_protocol\bin_protocol.c</name>
+                </file>
+                <file>
+                    <name>$extsource$\ylib\protocol\bin_protocol\bin_protocol.h</name>
+                </file>
+            </group>
             <file>
                 <name>$PROJ_DIR$\source\App_PPMu\ad5522_def.h</name>
             </file>
@@ -7843,6 +7852,12 @@
             </file>
             <file>
                 <name>$PROJ_DIR$\source\App_PPMu\shell_command.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\source\App_PPMu\task_binProtocol.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\source\App_PPMu\task_binProtocol.h</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\source\App_PPMu\task_ppmu.c</name>

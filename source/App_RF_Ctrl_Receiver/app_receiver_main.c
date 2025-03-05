@@ -20,6 +20,7 @@ static adcsample_t samples[ADC_GRP1_NUM_CHANNELS*ADC_GRP1_BUF_DEPTH];
 static void adccallback(ADCDriver *adcp);
 
 static void adcerror(ADCDriver *adcp, adcerror_t err);
+static  virtual_timer_t vt_blink;
 
 static void adccallback(ADCDriver *adcp)
 {
@@ -57,13 +58,15 @@ static const ShellCommand commands[] = {
   {"rate", cmd_rate},
   {"mode", cmd_mode},
   {"save", cmd_save},
-  {"pattern", cmd_default_io_pattern},
-  {"polt", cmd_poll_interval},
-  {"polc", cmd_poll_count},
-  {"idn", cmd_idn},
-  {"vrmap", cmd_vrMap},
-  {"spdmap", cmd_spdMap},
-  {"txsim",cmd_txsim},
+//#ifndef RF_HANDLER
+//  {"pattern", cmd_default_io_pattern},
+//  {"polt", cmd_poll_interval},
+//  {"polc", cmd_poll_count},
+//  {"idn", cmd_idn},
+//  {"vrmap", cmd_vrMap},
+//  {"spdmap", cmd_spdMap},
+//  {"txsim",cmd_txsim},
+//#endif
   {NULL, NULL}
 };
 
@@ -168,6 +171,15 @@ static void processRX1()
 {
   
 }
+
+static void blink_cb(void *arg)
+{
+ //virtual_timer_t *vt = (virtual_timer_t*)arg;
+  chSysLockFromISR();
+  palToggleLine(LINE_TX_ACT);
+  chVTSetI(&vt_blink,TIME_MS2I(500),blink_cb,NULL);
+  chSysUnlockFromISR();
+}
 static void processTX2()
 {
   rf_write_ctrl_state(processDI());
@@ -185,18 +197,17 @@ static void processTX2()
   // check if low battery
   /*
     lbt voltage         code
-    5.0                 5/10.56*4096 = 1940
-    4.0                 1552
+    5.0                 (5-1.2)/10.56*4096 = 1940
+    4.8                 (4.8 - 1.2)*10.56/4096 = 1400
   */
   
-  if(ch_sum[1] < 1552){
+  if(ch_sum[1] < 1300){
     palClearLine(LINE_TX_LBT);
   }
-  else{
+  else if(ch_sum[1] > 1400){
     palSetLine(LINE_TX_LBT);
   }
   
-  palToggleLine(LINE_TX_ACT);
   
 //  adcStartConversion(&ADCD1,&adcgrpcfg,samples,ADC_GRP1_BUF_DEPTH);  
 }
@@ -205,8 +216,13 @@ static void processRX2()
   uint16_t dio = read_ctrl_state();
   processRX_DO(dio);
   // process stepper
-  uint16_t aio = read_analog_state(0);
-  stepper_move_to(aio);
+  if(dio != 0){
+    uint16_t aio = read_analog_state(0);
+    stepper_move_to(aio);
+  }
+  else{
+    stepMoveHome();
+  }
 }
 
 static void drdy_handler(void *arg)
@@ -238,6 +254,8 @@ int main()
     ADCD1.adc->CR2 |= 0x0;
     palClearPad(GPIOA,2);
     palClearPad(GPIOB,9);
+    chVTObjectInit(&vt_blink);
+    chVTSet(&vt_blink,TIME_MS2I(500), blink_cb,NULL);
 //    palSetLineCallback(PAL_LINE(GPIOB, 7), drdy_handler,NULL);
 //    palEnableLineEvent(PAL_LINE(GPIOB, 7),PAL_EVENT_MODE_FALLING_EDGE);
   }
@@ -298,9 +316,17 @@ int main()
       palSetPadMode(GPIOB,9,PAL_MODE_INPUT);
 
       palClearLine(LINE_TX_ACT);
-      bStop = true;
+      if(usb_cdc_active() == 0){
+        bStop = true;
+        usbcdc_task_stop();
+      }
+    }
+    if(evt & EV_SAVE){
+      rf_save_nvm();
     }
   }
+  
+      chVTReset(&vt_blink);
     /*
         config exti PA0 falling edge trigger to wakeup 
       */

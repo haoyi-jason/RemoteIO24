@@ -115,30 +115,35 @@ static void load_settings()
     nvmParam.deviceConfig.flag = NVM_FLAG;
     nvmParam.deviceConfig.selfAddr = 0x01;
     nvmParam.deviceConfig.destAddr = 0x01;
-    nvmParam.deviceConfig.opMode = 1;
+    nvmParam.deviceConfig.opMode = 4;
     nvmParam.deviceConfig.txIntervalMs = 50;
     nvmParam.deviceConfig.txCounts = 90;
     
     nvmParam.rfConfig.dataRate = 2; // 10k
     nvmParam.rfConfig.frequency = 915.;
-    nvmParam.rfConfig.txPower = 3; // 10 dbm
+    nvmParam.rfConfig.txPower = 5; // 10 dbm
  
     nvmParam.tx_dio = 0xC000; // default tx pattern
     
     nvmParam.deviceConfig.rx_control.vr_map[0].angle = 0;
-    nvmParam.deviceConfig.rx_control.vr_map[0].raw = 200;
-    nvmParam.deviceConfig.rx_control.vr_map[1].angle = 60;
-    nvmParam.deviceConfig.rx_control.vr_map[1].raw = 600;
-    nvmParam.deviceConfig.rx_control.vr_map[2].angle = 180;
-    nvmParam.deviceConfig.rx_control.vr_map[2].raw = 2000;
+    nvmParam.deviceConfig.rx_control.vr_map[0].raw = 1200;
+    nvmParam.deviceConfig.rx_control.vr_map[1].angle = 30;
+    nvmParam.deviceConfig.rx_control.vr_map[1].raw = 1600;
+    nvmParam.deviceConfig.rx_control.vr_map[2].angle = 170;
+    nvmParam.deviceConfig.rx_control.vr_map[2].raw = 2600;
     nvmParam.deviceConfig.rx_control.vr_map[3].angle = 200;
-    nvmParam.deviceConfig.rx_control.vr_map[3].raw = 2500;
+    nvmParam.deviceConfig.rx_control.vr_map[3].raw = 3000;
     
-    nvmParam.deviceConfig.rx_control.pulsePerDegree = (200*10)/360.;
+    nvmParam.deviceConfig.rx_control.pulsePerDegree = (320*10)/360.;
     nvmParam.deviceConfig.rx_control.min_pps = 500;
-    nvmParam.deviceConfig.rx_control.max_pps = 1000;
+    nvmParam.deviceConfig.rx_control.max_pps = 1500;
     nvm_flash_write(OFFSET_NVM_BOARD,(uint8_t*)&nvmParam,nvmSz);
   }
+}
+
+void rf_save_nvm()
+{
+  nvm_flash_write(OFFSET_NVM_BOARD,(uint8_t*)&nvmParam,sizeof(nvmParam));
 }
 
 uint8_t checksum(uint8_t *d, uint8_t n)
@@ -308,7 +313,7 @@ static THD_FUNCTION(procSwitchTX ,p)
 //    PWR->CSR &= ~(PWR_CRSTS_WUF);
 //    chSysDisable();
 //    __WFI();  
-    runTime.mainThread = NULL;
+   // runTime.mainThread = NULL;
   }
 //  else{          
 //  }
@@ -420,6 +425,7 @@ static THD_FUNCTION(procSwitchRX ,p)
     else{
       palClearPad(GPIOB,7);
     }
+    eventmask_t evt = chEvtWaitAnyTimeout(ALL_EVENTS,TIME_IMMEDIATE);
     chThdSleepMilliseconds(nvmParam.deviceConfig.txIntervalMs);
   }
   
@@ -674,7 +680,7 @@ uint8_t rf_getMode()
 
 void rf_saveParam()
 {
-  chEvtSignal(runTime.self,EV_SAVE);
+  chEvtSignal(runTime.mainThread,EV_SAVE);
 }
 
 void rf_set_io_pattern(uint16_t val)
@@ -768,7 +774,7 @@ int8_t rf_task_init()
 //  nvmParam.deviceConfig.opMode = 1; // force tx mode
   runTime.userMode = 0;
   set_rf_addr();
- nvmParam.deviceConfig.opMode = 3;  // transmitter
+ //nvmParam.deviceConfig.opMode = 3;  // transmitter
  //nvmParam.deviceConfig.opMode = 4;
  
  runTime.mainThread = chRegFindThreadByName("Main");

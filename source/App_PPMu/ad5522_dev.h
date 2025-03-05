@@ -42,12 +42,15 @@ typedef struct{
 
 #define _ad5522_data \
   uint8_t id; \
+  uint8_t use_sync; \
   event_source_t ev_data; \
   uint32_t sys_config; \
   _pmu_config_t PMU[NOF_PMU_CHANNEL]
   
 typedef struct{
   AD5522Config *config;
+  uint8_t grp_reset;
+  uint8_t grp_load;
   _ad5522_data;
 }AD5522Driver;
 

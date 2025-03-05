@@ -14,5 +14,5 @@ void cmd_dac_output(BaseSequentialStream *chp, int argc, char *argv[]) ;
 void cmd_dac_gain(BaseSequentialStream *chp, int argc, char *argv[]) ;
 void cmd_dac_offset(BaseSequentialStream *chp, int argc, char *argv[]) ;
 //void cmd_load(BaseSequentialStream *chp, int argc, char *argv[]) ;
-
+void cmd_meas_out(BaseSequentialStream *chp, int argc, char *argv[]);
 #endif

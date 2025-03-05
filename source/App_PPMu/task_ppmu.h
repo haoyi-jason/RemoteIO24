@@ -14,20 +14,54 @@ enum OUTPUT_MODE_e{
 void pmu_init();
 void pmu_save_state();
 void pmu_set_dac_output(uint8_t channel, uint8_t reg, uint16_t value);
+uint16_t pmu_get_dac_output(uint8_t channel, uint8_t reg);
+uint16_t pmu_get_dac_output_cached(uint8_t channel, uint8_t reg);
 void pmu_set_dac_gain(uint8_t channel, uint8_t reg, uint16_t value);
+uint16_t pmu_get_dac_gain(uint8_t channel, uint8_t reg);
+uint16_t pmu_get_dac_gain_cached(uint8_t channel, uint8_t reg);
 void pmu_set_dac_offset(uint8_t channel, uint8_t reg, uint16_t value);
+uint16_t pmu_get_dac_offset(uint8_t channel, uint8_t reg);
+uint16_t pmu_get_dac_offset_cached(uint8_t channel, uint8_t reg);
 
 void pmu_set_output(uint8_t channel, uint16_t value);
+
 void pmu_set_output_mode(uint8_t channel, uint8_t mode);
+uint8_t pmu_get_output_mode(uint8_t channel);
+
 void pmu_set_crange(uint8_t channel, uint8_t value);
+uint8_t pmu_get_crange(uint8_t channel);
+
 void pmu_enable(uint8_t channel, bool enable);
-void pmu_measout(uint8_t channel, uint8_t value);
+uint8_t pmu_get_enable(uint8_t channel);
+
+void pmu_set_measout(uint8_t channel, uint8_t value);
+uint8_t pmu_get_measout(uint8_t channel);
+
 void pmu_sys_force(uint8_t channel, uint8_t value);
-void pmu_cl(uint8_t channel, uint8_t value);
-void pmu_cpolh(uint8_t channel, uint8_t value);
+uint8_t pmu_get_sys_force(uint8_t channel);
+
+void pmu_set_clamp(uint8_t channel, uint8_t value);
+uint8_t pmu_get_clamp(uint8_t channel);
+
+void pmu_set_cpolh(uint8_t channel, uint8_t value);
+uint8_t pmu_get_cpolh(uint8_t channel);
+
 void pmu_clear(uint8_t channel, uint8_t value);
+
 void pmu_reg_flush(uint8_t channel);
 
 void pmu_load(uint8_t id);
 void pmu_unload(uint8_t id);
+
+void pmu_set_enable(uint8_t channel, uint8_t mode);
+uint8_t pmu_get_enable(uint8_t channel);
+
+void pmu_set_fin(uint8_t channel, uint8_t mode);
+uint8_t pmu_get_fin(uint8_t channel);
+
+void pmu_set_ccomp(uint8_t range);
+uint8_t pmu_get_ccomp();
+void pmu_set_frange(uint8_t range);
+uint8_t pmu_get_frange();
+
 #endif

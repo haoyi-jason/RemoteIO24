@@ -46,6 +46,10 @@ static THD_FUNCTION(procUSBTask,p)
       }
     }
     chThdSleepMilliseconds(50);
+    
+    if(chThdShouldTerminateX()){
+      bStop = true;
+    }
 //    else if(usbcdc_runtime.shellThread != NULL){
 //      chThdTerminate(usbcdc_runtime.shellThread);
 //      chThdWait(usbcdc_runtime.shellThread);
@@ -55,14 +59,21 @@ static THD_FUNCTION(procUSBTask,p)
     
     
   }
-
+  chThdExit(MSG_OK);
 }
 
 void usbcdc_task_init(void *arg)
 {
-  
   usbcdc_runtime.self = chThdCreateStatic(waUSBTask,sizeof(waUSBTask),NORMALPRIO,procUSBTask,arg);
-  
-  
+}
 
+void usbcdc_task_stop()
+{
+  chThdTerminate(usbcdc_runtime.self);
+  chThdWait(usbcdc_runtime.self);
+}
+
+uint8_t usb_cdc_active()
+{
+  return (usbcdc_runtime.shellThread == NULL)?0:1;
 }

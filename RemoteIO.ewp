@@ -2818,7 +2818,7 @@
                 </option>
                 <option>
                     <name>OOCOutputFile</name>
-                    <state>RemoteIO_.hex</state>
+                    <state>RemoteIO_RX_25xxxx.hex</state>
                 </option>
                 <option>
                     <name>OOCCommandLineProducer</name>
@@ -4509,6 +4509,7 @@
                 <option>
                     <name>CCDefines</name>
                     <state>CHPRINTF_USE_FLOAT</state>
+                    <state>RF_HANDLER</state>
                 </option>
                 <option>
                     <name>CCPreprocFile</name>
@@ -5762,6 +5763,7 @@
                     <state>D:\SourceRespo\ChibiOS\chibios203\ext\lwip-2.1.2\lwip\src\include</state>
                     <state>D:\SourceRespo\ChibiOS\chibios203\os\various\lwip_bindings</state>
                     <state>D:\SourceRespo\ylib\AT32\at32_comm</state>
+                    <state>D:\SourceRespo\ylib</state>
                 </option>
                 <option>
                     <name>CCStdIncCheck</name>
@@ -7251,6 +7253,15 @@
                 <configuration>Receiver_V01</configuration>
                 <configuration>Transmitter_V01</configuration>
             </excluded>
+            <group>
+                <name>Protocol</name>
+                <file>
+                    <name>$extsource$\ylib\protocol\bin_protocol\bin_protocol.c</name>
+                </file>
+                <file>
+                    <name>$extsource$\ylib\protocol\bin_protocol\bin_protocol.h</name>
+                </file>
+            </group>
             <file>
                 <name>$PROJ_DIR$\source\App_PPMu\ad5522_def.h</name>
             </file>
@@ -7268,9 +7279,21 @@
             </file>
             <file>
                 <name>$PROJ_DIR$\source\App_PPMu\shell_command.c</name>
+                <excluded>
+                    <configuration>PPMU_V01</configuration>
+                </excluded>
             </file>
             <file>
                 <name>$PROJ_DIR$\source\App_PPMu\shell_command.h</name>
+                <excluded>
+                    <configuration>PPMU_V01</configuration>
+                </excluded>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\source\App_PPMu\task_binProtocol.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\source\App_PPMu\task_binProtocol.h</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\source\App_PPMu\task_ppmu.c</name>

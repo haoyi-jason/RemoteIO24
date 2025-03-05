@@ -1,29 +1,14 @@
 #include "ch.h"
 #include "hal.h"
 #include "../drivers/usbcdc_task.h"
-#include "shell.h"
-#include "shell_command.h"
+//#include "shell.h"
+//#include "shell_command.h"
 #include "../drivers/usbcfg.h"
 #include "task_ppmu.h"
+#include "task_binprotocol.h"
 
-
-static const ShellCommand commands[] = {
-  {"force",cmd_force},
-  {"fm",cmd_force_mode},
-  {"fr",cmd_force_range},
-  {"clamp",cmd_clamp},
-  {"cpoh",cmd_cpoh},
-  {"load",cmd_load},
-  {"daout",cmd_dac_output},
-  //{"dagain",cmd_dac_gain},
-  //{"daoffset",cmd_dac_offset},
-  {NULL, NULL}
-};
-
-static const ShellConfig shell_cfg = {
-  (BaseSequentialStream *)&SDU1,
-  commands
-};
+#define SD_USE_USB      0
+#define SD_USE_SD1      0
 
 int main()
 {
@@ -32,7 +17,14 @@ int main()
   AFIO->MAPR |= (AFIO_MAP_SWJTAG_CONF_JTAGDISABLE);
   
   chRegSetThreadName("Main");
+#if(SD_USE_USB)
   usbcdc_task_init((void*)&shell_cfg);
+#else
+//  sdStart(&SD1, &serialcfg);
+//  sdWrite(&SD1,"HELLO\n",6);
+//  chThdCreateStatic(waShell,sizeof(waShell),NORMALPRIO,shellThread,(void*)&shell_cfg);
+  task_binProtocolInit(0);
+#endif
   pmu_init();
   while(1){
     

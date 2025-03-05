@@ -132,7 +132,7 @@
                          PIN_UNDEFINED(13)          | /* Not use              */  \
                          PIN_UNDEFINED(14)          | /* not use            */  \
                          PIN_INPUT_PUD(15))     /* SMU_STB               */
-#define VAL_GPIOAODR    0xFFFFFAD0
+#define VAL_GPIOAODR    0xFFFFF8D0
 
 /*
  * Port B setup.
@@ -148,12 +148,12 @@
 #define VAL_GPIOBCRH    (PIN_OUTPUT_OD_50(8)           | /* CAN_RX.            */  \
                          PIN_OUTPUT_PP_2(9) | /* SSD1362 RES            */  \
                          PIN_OUTPUT_OD_50(10)| /* SmartCard IO.      */  \
-                         PIN_OUTPUT_PP_2(11)|           /* SPI2.CS     */  \
-                         PIN_OUTPUT_PP_2(12)|           /* SPI2.CLK     */  \
+                         PIN_OUTPUT_OD_50(11)|           /* SPI2.CS     */  \
+                         PIN_OUTPUT_OD_50(12)|           /* SPI2.CLK     */  \
                          PIN_ALTERNATE_PP_50(13)|       /* SPI2.MOSI */                    \
                          PIN_INPUT(14)|       /* SPI2.MISO.    */  \
                          PIN_ALTERNATE_PP_50(15))
-#define VAL_GPIOBODR    0xFFFFFE07
+#define VAL_GPIOBODR    0xFFFFE207
 
 /*
  * Port C setup.
@@ -174,7 +174,7 @@
                          PIN_OUTPUT_PP_50(13)          | /* LED     */  \
                          PIN_OUTPUT_PP_50(14)          | /* OSC IN.            */  \
                          PIN_INPUT_PUD(15))           /* OSC OUT.           */
-#define VAL_GPIOCODR    0xFFFFDFFF
+#define VAL_GPIOCODR    0xFFFFDCBF
 
 /*
  * Port D setup.

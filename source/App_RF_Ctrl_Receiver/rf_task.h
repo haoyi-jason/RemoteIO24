@@ -64,4 +64,6 @@ void rf_set_ppd(float value,uint16_t minp, uint16_t maxp);
 void rf_get_ppd(float *value,uint16_t *minp, uint16_t *maxp);
 
 void rf_write_ctrl_state(uint16_t value);
+
+void rf_save_nvm();
 #endif
