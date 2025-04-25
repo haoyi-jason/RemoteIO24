@@ -48,7 +48,7 @@ static void chipSel(AD5522Driver *dev, uint8_t set)
   
   if(set){
     palClearPad(dev->config->ssport, dev->config->sspad);
-    //delay(2000);
+    delay(200);
   }
   else
     palSetPad(dev->config->ssport, dev->config->sspad);
@@ -112,6 +112,7 @@ static bool dev_busy(AD5522Driver *dev)
 
 void ad5522_reset(AD5522Driver *dev,uint8_t channel)
 {
+  if(DBG_CHECK(dev->config->devp)) return;
   uint8_t buf_out[4] = {0,0,0,0};
   uint32_t v = 0x0;
   v |= PMU_REG_WR_MASK;
@@ -131,12 +132,14 @@ void ad5522_reset(AD5522Driver *dev,uint8_t channel)
 
 void ad5522_nop(AD5522Driver *dev)
 {
+  if(DBG_CHECK(dev->config->devp)) return;
   uint8_t buf_out[4] = {0,0xff,0xff,0xff};
   registerWrite(dev,buf_out);
 }
 
 static uint32_t ad5522_readFrame(AD5522Driver *dev)
 {
+  if(DBG_CHECK(dev->config->devp)) return 0;
   uint8_t buf_out[4] = {0x00,0xFF,0xFF,0xFF};
   uint8_t buf_in[4];
   uint32_t result;
@@ -148,6 +151,7 @@ static uint32_t ad5522_readFrame(AD5522Driver *dev)
 
 void ad5522_rd_sysconfig(AD5522Driver *dev)
 {
+  if(DBG_CHECK(dev->config->devp)) return;
   uint8_t buf_out[4] = {0,0,0,0};
   uint8_t buf_in[4] = {0,0,0,0};
   uint32_t v = 0x0;
@@ -170,6 +174,7 @@ void ad5522_rd_sysconfig(AD5522Driver *dev)
 
 void ad5522_wr_sysconfig(AD5522Driver *dev,uint32_t value)
 {
+  if(DBG_CHECK(dev->config->devp)) return ;
   uint8_t buf_out[4] = {0,0,0,0};
   //uint8_t buf_in[4] = {0,0,0,0};
   uint32_t v = value;
@@ -190,6 +195,7 @@ void ad5522_wr_sysconfig(AD5522Driver *dev,uint32_t value)
 
 void ad5522_rd_pmu_register(AD5522Driver *dev, uint8_t pmu_id)
 {
+  if(DBG_CHECK(dev->config->devp)) return ;
   uint8_t buf_out[4] = {0,0,0,0};
   uint8_t buf_in[4] = {0,0,0,0};
   uint32_t v = 0x0;
@@ -213,6 +219,7 @@ void ad5522_rd_pmu_register(AD5522Driver *dev, uint8_t pmu_id)
 
 void ad5522_wr_pmu_register(AD5522Driver *dev,uint8_t pmu_id, uint32_t value)
 {
+  if(DBG_CHECK(dev->config->devp)) return ;
   uint8_t buf_out[4] = {0,0,0,0};
   uint32_t v = value;
   v |= PMU_REG_WR_MASK;
@@ -232,6 +239,7 @@ void ad5522_wr_pmu_register(AD5522Driver *dev,uint8_t pmu_id, uint32_t value)
 
 void ad5522_rd_pmu_dac_register(AD5522Driver *dev, uint8_t pmu_id,uint8_t dac_address,uint8_t mode)
 {
+  if(DBG_CHECK(dev->config->devp)) return;
   uint8_t buf_out[4] = {0,0,0,0};
   uint8_t buf_in[4] = {0,0,0,0};
   uint32_t v = 0x0;
@@ -259,6 +267,7 @@ void ad5522_rd_pmu_dac_register(AD5522Driver *dev, uint8_t pmu_id,uint8_t dac_ad
 
 void ad5522_wr_pmu_dac_register(AD5522Driver *dev,uint8_t pmu_id, uint8_t dac_address,uint8_t mode, uint16_t value)
 {
+  if(DBG_CHECK(dev->config->devp)) return;
   uint8_t buf_out[4] = {0,0,0,0};
   // check range for cll & clh, page 52
   uint16_t v_write = value;

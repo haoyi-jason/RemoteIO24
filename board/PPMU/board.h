@@ -142,7 +142,7 @@
                          PIN_INPUT_PUD(6)               | /* TMPALM (not use)          */  \
                          PIN_INPUT_PUD(7))                /* CGALM (not use)          */
 #define VAL_GPIOBCRH    (PIN_INPUT_PUD(8)               | /* CAN1_RX. (not use)            */  \
-                         PIN_ALTERNATE_PP_50(9)         | /* CAN1 TX (not use)           */  \
+                         PIN_INPUT_PUD(9)         | /* CAN1 TX (not use)           */  \
                          PIN_INPUT_PUD(10)              | /* BUSY 2      */  \
                          PIN_OUTPUT_PP_2(11)            | /* SYNC 3    */  \
                          PIN_OUTPUT_PP_2(12)            | /* SYNC 2    */  \

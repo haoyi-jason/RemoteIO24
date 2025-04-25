@@ -449,18 +449,26 @@ static THD_FUNCTION(procTX2 ,p)
   txPacket.sz = pktSz+1;
   //memcpy(txPacket.data,(uint8_t*)&rfp, pktSz);
   bool bStop = false;
+  systime_t idleStart = chVTGetSystemTimeX();
+  systime_t idleMs = 0;
   while(!bStop){
     //cycles++;
     BC3601_RESET_TXFIFO(dev);
     reg = 0;
     // read analog input and i/o state
     if(runTime.dio_state == 0x0){
-      cycles++;
+      systime_t time = chVTGetSystemTimeX();
+      idleMs = TIME_I2MS(chVTTimeElapsedSinceX(idleStart));
+      //cycles++;
     }
     else{
-      cycles = 0;
+      idleStart = chVTGetSystemTimeX();
+      //cycles = 0;
     }
-    if((cycles > nvmParam.deviceConfig.txCounts) && (runTime.userMode == 0)){
+//    if((cycles > nvmParam.deviceConfig.txCounts) && (runTime.userMode == 0)){
+//      bStop = true;
+//    }
+    if((idleMs > 2000) && (runTime.userMode == 0)){
       bStop = true;
     }
     rfp->dio = runTime.dio_state;
@@ -515,6 +523,7 @@ static THD_FUNCTION(procRX2 ,p)
   runTime.rf_ctrl = 0x0;
   runTime.taskFinished = 0;
   runTime.rfLinkFail = 0;
+  nvmParam.deviceConfig.txIntervalMs = 2;
   while(bRun){
     //rf_ctrl = 0x0;
     if(chThdShouldTerminateX()){
@@ -561,7 +570,7 @@ static THD_FUNCTION(procRX2 ,p)
             }
           }
         }
-        //runTime.stage = 0;
+        runTime.stage = 0;
       }    
       else{
         if(runTime.rxLost < 1000){
@@ -574,7 +583,7 @@ static THD_FUNCTION(procRX2 ,p)
           runTime.ain_value = 0x0;
           runTime.rfLinkFail = 1;
 //          runTime.taskFinished = 0; // reset task
-//          runTime.stage = 0;
+          runTime.stage = 0;
         }
       }
       break;
@@ -592,8 +601,7 @@ static THD_FUNCTION(procRX2 ,p)
     default:
       break;
     }
-//    chThdSleepMilliseconds(nvmParam.deviceConfig.txIntervalMs);
-    chThdSleepMilliseconds(20);
+    chThdSleepMilliseconds(nvmParam.deviceConfig.txIntervalMs);
   }
   
   chThdExit(0);
@@ -758,11 +766,15 @@ int8_t rf_task_init()
   //palClearPad(GPIOB,7);
   load_settings();
   // rf chip initial
-  bc3601.txPower = nvmParam.rfConfig.txPower;
-  bc3601.dataRate = nvmParam.rfConfig.dataRate;
+//  bc3601.txPower = nvmParam.rfConfig.txPower;
+  bc3601.txPower = 4;
+//  bc3601.dataRate = nvmParam.rfConfig.dataRate;
+  bc3601.dataRate = 1; // 5K
   bc3601.frequency = nvmParam.rfConfig.frequency;
   bc3601.destAddr = nvmParam.deviceConfig.destAddr;
 
+  if(bc3601.txPower > 4) bc3601.txPower = 4;
+  
   dev_bc3601Init(&bc3601,&config);
   //nvmParam.deviceConfig.opMode = 99;
 //  if(palReadPad(GPIOB,0) == PAL_HIGH){ // RX mode
@@ -773,10 +785,15 @@ int8_t rf_task_init()
 //  }
 //  nvmParam.deviceConfig.opMode = 1; // force tx mode
   runTime.userMode = 0;
+  nvmParam.deviceConfig.txIntervalMs = 40;
   set_rf_addr();
- //nvmParam.deviceConfig.opMode = 3;  // transmitter
- //nvmParam.deviceConfig.opMode = 4;
- 
+  
+#if defined(RF_TX)
+ nvmParam.deviceConfig.opMode = 3;  // transmitter
+#endif
+#if defined(RF_RX)
+ nvmParam.deviceConfig.opMode = 4;
+#endif
  runTime.mainThread = chRegFindThreadByName("Main");
  
   switch(nvmParam.deviceConfig.opMode){

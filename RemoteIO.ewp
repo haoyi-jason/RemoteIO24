@@ -2340,6 +2340,7 @@
                 <option>
                     <name>CCDefines</name>
                     <state>CHPRINTF_USE_FLOAT</state>
+                    <state>RF_RX</state>
                 </option>
                 <option>
                     <name>CCPreprocFile</name>
@@ -4510,6 +4511,7 @@
                     <name>CCDefines</name>
                     <state>CHPRINTF_USE_FLOAT</state>
                     <state>RF_HANDLER</state>
+                    <state>RF_TX</state>
                 </option>
                 <option>
                     <name>CCPreprocFile</name>

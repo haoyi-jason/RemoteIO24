@@ -266,7 +266,7 @@ int main()
   
   bool bStop = false;
   while(!bStop){
-    eventmask_t evt = chEvtWaitAnyTimeout(ALL_EVENTS, TIME_MS2I(100));
+    eventmask_t evt = chEvtWaitAnyTimeout(ALL_EVENTS, TIME_MS2I(5));
     if(evt & EV_RX_PACKET){
       switch(rf_op_mode()){
       case 1:
@@ -284,7 +284,7 @@ int main()
       default:break;
       }    
     }
-    if(evt & EV_RX_ERROR){
+    if(evt & EV_RX_ERROR || evt & EV_RX_LOST){
       if(rf_op_mode() == 4){
         processRX_DO(0x0);
         stepMoveHome();

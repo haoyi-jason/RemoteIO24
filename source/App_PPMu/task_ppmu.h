@@ -2,7 +2,7 @@
 #define _TASK_PPMU_
 
 #define NOF_CHANNEL_PER_PMU     4
-#define NOF_AD5522                1
+#define NOF_AD5522                4
 #define TOTAL_PMU_CHANNEL       NOF_AD5522 * NOF_CHANNEL_PER_PMU
 
 enum OUTPUT_MODE_e{
@@ -64,4 +64,19 @@ uint8_t pmu_get_ccomp();
 void pmu_set_frange(uint8_t range);
 uint8_t pmu_get_frange();
 
+void pmu_nvm_load_default();
+void pmu_nvm_save();
+void pmu_set_init_state(uint8_t state);
+uint8_t pmu_get_init_state();
+
+void pmu_set_dutgnd(uint8_t id, uint8_t state);
+uint8_t pmu_get_dutgnd(uint8_t id);
+
+void pmu_set_int10k(uint8_t id, uint8_t state);
+uint8_t pmu_get_int10k(uint8_t id);
+
+void pmu_set_outgain(uint8_t id, uint8_t state);
+uint8_t pmu_get_outgain(uint8_t id);
+
+uint8_t pmu_fill_board_registers(uint8_t *dptr);
 #endif

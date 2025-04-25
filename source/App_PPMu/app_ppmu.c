@@ -1,8 +1,6 @@
 #include "ch.h"
 #include "hal.h"
 #include "../drivers/usbcdc_task.h"
-//#include "shell.h"
-//#include "shell_command.h"
 #include "../drivers/usbcfg.h"
 #include "task_ppmu.h"
 #include "task_binprotocol.h"
@@ -27,8 +25,6 @@ int main()
 #endif
   pmu_init();
   while(1){
-    
-    
     chThdSleepMilliseconds(50);
   }
 }

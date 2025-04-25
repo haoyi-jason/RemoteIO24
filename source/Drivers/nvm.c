@@ -50,6 +50,7 @@ msg_t nvm_flash_write(uint16_t offset, uint8_t *dptr, uint16_t sz)
       nvmFlashWritePage(i,pg);
       rsz += wsz;
       wof += wsz;
+      wof = wof % PAGE_SIZE;
       szRemain -= wsz;
   }
   return MSG_RESET;
