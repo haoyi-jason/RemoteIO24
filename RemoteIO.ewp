@@ -3553,7 +3553,7 @@
                     <state>$PROJ_DIR$\</state>
                     <state>D:\SourceRespo\IAR_SRC_WS\RemoteIO\board\RF_SWITCH</state>
                     <state>$PROJ_DIR$\include</state>
-                    <state>$PROJ_DIR$\..\conf</state>
+                    <state>$PROJ_DIR$\include\Transmitter_V01</state>
                     <state>$PROJ_DIR$\source\at32_comm</state>
                     <state>D:\SourceRespo\ChibiOS\chibios203\os\common\abstractions\cmsis_os</state>
                     <state>D:\SourceRespo\ChibiOS\chibios203\os\common\ext\ARM\CMSIS\Core\Include</state>
@@ -3867,6 +3867,7 @@
                     <state>$PROJ_DIR$\</state>
                     <state>$PROJ_DIR$\board</state>
                     <state>$PROJ_DIR$\include</state>
+                    <state>$PROJ_DIR$\include\Transmitter_V01</state>
                     <state>D:\SourceRespo\ChibiOS\chibios203\os\license</state>
                     <state>D:\SourceRespo\ChibiOS\chibios203\os\common\ports\ARMCMx</state>
                     <state>D:\SourceRespo\ChibiOS\chibios203\os\common\startup\ARMCMx\devices\AT32F4xx</state>
@@ -3903,7 +3904,7 @@
                 </option>
                 <option>
                     <name>OOCOutputFile</name>
-                    <state>RemoteIO_.hex</state>
+                    <state>RemoteIO_SWITCH_TX.hex</state>
                 </option>
                 <option>
                     <name>OOCCommandLineProducer</name>
@@ -7253,6 +7254,7 @@
             <name>APP_PPMU</name>
             <excluded>
                 <configuration>Receiver_V01</configuration>
+                <configuration>Switch_48LQFP</configuration>
                 <configuration>Transmitter_V01</configuration>
             </excluded>
             <group>

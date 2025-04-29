@@ -924,7 +924,8 @@ void dev_bc3601Init(BC3601Driver *dev,const bc3601_config_t *config)
 {
   uint8_t reg;
   dev->config = config;
-  gio_config(dev,_GPIO1_,1);
+  // 4-wire spi
+//  gio_config(dev,_GPIO1_,1);
   // set to sleep mode
   bc3601_lightSleepMode(dev);
   

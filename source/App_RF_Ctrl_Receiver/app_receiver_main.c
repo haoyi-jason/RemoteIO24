@@ -169,7 +169,29 @@ static void processTX1()
 }
 static void processRX1()
 {
+  uint16_t dio = read_ctrl_state();
   
+      // valid input
+    if(palReadPad(GPIOA,15) == PAL_LOW){
+      //palSetPad(GPIOB,7);
+      dio |= 0x8000;
+    }
+//    else{
+//      palClearPad(GPIOB,7);
+//    }
+    // valid output
+    if(dio & 0x4000){
+      palSetPad(GPIOB,6);
+    }
+    else{
+      palClearPad(GPIOB,6);
+    }
+    if(dio & 0x8000){
+      palSetPad(GPIOB,7);
+    }
+    else{
+      palClearPad(GPIOB,7);
+    }
 }
 
 static void blink_cb(void *arg)
@@ -273,7 +295,7 @@ int main()
         //processTX1();
         break;
       case 2:
-        // process RX1();
+        processRX1();
         break;
       case 3:
         processTX2();

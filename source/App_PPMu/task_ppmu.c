@@ -781,9 +781,28 @@ uint8_t pmu_fill_board_registers(uint8_t *dptr)
     dptr += 4;
     for(uint8_t j=0;j<NOF_CHANNEL_PER_PMU;j++){
       mask = pmu_reg_boundle(i,j);
-      memcpy(dptr,mask,4);
+      memcpy(dptr,&mask,4);
       dptr += 4;
     }
   }
   return NOF_AD5522*5*4;
+}
+
+uint8_t pmu_fill_dac_registers(uint8_t channel, uint8_t *dptr)
+{
+ // if(!ASSERT_CHANNEL(channel)) return;
+  uint8_t id = channel / NOF_CHANNEL_PER_PMU;
+  uint8_t pmu_id = ch_map[channel % NOF_CHANNEL_PER_PMU];
+  _pmu_config_t *cfg = &runTime.ad5522[id].PMU[pmu_id];
+
+  //uint32_t mask=0;
+  for(uint8_t i=0;i<NOF_DAC_ADDRESS;i++){
+    memcpy(dptr, &cfg->dac[i].c,2);
+    dptr +=2;
+    memcpy(dptr, &cfg->dac[i].m,2);
+    dptr +=2;
+    memcpy(dptr, &cfg->dac[i].x1,2);
+    dptr +=2;
+  }
+  return NOF_DAC_ADDRESS*6;
 }

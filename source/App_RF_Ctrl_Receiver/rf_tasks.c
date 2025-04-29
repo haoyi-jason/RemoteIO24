@@ -289,7 +289,9 @@ static THD_FUNCTION(procSwitchTX ,p)
   txPacket.sz = pktSz+1;
   memcpy(txPacket.data,(uint8_t*)&rfp, pktSz);
   bool bStop = false;
-  while((cycles < nvmParam.deviceConfig.txCounts) && !bStop){
+  systime_t idleStart = chVTGetSystemTimeX();
+  uint32_t idleMs;
+  while(!bStop){
     cycles++;
     BC3601_RESET_TXFIFO(dev);
     reg = 0;
@@ -302,9 +304,19 @@ static THD_FUNCTION(procSwitchTX ,p)
     if(chThdShouldTerminateX()){
       bStop = true;
     }
+    systime_t time = chVTGetSystemTimeX();
+    idleMs = TIME_I2MS(chVTTimeElapsedSinceX(idleStart));
+    
+    if(idleMs > 15000){
+      bStop = true;
+    }
   }
+  BC3601_STBY(dev);
+  BC3601_DEEP_SLEEP(dev);
+  chEvtSignal(runTime.mainThread,EV_TX_DONE);
+  chThdExit(0);
   
-  if(!bStop){
+//  if(!bStop){
 //    BC3601_STBY(dev);
 //    BC3601_DEEP_SLEEP(dev);
 //    runTime.self = NULL;
@@ -314,10 +326,10 @@ static THD_FUNCTION(procSwitchTX ,p)
 //    chSysDisable();
 //    __WFI();  
    // runTime.mainThread = NULL;
-  }
+//  }
 //  else{          
 //  }
-    chThdExit(0);
+//    chThdExit(0);
 //  }
 }
 
@@ -336,6 +348,8 @@ static THD_FUNCTION(procSwitchRX ,p)
   bool bRun = true;
   runTime.rf_ctrl = 0x0;
   runTime.taskFinished = 0;
+  systime_t idleStart = chVTGetSystemTimeX();
+  systime_t idleMs = 0;
   while(bRun){
     //rf_ctrl = 0x0;
     if(chThdShouldTerminateX()){
@@ -350,6 +364,7 @@ static THD_FUNCTION(procSwitchRX ,p)
       BC3601_RX_MODE(dev);
       irq_config(dev,IRQ2_RXCMPIE);
       runTime.stage++;
+      idleStart = chVTGetSystemTimeX();
       break;
     case 1:
       reg = bc3601_irqState(&bc3601);
@@ -363,37 +378,49 @@ static THD_FUNCTION(procSwitchRX ,p)
           if(r->sz == sizeof(_rfPacket)){
             rfp = (_rfPacket*)r->data;
             if(checksum((uint8_t*)rfp,sizeof(_rfPacket)-1) == rfp->checksum){
-              if(runTime.taskFinished == 0 && runTime.rf_ctrl == 0){
+              //if(runTime.taskFinished == 0 && runTime.rf_ctrl == 0){
                 runTime.rf_ctrl = rfp->dio;
+                runTime.dio_state = rfp->dio;
                 runTime.cycles = 0;
                 runTime.rxLost = 0;
                 chEvtSignal(runTime.mainThread,EV_RX_PACKET);
-              }
+              //}
             }
           }
         }
+        idleStart = chVTGetSystemTimeX();
+        runTime.stage = 0;
       }    
       else{ // check sum fail
-        runTime.rxLost += nvmParam.deviceConfig.txIntervalMs;
-        if(runTime.rxLost > 1000){
+        idleMs = TIME_I2MS(chVTTimeElapsedSinceX(idleStart));
+    
+        if(idleMs > 1000){
           runTime.rf_ctrl = 0x0;
-          runTime.taskFinished = 0; // reset task
+          runTime.dio_state = 0;
+          //bStop = true;
+          chEvtSignal(runTime.mainThread,EV_RX_PACKET);
+          runTime.stage = 0;
         }
+//        runTime.rxLost += nvmParam.deviceConfig.txIntervalMs;
+//        if(runTime.rxLost > 1000){
+//          runTime.rf_ctrl = 0x0;
+//          runTime.taskFinished = 0; // reset task
+//        }
       }
-      if(runTime.rf_ctrl != 0x0){
-        runTime.cycles++;
-        runTime.cycles++;
-        if(runTime.cycles > nvmParam.deviceConfig.txCounts){
-          runTime.rf_ctrl = 0x0;
-          runTime.taskFinished = 1;
-        }
-      }
-      runTime.stage = 0;
+//      if(runTime.rf_ctrl != 0x0){
+//        runTime.cycles++;
+//        runTime.cycles++;
+//        if(runTime.cycles > nvmParam.deviceConfig.txCounts){
+//          runTime.rf_ctrl = 0x0;
+//          runTime.taskFinished = 1;
+//        }
+//      }
       break;
     case 2:
       runTime.cycles++;
       if(runTime.cycles > nvmParam.deviceConfig.txCounts){
         runTime.rf_ctrl = 0x0;
+        runTime.dio_state = 0;
 //        palClearPad(GPIOB,6);
 //        palClearPad(GPIOB,7);
         runTime.stage = 0;
@@ -404,27 +431,7 @@ static THD_FUNCTION(procSwitchRX ,p)
     default:
       break;
     }
-    // valid input
-    if(palReadPad(GPIOA,15) == PAL_LOW){
-      //palSetPad(GPIOB,7);
-      runTime.rf_ctrl |= 0x8000;
-    }
-//    else{
-//      palClearPad(GPIOB,7);
-//    }
-    // valid output
-    if(runTime.rf_ctrl & 0x4000){
-      palSetPad(GPIOB,6);
-    }
-    else{
-      palClearPad(GPIOB,6);
-    }
-    if(runTime.rf_ctrl & 0x8000){
-      palSetPad(GPIOB,7);
-    }
-    else{
-      palClearPad(GPIOB,7);
-    }
+
     eventmask_t evt = chEvtWaitAnyTimeout(ALL_EVENTS,TIME_IMMEDIATE);
     chThdSleepMilliseconds(nvmParam.deviceConfig.txIntervalMs);
   }
@@ -539,6 +546,7 @@ static THD_FUNCTION(procRX2 ,p)
       irq_config(dev,IRQ2_RXCMPIE);
       runTime.stage++;
       runTime.rxLost = 0;
+      
       break;
     case 1:
       reg = bc3601_irqState(&bc3601);
@@ -794,6 +802,11 @@ int8_t rf_task_init()
 #if defined(RF_RX)
  nvmParam.deviceConfig.opMode = 4;
 #endif
+ 
+ nvmParam.deviceConfig.opMode = 1; // switch tx
+ nvmParam.deviceConfig.txIntervalMs = 100;
+ //nvmParam.deviceConfig.opMode = 2; // switch rx
+ //nvmParam.deviceConfig.txIntervalMs = 20;
  runTime.mainThread = chRegFindThreadByName("Main");
  
   switch(nvmParam.deviceConfig.opMode){

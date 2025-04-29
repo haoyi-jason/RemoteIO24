@@ -28,7 +28,7 @@ enum FC_CODE_e{
   FC_DAC_M,
   FC_DAC_C,
   FC_CONTROL = 0x40,
-  FC_BOARD_INFO = 0x80,
+  FC_BOARD_INFO,
   FC_ALL_DAC
 };
 
@@ -58,6 +58,9 @@ void cmd_dutgnd(BaseSequentialStream *chp, uint8_t *data, uint8_t size);
 void cmd_int10k(BaseSequentialStream *chp, uint8_t *data, uint8_t size);
 void cmd_outgain(BaseSequentialStream *chp, uint8_t *data, uint8_t size);
 void cmd_control(BaseSequentialStream *chp, uint8_t *data, uint8_t size);
+void cmd_boardInfo(BaseSequentialStream *chp, uint8_t *data, uint8_t size);
+void cmd_dacInfo(BaseSequentialStream *chp, uint8_t *data, uint8_t size);
+void cmd_dummy(BaseSequentialStream *chp, uint8_t *data, uint8_t size);
 
 static const BINProtocol_Command bin_commands[] = {
   {FC_ENABLE,cmd_enable},
@@ -77,7 +80,10 @@ static const BINProtocol_Command bin_commands[] = {
   {FC_DAC_M,cmd_dac_gain},
   {FC_DAC_C,cmd_dac_offset},
   {FC_CONTROL,cmd_control},
-  {0x00,0x00}
+  {FC_ALL_DAC,cmd_dacInfo},
+  {FC_BOARD_INFO,cmd_boardInfo},
+  {0xFF,cmd_dummy},
+  {0x00,0x00},
 };
 
 static SerialConfig serialCfg={
@@ -175,31 +181,66 @@ void task_binProtocolInit(BINProtocolConfig *config)
 
 }
 
+void cmd_dummy(BaseSequentialStream *chp, uint8_t *data, uint8_t size){}
 /**
-  * @fn         cmd_board
+  * @fn         cmd_boardInfo
   * @brief      access boards' system register an pmu register, total 3(sysconfig)+4*3 = 15 bytes per chip,
                 total 15*4 = 60 bytes per board
 */
 
-void cmd_board(BaseSequentialStream *chp, uint8_t *data, uint8_t size)
+void cmd_boardInfo(BaseSequentialStream *chp, uint8_t *data, uint8_t size)
 {
-  if(size ==  1){
+  if(size ==  0){
     uint8_t buffer[128];
     uint8_t *p = buffer;
     uint8_t sz = 0;
     *p++ = START_PREFIX;
     *p++ = FC_BOARD_INFO;
-    *p++ = board_nvm.id;
+    *p++ = bin_config.filter_id;
     *p++ = 0xFF;
-    pmu_fill_board_registers(p);
-
+    sz = pmu_fill_board_registers(p);
+    buffer[3] = sz;
+    p += sz;
     sz = (uint8_t)(p - buffer -2);
-    *p++ = crc8(&buffer[1],sz);
+    *p++ = crc8(&buffer[1],(p-buffer-2));
+//    *p++ = crc8(&buffer[1],sz);
     *p = END_PREFIX;
     chThdSleepMilliseconds(RESPONSE_DELAY_MS);
     streamWrite(chp, buffer, p-buffer+1);
   }
 }
+
+/**
+  * @fn         cmd_boardInfo
+  * @brief      access boards' system register an pmu register, total 3(sysconfig)+4*3 = 15 bytes per chip,
+                total 15*4 = 60 bytes per board
+*/
+
+void cmd_dacInfo(BaseSequentialStream *chp, uint8_t *data, uint8_t size)
+{
+  if(size ==  1){
+    
+    uint8_t buffer[256];
+    uint8_t *p = buffer;
+    uint8_t sz = 0;
+    *p++ = START_PREFIX;
+    *p++ = FC_ALL_DAC;
+    *p++ = bin_config.filter_id;
+    *p++ = 0xFF;
+    *p++ = data[0];
+    sz = pmu_fill_dac_registers(data[0],p);
+    //sz = 46;
+    buffer[3] = sz+1;
+    p += sz;
+    sz = (uint8_t)(p - buffer -2);
+    *p++ = crc8(&buffer[1],(p - buffer -2));
+//    *p++ = crc8(&buffer[1],sz);
+    *p = END_PREFIX;
+    chThdSleepMilliseconds(RESPONSE_DELAY_MS);
+    streamWrite(chp, buffer, p-buffer+1);
+  }
+}
+
 
 /**
   * @fn         cmd_idn
@@ -783,6 +824,10 @@ void cmd_dac_output(BaseSequentialStream *chp, uint8_t *data, uint8_t size)
   uint8_t r = data[1];
   uint8_t nofCh = (size - 2)/2;
   uint16_t value;
+  if(data[0] == 0xFF){
+    ch = 0;
+  }
+  
   for(uint8_t i=0;i<nofCh;i++){
     value = (data[i*2+2]) | (data[i*2+3] << 8); // c# is be
     pmu_set_dac_output(ch+i,data[1],value);

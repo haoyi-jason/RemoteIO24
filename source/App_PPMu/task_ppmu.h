@@ -79,4 +79,5 @@ void pmu_set_outgain(uint8_t id, uint8_t state);
 uint8_t pmu_get_outgain(uint8_t id);
 
 uint8_t pmu_fill_board_registers(uint8_t *dptr);
+uint8_t pmu_fill_dac_registers(uint8_t channel, uint8_t *dptr);
 #endif
