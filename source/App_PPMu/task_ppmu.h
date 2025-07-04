@@ -1,6 +1,8 @@
 #ifndef _TASK_PPMU_
 #define _TASK_PPMU_
 
+
+
 #define NOF_CHANNEL_PER_PMU     4
 #define NOF_AD5522                4
 #define TOTAL_PMU_CHANNEL       NOF_AD5522 * NOF_CHANNEL_PER_PMU

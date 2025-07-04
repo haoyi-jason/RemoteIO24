@@ -5,6 +5,8 @@
 #include "task_ppmu.h"
 #include "nvm_config.h"
 
+extern uint8_t BuildVersion[];
+
 #define PORT    SD1
 #define PROTOCOL_SIZE   6
 #define NVM_FLAG        0xAA
@@ -12,7 +14,7 @@
 // function codes
 enum FC_CODE_e{
   FC_ENABLE = 0x10,
-  FC_FORCE,
+  FC_FIN,
   FC_MODE,
   FC_RANGE,
   FC_MEASOUT,
@@ -36,13 +38,14 @@ enum FC_CODE_e{
 
 typedef struct{
   thread_t *shelltp;
+  thread_t *mainThread;
   BINProtocolConfig *config;
 }_runTime;
 
 static _runTime binProtoRuntime;
 
 void cmd_enable(BaseSequentialStream *chp, uint8_t *data, uint8_t size);
-void cmd_force(BaseSequentialStream *chp, uint8_t *data, uint8_t size);
+void cmd_fin(BaseSequentialStream *chp, uint8_t *data, uint8_t size);
 void cmd_mode(BaseSequentialStream *chp, uint8_t *data, uint8_t size);
 void cmd_range(BaseSequentialStream *chp, uint8_t *data, uint8_t size);
 void cmd_measout(BaseSequentialStream *chp, uint8_t *data, uint8_t size);
@@ -64,7 +67,7 @@ void cmd_dummy(BaseSequentialStream *chp, uint8_t *data, uint8_t size);
 
 static const BINProtocol_Command bin_commands[] = {
   {FC_ENABLE,cmd_enable},
-  {FC_FORCE,cmd_force},
+  {FC_FIN,cmd_fin},
   {FC_MODE,cmd_mode},
   {FC_RANGE,cmd_range},
   {FC_MEASOUT,cmd_measout},
@@ -179,6 +182,7 @@ void task_binProtocolInit(BINProtocolConfig *config)
   sdStart(&PORT,&serialCfg);
   binProtoRuntime.shelltp = chThdCreateStatic(waShell, sizeof(waShell),NORMALPRIO+1,binProtocolProc,(void*)&bin_config);
 
+  binProtoRuntime.mainThread = chRegFindThreadByName("Main");
 }
 
 void cmd_dummy(BaseSequentialStream *chp, uint8_t *data, uint8_t size){}
@@ -300,14 +304,14 @@ void cmd_enable(BaseSequentialStream *chp, uint8_t *data, uint8_t size)
 
 
 /**
-  * @fn         cmd_force
-  * @brief      Set force type of PMU channel
+  * @fn         cmd_fin
+  * @brief      Set FIN of PMU channel
   *
   *@param       d[0]: channel
   *@param       d[1]: 0: GND, 1: DAC
   *@retval
 */
-void cmd_force(BaseSequentialStream *chp, uint8_t *data, uint8_t size)
+void cmd_fin(BaseSequentialStream *chp, uint8_t *data, uint8_t size)
 {
   if(size == 2){
     if(data[0] == 0xff){
@@ -323,7 +327,7 @@ void cmd_force(BaseSequentialStream *chp, uint8_t *data, uint8_t size)
     uint8_t buffer[64];
     uint8_t *p = buffer;
     *p++ = START_PREFIX;
-    *p++ = FC_FORCE;
+    *p++ = FC_FIN;
     *p++ = bin_config.filter_id;
     if(data[0] == 0xFF){
       *p++ = TOTAL_PMU_CHANNEL+1;
@@ -965,17 +969,23 @@ void cmd_dac_offset(BaseSequentialStream *chp, uint8_t *data, uint8_t size)
 */
 void cmd_control(BaseSequentialStream *chp, uint8_t *data, uint8_t size)
 {
+  uint8_t opt = data[0];
+  uint8_t buffer[128];
   if(size == 2){
-    switch(data[0]){
+    switch(opt){
     case 0x55:
       pmu_reg_flush(data[1]);
       break;
     case 0x53: 
       if(data[1] == 0x01){
-        pmu_nvm_save();
+        if(binProtoRuntime.mainThread != NULL){
+          chEvtSignal(binProtoRuntime.mainThread, EVT_SAVE_BOARD_NVM);
+        }
       }
       else if(data[1] == 0x02){
-        save_nvm();
+        if(binProtoRuntime.mainThread != NULL){
+          chEvtSignal(binProtoRuntime.mainThread, EVT_SAVE_PMU_NVM);
+        }
       }
       break;
     case 0x42:
@@ -1001,7 +1011,6 @@ void cmd_control(BaseSequentialStream *chp, uint8_t *data, uint8_t size)
     }
   }
   // prepare response
-  uint8_t buffer[128];
   uint8_t *p = buffer;
   *p++ = START_PREFIX;
   *p++ = FC_CONTROL;
@@ -1024,7 +1033,11 @@ void cmd_control(BaseSequentialStream *chp, uint8_t *data, uint8_t size)
     *p++ = board_nvm.baudrate;
     break;
   case 0xAA:
+    buffer[3] = 10;
     *p++ = bin_config.filter_id;
+    for(uint8_t i=0;i<8;i++){
+      *p++ = BuildVersion[i];
+    }
     break;
   default:break;
   }
@@ -1033,4 +1046,13 @@ void cmd_control(BaseSequentialStream *chp, uint8_t *data, uint8_t size)
   *p = END_PREFIX;
   chThdSleepMilliseconds(RESPONSE_DELAY_MS);
   streamWrite(chp, buffer, p-buffer+1);
+}
+
+void board_nvm_load_default()
+{
+  
+}
+void board_nvm_save()
+{
+  save_nvm();
 }

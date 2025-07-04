@@ -14,6 +14,7 @@
 #define INIT_LOAD_DAC_C         0x02
 #define INIT_LOAD_DAC_M         0x04
 
+
 const uint8_t ch_map[4] = {1,3,2,0};
 
 static const SPIConfig spicfg = {
@@ -162,6 +163,7 @@ static THD_FUNCTION(procPMU ,p)
   bool bStop = false;
   while(!bStop){
     chThdSleepMilliseconds(50);
+
     if(chThdShouldTerminateX()){
       bStop = true;
     }
@@ -170,7 +172,7 @@ static THD_FUNCTION(procPMU ,p)
 
 void pmu_init()
 {
-//  runTime.mainThread = chRegFindThreadByName("Main");
+  runTime.mainThread = chRegFindThreadByName("Main");
 //  runTime.self = chThdCreateStatic(waPMU,sizeof(waPMU),NORMALPRIO,procPMU,NULL);
 //  chThdSuspend(&runTime.reference);
   load_nvm();
@@ -181,9 +183,12 @@ void pmu_init()
   
   uint16_t chip_offset = 0;
   for(uint8_t i=0;i<NOF_AD5522;i++){
+    ad5522_init(&runTime.ad5522[i],&ad5522_config[i]);  
     chip_offset = i * NOF_CHANNEL_PER_PMU * NOF_DAC_ADDRESS;
     for(uint8_t j=0;j<NOF_CHANNEL_PER_PMU;j++){
-      runTime.ad5522[i].PMU[ch_map[j]].dac = &nvmParam.dac_registers[chip_offset+j*NOF_DAC_ADDRESS];
+      ad5522_rd_pmu_register(&runTime.ad5522[i],ch_map[j]);
+//      runTime.ad5522[i].PMU[ch_map[j]].dac = &nvmParam.dac_registers[chip_offset+ch_map[j]*NOF_DAC_ADDRESS];
+      runTime.ad5522[i].PMU[ch_map[j]].dac = &nvmParam.dac_registers[chip_offset+ch_map[j]*NOF_DAC_ADDRESS];
 //      runTime.ad5522[i].PMU[j].enable = 1;
 //      runTime.ad5522[i].PMU[j].fin = 1;
 //      runTime.ad5522[i].PMU[j].force = 1; // FI
@@ -192,7 +197,7 @@ void pmu_init()
     runTime.ad5522[i].use_sync = 0;
     runTime.ad5522[i].grp_load = 1;
     runTime.ad5522[i].grp_reset = 1;
-    ad5522_init(&runTime.ad5522[i],&ad5522_config[i]);    
+    ad5522_rd_sysconfig(&runTime.ad5522[i]);
   }
   
   // check if load from eeprom
@@ -201,7 +206,7 @@ void pmu_init()
       uint8_t id = j/NOF_CHANNEL_PER_PMU;
       uint8_t pid = j%NOF_CHANNEL_PER_PMU;
       for(uint8_t k=0;k<NOF_DAC_ADDRESS;k++){
-        pmu_set_dac_output(j,k,runTime.ad5522[id].PMU[pid].dac[k].x1);
+        pmu_set_dac_output(j,k,runTime.ad5522[id].PMU[ch_map[pid]].dac[k].x1);
       }
     }
   }
@@ -210,7 +215,7 @@ void pmu_init()
       uint8_t id = j/NOF_CHANNEL_PER_PMU;
       uint8_t pid = j%NOF_CHANNEL_PER_PMU;
       for(uint8_t k=0;k<NOF_DAC_ADDRESS;k++){
-        pmu_set_dac_offset(j,k,runTime.ad5522[id].PMU[pid].dac[k].c);
+        pmu_set_dac_offset(j,k,runTime.ad5522[id].PMU[ch_map[pid]].dac[k].c);
       }
     }
   }
@@ -220,7 +225,7 @@ void pmu_init()
       uint8_t id = j/NOF_CHANNEL_PER_PMU;
       uint8_t pid = j%NOF_CHANNEL_PER_PMU;
       for(uint8_t k=0;k<NOF_DAC_ADDRESS;k++){
-        pmu_set_dac_gain(j,k,runTime.ad5522[id].PMU[pid].dac[k].m);
+        pmu_set_dac_gain(j,k,runTime.ad5522[id].PMU[ch_map[pid]].dac[k].m);
       }
     }
   }    
@@ -252,17 +257,17 @@ void pmu_init()
 //  }
 }
 
-void pmu_save_state()
-{
-  save_nvm();
-}
+//void pmu_save_state()
+//{
+//  save_nvm(false);
+//}
 //! DAC registers helper function
 void pmu_set_dac_output(uint8_t channel, uint8_t reg, uint16_t value)
 {
   if(!ASSERT_CHANNEL(channel)) return;
   uint8_t id = channel / NOF_CHANNEL_PER_PMU;
-  uint8_t pmu_id = ch_map[channel % NOF_CHANNEL_PER_PMU];
-  ad5522_wr_pmu_dac_register(&runTime.ad5522[id], pmu_id,reg, DAC_REGISTER_X1,value);
+  uint8_t pmu_id = channel % NOF_CHANNEL_PER_PMU;
+  ad5522_wr_pmu_dac_register(&runTime.ad5522[id], ch_map[pmu_id],reg, DAC_REGISTER_X1,value);
 }
 
 uint16_t pmu_get_dac_output(uint8_t channel, uint8_t reg)
@@ -270,8 +275,8 @@ uint16_t pmu_get_dac_output(uint8_t channel, uint8_t reg)
   if(!ASSERT_CHANNEL(channel)) return 0;
   uint16_t ret = 0x0;
   uint8_t id = channel / NOF_CHANNEL_PER_PMU;
-  uint8_t pmu_id = ch_map[channel % NOF_CHANNEL_PER_PMU];
-  ad5522_rd_pmu_dac_register(&runTime.ad5522[id], pmu_id,reg, DAC_REGISTER_X1);
+  uint8_t pmu_id = channel % NOF_CHANNEL_PER_PMU;
+  ad5522_rd_pmu_dac_register(&runTime.ad5522[id], ch_map[pmu_id],reg, DAC_REGISTER_X1);
   ret = runTime.ad5522[id].PMU[pmu_id].dac[reg].x1;
   return ret;
 }
@@ -281,8 +286,8 @@ uint16_t pmu_get_dac_output_cached(uint8_t channel, uint8_t reg)
   if(!ASSERT_CHANNEL(channel)) return 0;
   uint16_t ret = 0x0;
   uint8_t id = channel / NOF_CHANNEL_PER_PMU;
-  uint8_t pmu_id = ch_map[channel % NOF_CHANNEL_PER_PMU];
-  ret = runTime.ad5522[id].PMU[pmu_id].dac[reg].x1;
+  uint8_t pmu_id = channel % NOF_CHANNEL_PER_PMU;
+  ret = runTime.ad5522[id].PMU[ch_map[pmu_id]].dac[reg].x1;
   return ret;
 }
 
@@ -291,8 +296,8 @@ void pmu_set_dac_gain(uint8_t channel, uint8_t reg, uint16_t value)
 {
   if(!ASSERT_CHANNEL(channel)) return;
   uint8_t id = channel / NOF_CHANNEL_PER_PMU;
-  uint8_t pmu_id = ch_map[channel % NOF_CHANNEL_PER_PMU];
-  ad5522_wr_pmu_dac_register(&runTime.ad5522[id], pmu_id,reg, DAC_REGISTER_M,value);
+  uint8_t pmu_id = channel % NOF_CHANNEL_PER_PMU;
+  ad5522_wr_pmu_dac_register(&runTime.ad5522[id], ch_map[pmu_id],reg, DAC_REGISTER_M,value);
 }
 
 uint16_t pmu_get_dac_gain(uint8_t channel, uint8_t reg)
@@ -300,8 +305,8 @@ uint16_t pmu_get_dac_gain(uint8_t channel, uint8_t reg)
   if(!ASSERT_CHANNEL(channel)) return 0;
   uint16_t ret = 0x0;
   uint8_t id = channel / NOF_CHANNEL_PER_PMU;
-  uint8_t pmu_id = ch_map[channel % NOF_CHANNEL_PER_PMU];
-  ad5522_rd_pmu_dac_register(&runTime.ad5522[id], pmu_id,reg, DAC_REGISTER_M);
+  uint8_t pmu_id = channel % NOF_CHANNEL_PER_PMU;
+  ad5522_rd_pmu_dac_register(&runTime.ad5522[id], ch_map[pmu_id],reg, DAC_REGISTER_M);
   ret = runTime.ad5522[id].PMU[pmu_id].dac[reg].m;
   return ret;
 }
@@ -311,7 +316,7 @@ uint16_t pmu_get_dac_gain_cached(uint8_t channel, uint8_t reg)
   if(!ASSERT_CHANNEL(channel)) return 0;
   uint16_t ret = 0x0;
   uint8_t id = channel / NOF_CHANNEL_PER_PMU;
-  uint8_t pmu_id = ch_map[channel % NOF_CHANNEL_PER_PMU];
+  uint8_t pmu_id = channel % NOF_CHANNEL_PER_PMU;
   ret = runTime.ad5522[id].PMU[pmu_id].dac[reg].m;
   return ret;
 }
@@ -320,8 +325,8 @@ void pmu_set_dac_offset(uint8_t channel, uint8_t reg, uint16_t value)
 {
   if(!ASSERT_CHANNEL(channel)) return;
   uint8_t id = channel / NOF_CHANNEL_PER_PMU;
-  uint8_t pmu_id = ch_map[channel % NOF_CHANNEL_PER_PMU];
-  ad5522_wr_pmu_dac_register(&runTime.ad5522[id], pmu_id,reg, DAC_REGISTER_C,value);
+  uint8_t pmu_id = channel % NOF_CHANNEL_PER_PMU;
+  ad5522_wr_pmu_dac_register(&runTime.ad5522[id], ch_map[pmu_id],reg, DAC_REGISTER_C,value);
 }
 
 uint16_t pmu_get_dac_offset(uint8_t channel, uint8_t reg)
@@ -329,8 +334,8 @@ uint16_t pmu_get_dac_offset(uint8_t channel, uint8_t reg)
   if(!ASSERT_CHANNEL(channel)) return 0;
   uint16_t ret = 0x0;
   uint8_t id = channel / NOF_CHANNEL_PER_PMU;
-  uint8_t pmu_id = ch_map[channel % NOF_CHANNEL_PER_PMU];
-  ad5522_rd_pmu_dac_register(&runTime.ad5522[id], pmu_id,reg, DAC_REGISTER_C);
+  uint8_t pmu_id = channel % NOF_CHANNEL_PER_PMU;
+  ad5522_rd_pmu_dac_register(&runTime.ad5522[id], ch_map[pmu_id],reg, DAC_REGISTER_C);
   ret = runTime.ad5522[id].PMU[pmu_id].dac[reg].c;
   return ret;
 }
@@ -340,8 +345,8 @@ uint16_t pmu_get_dac_offset_cached(uint8_t channel, uint8_t reg)
   if(!ASSERT_CHANNEL(channel)) return 0;
   uint16_t ret = 0x0;
   uint8_t id = channel / NOF_CHANNEL_PER_PMU;
-  uint8_t pmu_id = ch_map[channel % NOF_CHANNEL_PER_PMU];
-  ret = runTime.ad5522[id].PMU[pmu_id].dac[reg].c;
+  uint8_t pmu_id = channel % NOF_CHANNEL_PER_PMU;
+  ret = runTime.ad5522[id].PMU[ch_map[pmu_id]].dac[reg].c;
   return ret;
 }
 

@@ -28,6 +28,10 @@
 #define BOARD_ID                0x24021000
 #define FW_VERSION              0x24122501
 
+#define EVT_SAVE_PMU_NVM            EVENT_MASK(0)
+#define EVT_RESTORE_PMU_NVM            EVENT_MASK(1)
+#define EVT_SAVE_BOARD_NVM            EVENT_MASK(2)
+#define EVT_RESTORE_BOARD_NVM            EVENT_MASK(3)
 /*
  * Board frequencies.
  */

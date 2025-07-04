@@ -213,7 +213,7 @@ void ad5522_rd_pmu_register(AD5522Driver *dev, uint8_t pmu_id)
   registerWrite(dev,buf_out);
 
   v = ad5522_readFrame(dev);
-  
+  dev->PMU[pmu_id].pmu_reg = v;
   //dev->PMU[pmu_id] = v;
 }
 

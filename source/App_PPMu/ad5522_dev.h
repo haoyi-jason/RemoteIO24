@@ -23,7 +23,7 @@ typedef struct{
   uint8_t clear;
   _dac_reg_grp_t *dac;
   // private parameters
-  
+  uint32_t pmu_reg;
 }_pmu_config_t;
 
   

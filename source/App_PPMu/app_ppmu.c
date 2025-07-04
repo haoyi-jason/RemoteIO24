@@ -4,9 +4,14 @@
 #include "../drivers/usbcfg.h"
 #include "task_ppmu.h"
 #include "task_binprotocol.h"
+#include "version.h"
+
 
 #define SD_USE_USB      0
 #define SD_USE_SD1      0
+
+
+
 
 int main()
 {
@@ -25,6 +30,21 @@ int main()
 #endif
   pmu_init();
   while(1){
+    eventmask_t evt = chEvtWaitAnyTimeout(ALL_EVENTS, TIME_MS2I(50));
+    if(evt & EVT_SAVE_PMU_NVM)
+    {
+      pmu_nvm_save();
+    }
+    if(evt & EVT_RESTORE_PMU_NVM){
+      pmu_nvm_load_default();
+    }    
+    if(evt & EVT_SAVE_BOARD_NVM)
+    {
+      board_nvm_save();
+    }
+    if(evt & EVT_RESTORE_BOARD_NVM){
+      board_nvm_load_default();
+    }    
     chThdSleepMilliseconds(50);
   }
 }
