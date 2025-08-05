@@ -29,9 +29,12 @@ enum FC_CODE_e{
   FC_DAC_X1 = 0x20,
   FC_DAC_M,
   FC_DAC_C,
+  FC_PMU_CONFIG,
   FC_CONTROL = 0x40,
   FC_BOARD_INFO,
-  FC_ALL_DAC
+  FC_ALL_DAC,
+  FC_USER_PARAMA,
+  FC_USER_PARAMB,
 };
 
 #define PMU_ALL_CHANNEL 0xFF
@@ -63,6 +66,9 @@ void cmd_outgain(BaseSequentialStream *chp, uint8_t *data, uint8_t size);
 void cmd_control(BaseSequentialStream *chp, uint8_t *data, uint8_t size);
 void cmd_boardInfo(BaseSequentialStream *chp, uint8_t *data, uint8_t size);
 void cmd_dacInfo(BaseSequentialStream *chp, uint8_t *data, uint8_t size);
+void cmd_channelSet(BaseSequentialStream *chp, uint8_t *data, uint8_t size);
+void cmd_user_paramA(BaseSequentialStream *chp, uint8_t *data, uint8_t size);
+void cmd_user_paramB(BaseSequentialStream *chp, uint8_t *data, uint8_t size);
 void cmd_dummy(BaseSequentialStream *chp, uint8_t *data, uint8_t size);
 
 static const BINProtocol_Command bin_commands[] = {
@@ -85,6 +91,9 @@ static const BINProtocol_Command bin_commands[] = {
   {FC_CONTROL,cmd_control},
   {FC_ALL_DAC,cmd_dacInfo},
   {FC_BOARD_INFO,cmd_boardInfo},
+  {FC_PMU_CONFIG,cmd_channelSet},
+  {FC_USER_PARAMA, cmd_user_paramA},
+  {FC_USER_PARAMB, cmd_user_paramB},
   {0xFF,cmd_dummy},
   {0x00,0x00},
 };
@@ -104,6 +113,8 @@ static struct boardNvmparam_s{
   uint8_t flag;
   uint8_t id;
   uint8_t baudrate;
+  uint8_t paramA[128];
+  uint8_t paramB[128];
 }board_nvm;
 
 
@@ -117,10 +128,10 @@ static void load_nvm_default()
 static void save_nvm()
 {
   uint8_t checksum = 0;
-  uint8_t sz = sizeof(board_nvm);
+  uint16_t sz = sizeof(board_nvm);
   uint8_t *ptr = (uint8_t*)&board_nvm;
   ptr++;
-  for(uint8_t i=1;i<sz;i++){
+  for(uint16_t i=1;i<sz;i++){
     checksum += *ptr++;
   }
   board_nvm.checksum = checksum;
@@ -135,7 +146,7 @@ static void load_nvm()
   uint8_t checksum = 0x0;
   uint8_t *ptr = (uint8_t*)&board_nvm;
   ptr++;
-  for(uint8_t i=1;i<sz;i++){
+  for(uint16_t i=1;i<sz;i++){
     checksum += *ptr++;
   }
   
@@ -145,7 +156,7 @@ static void load_nvm()
   }
 }
 
-#define SHELL_WA_SIZE   512
+#define SHELL_WA_SIZE   2048
 static THD_WORKING_AREA(waShell,SHELL_WA_SIZE);
 
 void task_binProtocolInit(BINProtocolConfig *config)
@@ -222,7 +233,7 @@ void cmd_boardInfo(BaseSequentialStream *chp, uint8_t *data, uint8_t size)
 
 void cmd_dacInfo(BaseSequentialStream *chp, uint8_t *data, uint8_t size)
 {
-  if(size ==  1){
+  if(size ==  1){ // read channel config
     
     uint8_t buffer[256];
     uint8_t *p = buffer;
@@ -243,7 +254,86 @@ void cmd_dacInfo(BaseSequentialStream *chp, uint8_t *data, uint8_t size)
     chThdSleepMilliseconds(RESPONSE_DELAY_MS);
     streamWrite(chp, buffer, p-buffer+1);
   }
+  else if(size == 139){ // write channel config
+    pmu_update_dac_registers(data[0],&data[1]);
+  }
 }
+
+/**
+  * @fn         cmd_channelSet
+  * @brief      single channel configurateion command, include
+                channel: pmu_register, range, dac's gain/offset/output,
+                board: filter, compensation, 2w/4w
+
+*/
+
+void cmd_channelSet(BaseSequentialStream *chp, uint8_t *data, uint8_t size)
+{
+  uint8_t szRemain = size;
+  uint8_t *ptr = data;
+  uint8_t ch;
+  uint32_t pmu_reg;
+  uint8_t buffer[256];
+  uint8_t *p = buffer;
+  uint8_t sz = 0;
+
+  // send response
+    *p++ = START_PREFIX;
+    *p++ = FC_PMU_CONFIG;
+    *p++ = bin_config.filter_id;
+
+  while(szRemain >= 14){ // write channel config, each config queue is 14-byte long
+    ch = *ptr++;
+    pmu_reg = (*ptr++ << 0);
+    pmu_reg |= (*ptr++ << 8);
+    pmu_reg |= (*ptr++ << 16);
+    pmu_reg <<= 8;
+    uint16_t dac_x, dac_c,dac_m, cll,clh;
+    memcpy((void*)&dac_x,ptr,2);
+    ptr +=2;
+    memcpy((void*)&dac_c,ptr,2);
+    ptr += 2;
+    memcpy((void*)&dac_m,ptr,2);
+    ptr += 2;
+    memcpy((void*)&cll,ptr,2);
+    ptr += 2;
+    memcpy((void*)&clh,ptr,2);
+    ptr += 2;
+
+    pmu_reg_set(ch,pmu_reg);
+    pmu_set_offset(ch,dac_c);
+    pmu_set_gain(ch,dac_m);
+    pmu_set_cll_output(ch,cll);
+    pmu_set_clh_output(ch,clh);
+    pmu_set_output(ch,dac_x);
+    
+    // config board offset
+    uint8_t code = pmu_reg & 0x03;
+    pmu_set_frange(code);
+    code = ((pmu_reg >> 2) & 0x03);
+    pmu_set_ccomp(code);
+    code = ((pmu_reg >> 4) & 0x01);
+    pmu_set_dutgnd(ch/4,code);
+    szRemain -= 14;
+
+    *p++ = ch;
+    
+
+  }
+  
+//    sz = pmu_fill_dac_registers(data[0],p);
+//    //sz = 46;
+//    buffer[3] = sz+1;
+//    p += sz;
+//    sz = (uint8_t)(p - buffer -2);
+//    *p++ = crc8(&buffer[1],(p - buffer -2));
+////    *p++ = crc8(&buffer[1],sz);
+//    *p++ = END_PREFIX;
+//    chThdSleepMilliseconds(RESPONSE_DELAY_MS);
+//    streamWrite(chp, buffer, p-buffer);
+
+}
+
 
 
 /**
@@ -1052,6 +1142,52 @@ void board_nvm_load_default()
 {
   
 }
+void cmd_user_paramA(BaseSequentialStream *chp, uint8_t *data, uint8_t size)
+{
+  if(size == 0){ // read all 128-bytes
+    uint8_t buffer[256];
+    uint8_t *p = buffer;
+    *p++ = START_PREFIX;
+    *p++ = FC_USER_PARAMA;
+    *p++ = bin_config.filter_id;
+    *p++ = 128;
+    memcpy(p,board_nvm.paramA,128);
+    p+=128;
+    *p++ = crc8(&buffer[1],(p-buffer-2));
+    *p = END_PREFIX;
+    chThdSleepMilliseconds(RESPONSE_DELAY_MS);
+    streamWrite(chp, buffer, p-buffer+1);
+  }
+  else
+  {
+    memcpy(board_nvm.paramA,data,size);
+    //save_nvm();
+  }
+}
+
+void cmd_user_paramB(BaseSequentialStream *chp, uint8_t *data, uint8_t size)
+{
+  if(size == 0){ // read all 128-bytes
+    uint8_t buffer[256];
+    uint8_t *p = buffer;
+    *p++ = START_PREFIX;
+    *p++ = FC_USER_PARAMB;
+    *p++ = bin_config.filter_id;
+    *p++ = 128;
+    memcpy(p,board_nvm.paramB,128);
+    p+=128;
+    *p++ = crc8(&buffer[1],(p-buffer-2));
+    *p = END_PREFIX;
+    chThdSleepMilliseconds(RESPONSE_DELAY_MS);
+    streamWrite(chp, buffer, p-buffer+1);
+  }
+  else
+  {
+    memcpy(board_nvm.paramB,data,size);
+    //save_nvm();
+  }
+}
+
 void board_nvm_save()
 {
   save_nvm();

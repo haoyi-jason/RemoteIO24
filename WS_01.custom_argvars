@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iarUserArgVars>
+    <group name="HY" active="true">
+        <variable>
+            <name>extsource</name>
+            <value>D:\SourceRespo</value>
+        </variable>
+    </group>
+</iarUserArgVars>

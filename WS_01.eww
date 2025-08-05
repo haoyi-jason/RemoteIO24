@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workspace>
+    <project>
+        <path>$WS_DIR$\..\DBG_DISP\DBG_DISP.ewp</path>
+    </project>
+    <project>
+        <path>$WS_DIR$\RemoteIO.ewp</path>
+    </project>
+    <project>
+        <path>$WS_DIR$\..\STM32_21008\STM32_21008.ewp</path>
+    </project>
+    <project>
+        <path>$WS_DIR$\..\vnode\VNODE_Base.ewp</path>
+    </project>
+    <batchBuild />
+</workspace>

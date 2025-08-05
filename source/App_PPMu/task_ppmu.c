@@ -248,8 +248,20 @@ void pmu_init()
   palClearPad(GPIOA,3);
 
   // test output 
+//  for(uint8_t j=0;j<4;j++)
+//  {
+//    for(uint8_t i=0;i<4;i++){
+//      runTime.ad5522[j].PMU[i].fin = 1;
+//      runTime.ad5522[j].PMU[i].enable = 1;
+//      runTime.ad5522[j].PMU[i].force = 1;
+//      runTime.ad5522[j].PMU[i].measout = 1;
+//      runTime.ad5522[j].PMU[i].crange = DAC_ID_I_2MA;
+//      pmu_reg_flush(j*4+i);
+//    }
+//  }
+//  
 //  for(uint8_t i=0;i<128;i++){
-//    for(uint8_t j=0;j<4;j++){
+//    for(uint8_t j=0;j<16;j++){
 //      pmu_set_dac_output(j,DAC_ID_I_2MA,i<<9);
 ////      pmu_set_dac_output(j,DAC_ID_V,i<<9);
 //    }
@@ -389,6 +401,131 @@ void pmu_set_output(uint8_t channel, uint16_t value)
   default:break;
   
   
+  }
+}
+
+//! write force offset
+void pmu_set_offset(uint8_t channel, uint16_t value)
+{
+  if(!ASSERT_CHANNEL(channel)) return;
+  uint8_t id = channel / NOF_CHANNEL_PER_PMU;
+  uint8_t pmu_id = ch_map[channel % NOF_CHANNEL_PER_PMU];
+  _pmu_config_t *pmu = &runTime.ad5522[id].PMU[pmu_id];
+  switch(pmu->force){
+  case PMU_PMU_REG_FORCE_FVMI:
+    pmu_set_dac_offset(channel,DAC_ID_V,value);
+    break;
+  case PMU_PMU_REG_FORCE_FIMV:
+    switch(pmu->crange){
+    case PMU_PMU_REG_CRANGE_5_UA:
+      pmu_set_dac_offset(channel,DAC_ID_I_5UA,value);
+      break;
+    case PMU_PMU_REG_CRANGE_20_UA:
+      pmu_set_dac_offset(channel,DAC_ID_I_20UA,value);
+      break;
+    case PMU_PMU_REG_CRANGE_200_UA:
+      pmu_set_dac_offset(channel,DAC_ID_I_200UA,value);
+      break;
+    case PMU_PMU_REG_CRANGE_2_MA:
+      pmu_set_dac_offset(channel,DAC_ID_I_2MA,value);
+      break;
+    case PMU_PMU_REG_CRANGE_EXT:
+      pmu_set_dac_offset(channel,DAC_ID_I_EXT,value);
+      break;
+    default:break;
+    }
+    break;
+  case PMU_PMU_REG_FORCE_FVHZ:
+    break;
+  case PMU_PMU_REG_FORCE_FCHZ:
+    break;
+  default:break;
+  
+  
+  }
+}
+
+//! write force gain
+void pmu_set_gain(uint8_t channel, uint16_t value)
+{
+  if(!ASSERT_CHANNEL(channel)) return;
+  uint8_t id = channel / NOF_CHANNEL_PER_PMU;
+  uint8_t pmu_id = ch_map[channel % NOF_CHANNEL_PER_PMU];
+  _pmu_config_t *pmu = &runTime.ad5522[id].PMU[pmu_id];
+  switch(pmu->force){
+  case PMU_PMU_REG_FORCE_FVMI:
+    pmu_set_dac_gain(channel,DAC_ID_V,value);
+    break;
+  case PMU_PMU_REG_FORCE_FIMV:
+    switch(pmu->crange){
+    case PMU_PMU_REG_CRANGE_5_UA:
+      pmu_set_dac_gain(channel,DAC_ID_I_5UA,value);
+      break;
+    case PMU_PMU_REG_CRANGE_20_UA:
+      pmu_set_dac_gain(channel,DAC_ID_I_20UA,value);
+      break;
+    case PMU_PMU_REG_CRANGE_200_UA:
+      pmu_set_dac_gain(channel,DAC_ID_I_200UA,value);
+      break;
+    case PMU_PMU_REG_CRANGE_2_MA:
+      pmu_set_dac_gain(channel,DAC_ID_I_2MA,value);
+      break;
+    case PMU_PMU_REG_CRANGE_EXT:
+      pmu_set_dac_gain(channel,DAC_ID_I_EXT,value);
+      break;
+    default:break;
+    }
+    break;
+  case PMU_PMU_REG_FORCE_FVHZ:
+    break;
+  case PMU_PMU_REG_FORCE_FCHZ:
+    break;
+  default:break;
+  
+  
+  }
+}
+
+//! write clamp low
+void pmu_set_cll_output(uint8_t channel, uint16_t value)
+{
+  if(!ASSERT_CHANNEL(channel)) return;
+  uint8_t id = channel / NOF_CHANNEL_PER_PMU;
+  uint8_t pmu_id = ch_map[channel % NOF_CHANNEL_PER_PMU];
+  _pmu_config_t *pmu = &runTime.ad5522[id].PMU[pmu_id];
+  switch(pmu->force){
+  case PMU_PMU_REG_FORCE_FVMI:
+    pmu_set_dac_output(channel,DAC_ID_V_CLL,value);
+    break;
+  case PMU_PMU_REG_FORCE_FIMV:
+    pmu_set_dac_output(channel,DAC_ID_I_CLL,value);
+    break;
+  case PMU_PMU_REG_FORCE_FVHZ:
+    break;
+  case PMU_PMU_REG_FORCE_FCHZ:
+    break;
+  default:break;
+  }
+}
+//! write clamp high
+void pmu_set_clh_output(uint8_t channel, uint16_t value)
+{
+  if(!ASSERT_CHANNEL(channel)) return;
+  uint8_t id = channel / NOF_CHANNEL_PER_PMU;
+  uint8_t pmu_id = ch_map[channel % NOF_CHANNEL_PER_PMU];
+  _pmu_config_t *pmu = &runTime.ad5522[id].PMU[pmu_id];
+  switch(pmu->force){
+  case PMU_PMU_REG_FORCE_FVMI:
+    pmu_set_dac_output(channel,DAC_ID_V_CLH,value);
+    break;
+  case PMU_PMU_REG_FORCE_FIMV:
+    pmu_set_dac_output(channel,DAC_ID_I_CLH,value);
+    break;
+  case PMU_PMU_REG_FORCE_FVHZ:
+    break;
+  case PMU_PMU_REG_FORCE_FCHZ:
+    break;
+  default:break;
   }
 }
 
@@ -597,6 +734,7 @@ uint32_t pmu_reg_boundle(uint8_t chip, uint8_t pid)
   mask |= PMU_PMU_REG_RESET(cfg->clear);
   
   cfg->clear = 0; // clear onece
+  cfg->pmu_reg = mask;
   return mask;
 }
 
@@ -624,6 +762,37 @@ void pmu_reg_flush(uint8_t channel)
   ad5522_wr_pmu_register(&runTime.ad5522[id], pmu_id, mask);
   
 }
+
+void pmu_reg_set(uint8_t channel, uint32_t value)
+{
+  if(!ASSERT_CHANNEL(channel)) return;
+  uint8_t id = channel / NOF_CHANNEL_PER_PMU;
+  uint8_t pmu_id = ch_map[channel % NOF_CHANNEL_PER_PMU];
+  uint32_t mask = 0x0;
+  _pmu_config_t *cfg = &runTime.ad5522[id].PMU[pmu_id];
+  mask = (1 << 21);
+  cfg->enable = ((value & mask)==0)?0:1;
+  mask = (3 << 19);
+  cfg->force = ((value & mask) >> 19);
+  mask = (7 << 15);
+  cfg->crange = ((value & mask) >> 15);
+  mask = (3 << 13);
+  cfg->measout = ((value & mask) >> 13);
+  mask = (1 << 12);
+  cfg->fin = ((value & mask) >> 12);
+  mask = (3 << 10);
+  cfg->sf = ((value & mask) >> 10);
+  mask = (1 << 9);
+  cfg->clamp_enable = ((value & mask) >> 9);
+  mask = (1 << 8);
+  cfg->cpolh = ((value & mask) >> 8);
+  mask = (1 << 7);
+  cfg->cmp_out = ((value & mask) >> 7);
+  
+  pmu_reg_flush(channel);
+}
+
+
 
 void pmu_set_ccomp(uint8_t range)
 {
@@ -810,4 +979,19 @@ uint8_t pmu_fill_dac_registers(uint8_t channel, uint8_t *dptr)
     dptr +=2;
   }
   return NOF_DAC_ADDRESS*6;
+}
+
+void pmu_update_dac_registers(uint8_t channel, uint8_t *dptr)
+{
+  uint8_t id = channel / NOF_CHANNEL_PER_PMU;
+  uint8_t pmu_id = ch_map[channel % NOF_CHANNEL_PER_PMU];
+  _pmu_config_t *cfg = &runTime.ad5522[id].PMU[pmu_id];
+  for(uint8_t i=0;i<NOF_DAC_ADDRESS;i++){
+    memcpy(&cfg->dac[i].c,dptr,2);
+    dptr +=2;
+    memcpy(&cfg->dac[i].m,dptr,2);
+    dptr +=2;
+    memcpy(&cfg->dac[i].x1,dptr,2);
+    dptr +=2;
+  }
 }

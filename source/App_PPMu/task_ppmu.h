@@ -26,6 +26,8 @@ uint16_t pmu_get_dac_offset(uint8_t channel, uint8_t reg);
 uint16_t pmu_get_dac_offset_cached(uint8_t channel, uint8_t reg);
 
 void pmu_set_output(uint8_t channel, uint16_t value);
+void pmu_set_offset(uint8_t channel, uint16_t value);
+void pmu_set_gain(uint8_t channel, uint16_t value);
 
 void pmu_set_output_mode(uint8_t channel, uint8_t mode);
 uint8_t pmu_get_output_mode(uint8_t channel);
@@ -82,4 +84,6 @@ uint8_t pmu_get_outgain(uint8_t id);
 
 uint8_t pmu_fill_board_registers(uint8_t *dptr);
 uint8_t pmu_fill_dac_registers(uint8_t channel, uint8_t *dptr);
+
+void pmu_reg_set(uint8_t channel, uint32_t value);
 #endif
