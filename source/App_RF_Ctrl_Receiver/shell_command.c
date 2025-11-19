@@ -1,7 +1,7 @@
 #include "ch.h"
 #include "hal.h"
 #include "shell_command.h"
-#include "rf_task.h"
+#include "../rf_task/rf_task.h"
 /*
   send packet to remote, usage:
   write xx yy

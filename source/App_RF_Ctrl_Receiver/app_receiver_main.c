@@ -2,7 +2,7 @@
 #include "hal.h"
 #include "stepper.h"
 #include "../drivers/bc3601.h"
-#include "rf_task.h"
+#include "../rf_task/rf_task.h"
 #include "stepper_task.h"
 #include "../drivers/usbcdc_task.h"
 #include "shell.h"

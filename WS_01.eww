@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <workspace>
     <project>
+        <path>$WS_DIR$\..\AT32_16030\AT32_16030.ewp</path>
+    </project>
+    <project>
         <path>$WS_DIR$\..\DBG_DISP\DBG_DISP.ewp</path>
+    </project>
+    <project>
+        <path>$WS_DIR$\..\doorControllerV22\DoorController_V22.ewp</path>
+    </project>
+    <project>
+        <path>$WS_DIR$\..\PBC_BMS_V01\pbc_bms_v01.ewp</path>
     </project>
     <project>
         <path>$WS_DIR$\RemoteIO.ewp</path>

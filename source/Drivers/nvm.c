@@ -3,6 +3,8 @@
 #include "nvm.h"
 //#include "at32_flash.h"
 #include "bootConfig.h"
+ 
+static uint8_t pg[PAGE_SIZE];
 
 void nvmFlashReadPage(uint8_t page, uint8_t *d)
 {
@@ -24,7 +26,10 @@ msg_t nvm_flash_read(uint32_t offset, uint8_t *dptr, uint16_t sz)
 
 msg_t nvm_flash_write(uint16_t offset, uint8_t *dptr, uint16_t sz)
 {
-  uint8_t pg[PAGE_SIZE];
+  //uint8_t *pg = chHeapAlloc(NULL,PAGE_SIZE);
+  if(pg == NULL){
+    while(1);
+  }
   uint8_t pgStart, pgEnd;
   uint32_t addr_end = offset + sz;
   pgStart = PAGE_NUMBER(offset);
