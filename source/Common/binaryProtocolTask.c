@@ -132,6 +132,7 @@ void cmd_data_flash(BaseSequentialStream *chp, uint8_t *data, uint8_t size)
       if(sz_to_write == 0) break;
     }
     db_enable_save_on_write(true);
+    db_save_pendWrite();
   }
   
   wptr = buffer;
@@ -185,7 +186,7 @@ void cmd_live_data(BaseSequentialStream *chp, uint8_t *data, uint8_t size)
   
   wptr = buffer;
   *wptr++ = START_PREFIX;
-  *wptr++ = FC_DATAFLASH;
+  *wptr++ = FC_LIVEDATA;
   *wptr++ = bin_config.filter_id;
   *wptr++;  // reserve for packet length
   *wptr++ = data[0]; // rw + nof reg

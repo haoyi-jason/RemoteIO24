@@ -101,6 +101,8 @@ struct _runTime{
   uint8_t adcReady;
   systime_t lastIdleTime;
   _int_filter_t rawFilter[8];
+  uint8_t gain[8];
+  uint32_t function_code;
 };
 
 static struct _runTime runTime, *adcRunTime;
@@ -113,11 +115,25 @@ static void init_config()
   uint8_t i,u8;
   uint16_t u16;
   uint32_t u32;
+  ad7124_channel_t cfg;
   
   u8 = db_read_df_u8(APP_SIGNATURE+SIGNATURE_OFFSET);
   
   if(u8 != AD7124_SIGNATURE){
     db_enable_save_on_write(false);
+    // channel config
+  
+    // channel config
+    uint8_t ch;
+    for(ch = 0;ch < 16; ch++){
+      cfg.u.ainm = ch * 2;
+      cfg.u.ainp = ch * 2 + 1;
+      cfg.u.setup = 3; // 128
+      cfg.u.enable = 1;
+//      ad7124_set_channel(&ad7124,ch,&cfg);
+      db_write_df_u16(AD7124_CHANNEL_CCONFIG_1+ch, cfg.u16);
+    }
+    
     for(i=0;i<8;i++){
       u16 = setups[i].b[0] | (setups[i].b[1] << 8);
       db_write_df_u16(AD7124_SETUP_CCONFIG_1+i,u16);
@@ -125,9 +141,12 @@ static void init_config()
       db_write_df_u32(AD7124_FILTER_CONFIG_1+i, u32);
     }
     
-    for(i=0;i<16;i++){
+    for(i=0;i<8;i++){
       db_write_df_f32(ENG_GAIN_CHANNEL_1+i,0);
     }
+    
+    db_write_df_u8(APP_CONFIG_ADC_CHANNEL_ENABLE_MASK,0xff);
+    
     db_enable_save_on_write(true);
     db_write_df_u8(APP_SIGNATURE+SIGNATURE_OFFSET, AD7124_SIGNATURE);
     db_save_section(U8);
@@ -135,17 +154,17 @@ static void init_config()
     db_save_section(U32);
     db_save_section(F32);
   }
-  else{
-    for(i=0;i<8;i++){
-      u16 = db_read_df_u16(AD7124_SETUP_CCONFIG_1+i);
-      setups[i].b[0] = (uint8_t)(u16 & 0xFF);
-      setups[i].b[1] = (uint8_t)(u16 >> 8);
-      u32 = db_read_df_u32(AD7124_FILTER_CONFIG_1+i);
-      filters[i].b[0] = (uint8_t)(u32 & 0xFF);
-      filters[i].b[1] = (uint8_t)((u32 >> 8) & 0xFF);
-      filters[i].b[2] = (uint8_t)((u32 >> 16) & 0xFF);
-      
-    }
+  for(i=0;i<8;i++){
+    u16 = db_read_df_u16(AD7124_SETUP_CCONFIG_1+i);
+    setups[i].b[0] = (uint8_t)(u16 & 0xFF);
+    setups[i].b[1] = (uint8_t)(u16 >> 8);
+    u32 = db_read_df_u32(AD7124_FILTER_CONFIG_1+i);
+    filters[i].b[0] = (uint8_t)(u32 & 0xFF);
+    filters[i].b[1] = (uint8_t)((u32 >> 8) & 0xFF);
+    filters[i].b[2] = (uint8_t)((u32 >> 16) & 0xFF);
+    
+    ad7124_set_config(&ad7124,i,&setups[i]);
+    ad7124_set_filter(&ad7124,i,&filters[i]);
   }
   
   
@@ -155,11 +174,27 @@ static void init_config()
   uint8_t tx[2] = {u8,u8 & 0x3f};
   pca9555_write(&pca9555,tx,PCA9555_PORT_COUNT);  
 
+  uint8_t mask;
+  u8 = ~u8;
   for(uint8_t i=0;i<8;i++){
-    ad7124_set_config(&ad7124,i,&setups[i]);
-    ad7124_set_filter(&ad7124,i,&filters[i]);
+    cfg.u16 = db_read_df_u16(AD7124_CHANNEL_CCONFIG_1 + i);
+    mask = (1 << i);
+    if((mask & u8) != 0x0){
+      cfg.u.enable = 1;
+    }
+    ad7124_set_channel(&ad7124,i,&cfg);
+    
+    uint8_t sid = cfg.u.setup;
+    runTime.gain[i] = (1 << setups[sid].u.pga);
   }  
   
+  runTime.function_code = db_read_df_u32(BOARD_SECTION_FUNCTION_CODE);
+  
+  u8 = db_read_df_u8(FILTER_STAGE);
+  if(u8 == 0 || u8 == 0xff){
+    db_write_df_u8(FILTER_STAGE,4);
+    db_save_section(U8);
+  }
 }
 
 static void app_channel_config()
@@ -194,6 +229,7 @@ static THD_FUNCTION(procAD7124 ,p)
     uint8_t channel;
     uint8_t cntr;
     int8_t i;
+    float fv;
     if(pca9555_init(&pca9555,&pca9555_config,  PCA9555_ADDR_MASK(0x1)) == MSG_OK){
       //runTime.hasExpansion = pca9555.sla;
       pca9555.inverted = true;
@@ -215,7 +251,7 @@ static THD_FUNCTION(procAD7124 ,p)
 //    if(ad7124_set_channel(&ad7124,1,&chcfg) != 0){
 //      //while(1);
 //    }
-    app_channel_config();
+    //app_channel_config();
     
     bool bStop = false;
     bool adcRestart = false;
@@ -225,7 +261,7 @@ static THD_FUNCTION(procAD7124 ,p)
     chThdResume(&runTime.ref, MSG_OK);
     
     for(i=0;i<8;i++){
-      runTime.rawFilter[i].stages = 8;
+      runTime.rawFilter[i].stages = db_read_df_u8(FILTER_STAGE);
       runTime.rawFilter[i].reset = 1;
     }
             
@@ -245,8 +281,13 @@ static THD_FUNCTION(procAD7124 ,p)
           ad7124_ReadDataEx(&ad7124,&data,&status);
           channel = status & 0x0F;
           //db_write_livedata();
+          if((runTime.function_code & FC_OUTPUT_ORIGIN_DATA) == 0){
+            data -= db_read_df_i32(USER_RAW_OFFSET_CHANNEL_1+channel);
+          }
           iir_insert(&runTime.rawFilter[channel],data);
           db_write_ld_i32(LIVE_DATA_CH1_RAW+channel, runTime.rawFilter[channel].last);
+          fv = (runTime.rawFilter[channel].last/8388608./runTime.gain[channel])*1000000;
+          db_write_ld_f32(LIVE_DATA_CH1_ENG+channel, fv);
           ad7124_enable_interrupt(&ad7124);
         }
         if(evt & EV_AD7124_START){

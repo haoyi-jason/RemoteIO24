@@ -140,13 +140,14 @@ void cmd_data_flash(BaseSequentialStream *chp, uint8_t *data, uint8_t size)
     db_enable_save_on_write(false);
     for(i=0;i<nof_reg;i++){
 //    while(sz_to_write > 0){
-      szWrite = db_write_dataflash(0,0,address, wptr);
+      szWrite = db_write_dataflash(0,0xff,address, wptr);
       sz_to_write -= szWrite;      
       address += szWrite;
       wptr += szWrite;
       if(sz_to_write == 0) break;
     }
     db_enable_save_on_write(true);
+    db_save_pendWrite();
   }
   
   wptr = buffer;
@@ -160,9 +161,10 @@ void cmd_data_flash(BaseSequentialStream *chp, uint8_t *data, uint8_t size)
   
   uint8_t sz_to_read = pkt_sz - 2;
   int8_t sz_read = 0;
+  address = (data[2]<<8 | data[1]);
   for(i=0;i<nof_reg;i++){
 //  while(sz_to_read > 0){
-    sz_read = db_read_dataflash(0,0,address,wptr);
+    sz_read = db_read_dataflash(0,0xff,address,wptr);
     //sz_to_read -= sz_read;
     address += sz_read;
     wptr+= sz_read;
@@ -182,17 +184,30 @@ void cmd_live_data(BaseSequentialStream *chp, uint8_t *data, uint8_t size)
   uint8_t *ptr = data;
   uint8_t buffer[32];
   uint8_t *wptr = buffer;
-  uint16_t address = (data[1]<<8 | data[2]);
-  if(*ptr == 0x80){ // write  
-    db_write_dataflash(0,0,address, &data[3]);
-  }
+  uint8_t pkt_sz = size;
+  uint16_t address = (data[2]<<8 | data[1]);
+  uint8_t nof_reg = data[0] & 0x7F;
+  uint8_t rw = data[0] & 0x80;
+  uint8_t i;
+//  if(*ptr == 0x80){ // write  
+//    db_write_dataflash(0,0,address, &data[3]);
+//  }
   
   *wptr++ = START_PREFIX;
-  *wptr++ = FC_DATAFLASH;
+  *wptr++ = FC_LIVEDATA;
+  *wptr++ = bin_config.filter_id;
+  *wptr++;
+  *wptr++ = data[0]; // rw + nof reg
   *wptr++ = data[1];
   *wptr++ = data[2];
-  int sz = db_read_livedata(0,0,address,wptr);
-  wptr += sz;
+  uint8_t sz_to_read = pkt_sz - 2;
+  int8_t sz_read = 0;
+  for(i=0;i<nof_reg;i++){
+    sz_read = db_read_livedata(0,0xff,address,wptr);
+    address += sz_read;
+    wptr+= sz_read;
+  }
+  buffer[3] = (wptr - &buffer[3]-1);
   *wptr++ = crc8(&buffer[1],(wptr-buffer-2));
   *wptr = END_PREFIX;
   chThdSleepMilliseconds(RESPONSE_DELAY_MS);

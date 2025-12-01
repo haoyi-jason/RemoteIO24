@@ -11881,7 +11881,10 @@
                 <name>$PROJ_DIR$\source\App_WDAQ\app_wdaq.c</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\source\App_WDAQ\grididea_global.h</name>
+                <name>$PROJ_DIR$\source\App_WDAQ\bq76xx_dev.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\source\App_WDAQ\bq76xx_dev.h</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\source\App_WDAQ\task_ad.c</name>
@@ -11933,6 +11936,9 @@
             </file>
             <file>
                 <name>$PROJ_DIR$\source\Common\database.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\source\Common\grididea_global.h</name>
             </file>
         </group>
         <group>
@@ -12137,6 +12143,12 @@
             </file>
             <file>
                 <name>$extsource$\ylib\encryption\crc16\crc16-ccitt.h</name>
+            </file>
+            <file>
+                <name>$extsource$\ylib\encryption\crc8\crc8.c</name>
+            </file>
+            <file>
+                <name>$extsource$\ylib\encryption\crc8\crc8.h</name>
             </file>
             <file>
                 <name>$extsource$\ylib\numeric\Filters\iir.c</name>

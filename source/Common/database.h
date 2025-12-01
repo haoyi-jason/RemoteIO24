@@ -163,4 +163,5 @@ void db_write_ld_f32(uint16_t address, float value);
 void db_enable_save_on_write(bool set);
 int8_t db_save_section(uint8_t section);
 
+void db_save_pendWrite();
 #endif

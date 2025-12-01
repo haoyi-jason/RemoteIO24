@@ -7,6 +7,8 @@
 #include "version.h"
 #include "database.h"
 #include "app_defs.h"
+#include "bq76xx_dev.h"
+
 #define SD_USE_USB      0
 #define SD_USE_SD1      1
 
@@ -26,14 +28,16 @@ static THD_FUNCTION(procOperation ,p)
     union{
       uint8_t b[32];
       int32_t i32[8];
+      float f32[8];
     }u;
   }data;
   data.packet_id = 0;
-  data.start_address = LIVE_DATA_CH1_RAW;
+  data.start_address = LIVE_DATA_CH1_ENG;
   while(!bStop)
   {
     for(uint8_t i=0;i<8;i++){
-      data.u.i32[i] = db_read_ld_i32(LIVE_DATA_CH1_RAW+i);
+      //data.u.i32[i] = db_read_ld_i32(LIVE_DATA_CH1_RAW+i);
+      data.u.f32[i] = db_read_ld_f32(data.start_address+i);
     }
     send_packet((uint8_t*)&data,36);
     data.packet_id++;
@@ -72,6 +76,42 @@ int main()
   halInit();
   chSysInit();
   AFIO->MAPR |= (AFIO_MAP_SWJTAG_CONF_JTAGDISABLE);
+  
+  static uint8_t comm_type = 0xff;
+//  while(1)
+//  {
+//    if(palReadPad(GPIOA,8) == PAL_LOW){
+//      // config pb6/7 to input mode
+//      palSetPadMode(GPIOB,6, PAL_MODE_INPUT);
+//      palSetPadMode(GPIOB,7, PAL_MODE_INPUT);
+//      
+//      palSetPadMode(GPIOA,4, PAL_MODE_OUTPUT_PUSHPULL);
+//      palSetPadMode(GPIOA,5, PAL_MODE_STM32_ALTERNATE_PUSHPULL);
+//      palSetPadMode(GPIOA,6, PAL_MODE_INPUT_PULLUP);
+//      palSetPadMode(GPIOA,7, PAL_MODE_STM32_ALTERNATE_PUSHPULL);
+//      
+//      if(comm_type == 0xff){
+//        comm_type = bq76xx_spi_check();
+//      }
+//      else if(comm_type == 0x00){
+//        bq76xx_spi_to_iic();        
+//      }
+//    }
+//    
+//    if(palReadPad(GPIOA,10) == PAL_LOW){
+//      palSetPadMode(GPIOB,6, PAL_MODE_STM32_ALTERNATE_OPENDRAIN);
+//      palSetPadMode(GPIOB,7, PAL_MODE_STM32_ALTERNATE_OPENDRAIN);
+//      
+//      palSetPadMode(GPIOA,4, PAL_MODE_INPUT);
+//      palSetPadMode(GPIOA,5, PAL_MODE_INPUT);
+//      palSetPadMode(GPIOA,6, PAL_MODE_INPUT);
+//      palSetPadMode(GPIOA,7, PAL_MODE_INPUT);
+//
+//      bq76xx_i2c_check();
+//    }
+//
+//    chThdSleepMilliseconds(50);
+//  }
   
   //chRegSetThreadName("Main");
   J3_POWER_ON();

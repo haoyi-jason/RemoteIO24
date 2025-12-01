@@ -28,4 +28,14 @@ enum DataType
 #define PARAM_INDEX(x)          (x & 0x0FFF)
 #define PARAM_LIVE              (0x8000)
 #define PARAM_IS_LIVE(x)        ((x & PARAM_LIVE) != 0)
+
+
+#define PARAM_U8_SZ_MAX		256
+#define PARAM_I8_SZ_MAX		256
+#define PARAM_U16_SZ_MAX	128
+#define PARAM_I16_SZ_MAX	128
+#define PARAM_U32_SZ_MAX	128
+#define PARAM_I32_SZ_MAX	128
+#define PARAM_F4_SZ_MAX		128
+
 #endif

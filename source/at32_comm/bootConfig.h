@@ -5,7 +5,8 @@
 
 #if defined(AT32F413Rx_HD)
 #define PAGE_SIZE               (uint16_t)0x800         // 2k page size
-#define FLASH_START_ADDRESS     ((uint32_t)0x8007000)   // EEPROM start address
+//#define FLASH_START_ADDRESS     ((uint32_t)0x8007000)   // EEPROM start address
+#define FLASH_START_ADDRESS     ((uint32_t)(FLASH_BASE_ADDRESS+FLASH_ALL_SIZE - PAGE_SIZE*8))   // EEPROM start address
 #define FLASH_BASE_ADDRESS      ((uint32_t)0x8000000)
 #define FLASH_ALL_SIZE          (1024*256)              // 256K
 #define USER_FLASH_BASE_PAGE    16

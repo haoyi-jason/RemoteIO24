@@ -155,6 +155,7 @@ static struct{
   thread_t *self;
   thread_t *mainThread;
   thread_t *usbtrx;
+  thread_t *opThread;
   thread_reference_t ref;
   uint8_t rssi;
   uint16_t rf_ctrl;
@@ -476,155 +477,187 @@ static void process_rxv01(uint16_t value, int16_t adcv)
 {
   uint16_t mask;
   pwmcnt_t width = 0;
-  pwmcnt_t pwm_width2 = 5000; // servo control
+  pwmcnt_t pwm_width2 = 5000; // servo control, reversed
   uint8_t opMode = db_read_df_u8(OP_MODE);
+  float fv = 0;
+  
+  if(opMode & RX_GEAR_SERVO){
+//    if(adcv >= 3000){
+//      pwm_width2 = PWM_PERIOD_COUNT-(PWM_FULL_OUTPUT*(adcv - 3000)/1000);
+//    }
+//    else{
+//      pwm_width2 = PWM_PERIOD_COUNT;
+//    }
+//    pwm_width2 -= 150;
+    
+    if(adcv < db_read_df_u16(SERVO_MAP_RAW_PT_1)){
+      pwm_width2 = db_read_df_u16(SERVO_MAP_COUNTER_PT_1);
+    }
+    else if(adcv < db_read_df_u16(SERVO_MAP_RAW_PT_2)){
+      fv = (db_read_df_u16(SERVO_MAP_COUNTER_PT_2) - db_read_df_u16(SERVO_MAP_COUNTER_PT_1));
+      fv /= (db_read_df_u16(SERVO_MAP_RAW_PT_2) - db_read_df_u16(SERVO_MAP_RAW_PT_1));
+      fv *= (adcv - db_read_df_u16(SERVO_MAP_RAW_PT_1));
+      pwm_width2 = (uint16_t)(fv + db_read_df_u16(SERVO_MAP_COUNTER_PT_1));
+    }
+    else if(adcv < db_read_df_u16(SERVO_MAP_RAW_PT_3)){
+      fv = (db_read_df_u16(SERVO_MAP_COUNTER_PT_3) - db_read_df_u16(SERVO_MAP_COUNTER_PT_2));
+      fv /= (db_read_df_u16(SERVO_MAP_RAW_PT_3) - db_read_df_u16(SERVO_MAP_RAW_PT_2));
+      fv *= (adcv - db_read_df_u16(SERVO_MAP_RAW_PT_2));
+      pwm_width2 = (uint16_t)(fv + db_read_df_u16(SERVO_MAP_COUNTER_PT_2));
+    }
+    else if(adcv < db_read_df_u16(SERVO_MAP_RAW_PT_4)){
+      fv = (db_read_df_u16(SERVO_MAP_COUNTER_PT_4) - db_read_df_u16(SERVO_MAP_COUNTER_PT_3));
+      fv /= (db_read_df_u16(SERVO_MAP_RAW_PT_4) - db_read_df_u16(SERVO_MAP_RAW_PT_3));
+      fv *= (adcv - db_read_df_u16(SERVO_MAP_RAW_PT_3));
+      pwm_width2 = (uint16_t)(fv + db_read_df_u16(SERVO_MAP_COUNTER_PT_3));
+    }
+    else{
+      pwm_width2 = db_read_df_u16(SERVO_MAP_COUNTER_PT_4);
+    }
+    pwm_width2 = PWM_PERIOD_COUNT - pwm_width2;
+    pwmEnableChannel(&PWMD2,3,pwm_width2);
+    db_write_ld_u32(LIVE_DATA_SERVO_CONTROL,pwm_width2);
+  }
+  else{
+    if(adcv > 500 &&  value != 0x0){
+//      palSetPad(digital_out_rx[8].port,digital_out_rx[8].line);
+      palSetPad(digital_out_rx[9].port,digital_out_rx[9].line);
+      //value |= 0x300;
+      stepper_move_to(adcv);
+    }
+    else{
+//      palClearPad(digital_out_rx[8].port,digital_out_rx[8].line);
+      palClearPad(digital_out_rx[9].port,digital_out_rx[9].line);
+      stepMoveHome();
+    }
+  }
 
   if(opMode & RX_VALVE_PWM){
-  if(adcv > 500 &&  value != 0x0){
-    if(value & 0x100){
-      palSetPad(digital_out_rx[8].port,digital_out_rx[8].line);
-    }
-    else{
-      palClearPad(digital_out_rx[8].port,digital_out_rx[8].line);
-    }
-    palSetPad(digital_out_rx[9].port,digital_out_rx[9].line);
-    if(adcv >= 3000){
-      pwm_width2 = PWM_PERIOD_COUNT-(PWM_FULL_OUTPUT*(adcv - 3000)/1000);
-    }
-    else{
-      pwm_width2 = PWM_PERIOD_COUNT;
-    }
-  }
-  else{
-    palClearPad(digital_out_rx[8].port,digital_out_rx[8].line);
-    palClearPad(digital_out_rx[9].port,digital_out_rx[9].line);
-    pwm_width2 = PWM_PERIOD_COUNT;
-  }
-  int8_t newDirection[4] = {0,0,0,0};
-  for(uint8_t i=0;i<4;i++){
-    mask = (1 << (i*2));
-    if((mask & value) != 0){
-      newDirection[i] = 1;
-    }
-    mask = (1 << (i*2+1));
-    if((mask & value) != 0){
-      newDirection[i] = -1;
-    }
-  }
-  
-//#if PWM_REVERSE_POLARITY
-//  width = 500 - ((500 * adcv) >> 12);
-//#else
-//  if(adcv > 500){
-//    width = ((PWM_VALVE_PERIOD * (adcv-500))/1500); 
-//    if(width >PWM_VALVE_PERIOD) width = PWM_VALVE_PERIOD;
-//    width += PWM_VALVE_BASE;
-//  }
-  // #endif
-  float fv = 0;
-  if(adcv < db_read_df_u16(PWM_MAP_RAW_PT_1)){
-//    width = nvmParam.deviceConfig.rx_control.pwm_map[0].counter;
-    width = 0;
-  }
-  else if(adcv < db_read_df_u16(PWM_MAP_RAW_PT_2)){
-    fv = (db_read_df_u16(PWM_MAP_COUNTER_PT_2) - db_read_df_u16(PWM_MAP_COUNTER_PT_1));
-    fv /= (db_read_df_u16(PWM_MAP_RAW_PT_2) - db_read_df_u16(PWM_MAP_RAW_PT_1));
-    fv *= (adcv - db_read_df_u16(PWM_MAP_RAW_PT_1));
-    width = (uint16_t)(fv + db_read_df_u16(PWM_MAP_COUNTER_PT_1));
-  }
-  else if(adcv < db_read_df_u16(PWM_MAP_RAW_PT_3)){
-    fv = (db_read_df_u16(PWM_MAP_COUNTER_PT_3) - db_read_df_u16(PWM_MAP_COUNTER_PT_2));
-    fv /= (db_read_df_u16(PWM_MAP_RAW_PT_3) - db_read_df_u16(PWM_MAP_RAW_PT_2));
-    fv *= (adcv - db_read_df_u16(PWM_MAP_RAW_PT_2));
-    width = (uint16_t)(fv + db_read_df_u16(PWM_MAP_COUNTER_PT_2));
-  }
-  else if(adcv < db_read_df_u16(PWM_MAP_RAW_PT_4)){
-    fv = (db_read_df_u16(PWM_MAP_COUNTER_PT_4) - db_read_df_u16(PWM_MAP_COUNTER_PT_3));
-    fv /= (db_read_df_u16(PWM_MAP_RAW_PT_4) - db_read_df_u16(PWM_MAP_RAW_PT_3));
-    fv *= (adcv - db_read_df_u16(PWM_MAP_RAW_PT_3));
-    width = (uint16_t)(fv + db_read_df_u16(PWM_MAP_COUNTER_PT_3));
-  }
-  else{
-    width = db_read_df_u16(PWM_MAP_COUNTER_PT_4);
-  }
- //  pwm_width2 -= 125;
-  pwm_width2 -= 150;
-  pwmEnableChannel(&PWMD2,3,pwm_width2);
-  
-  
-  for(uint8_t i=0;i<4;i++){
-//    if((newDirection[i] != 0) && (newDirection[i] != runTime.pwmDirection[i]) && (runTime.pwmDirection[i] != 0)){
-//      runTime.pwmDirection[i] = 0;
-//    }
-//    else {
-//      runTime.pwmDirection[i] = newDirection[i];
-//    }
-    
-    if(runTime.pwmDirection[i] == 0 || newDirection[i] == 0){
-      runTime.pwmDirection[i] = newDirection[i];
-    }
-    else if(newDirection[i] != runTime.pwmDirection[i]){
-      runTime.pwmDirection[i] = 0;
-    }
-  }
-    
-  if(runTime.pwmDirection[0] == 0){
-    pwmEnableChannel(&PWMD3,0,PWM_VALVE_IDLE_OUTPUT);
-    pwmEnableChannel(&PWMD3,1,PWM_VALVE_IDLE_OUTPUT);
-  }
-  else if(runTime.pwmDirection[0] == 1){
-    pwmEnableChannel(&PWMD3,0,width);
-  }
-  else if(runTime.pwmDirection[0] == -1){
-    pwmEnableChannel(&PWMD3,1,width);
-  }
- 
-  if(runTime.pwmDirection[1] == 0){
-    pwmEnableChannel(&PWMD3,2,PWM_VALVE_IDLE_OUTPUT);
-    pwmEnableChannel(&PWMD3,3,PWM_VALVE_IDLE_OUTPUT);
-  }
-  else if(runTime.pwmDirection[1] == 1){
-    pwmEnableChannel(&PWMD3,2,width);
-  } 
-  else if(runTime.pwmDirection[1] == -1){
-    pwmEnableChannel(&PWMD3,3,width);
-  }
-   
-
-  if(runTime.pwmDirection[2] == 0){
-    pwmEnableChannel(&PWMD4,3,PWM_VALVE_IDLE_OUTPUT);
-    pwmEnableChannel(&PWMD4,2,PWM_VALVE_IDLE_OUTPUT);
-  }
-  else if(runTime.pwmDirection[2] == 1){
-    pwmEnableChannel(&PWMD4,3,width);
-  }
-  else if(runTime.pwmDirection[2] == -1){
-    pwmEnableChannel(&PWMD4,2,width);
-  }
- 
-  if(runTime.pwmDirection[3] == 0){
-    pwmEnableChannel(&PWMD4,1,PWM_VALVE_IDLE_OUTPUT);
-    pwmEnableChannel(&PWMD4,0,PWM_VALVE_IDLE_OUTPUT);
-  }
-  else if(runTime.pwmDirection[3] == 1){
-    pwmEnableChannel(&PWMD4,1,width);
-  } 
-  else if(runTime.pwmDirection[3] == -1){
-    pwmEnableChannel(&PWMD4,0,width);
-  } 
-  }
-  else{
-      if(adcv > 500 &&  value != 0x0){
-    palSetPad(digital_out_rx[8].port,digital_out_rx[8].line);
-    palSetPad(digital_out_rx[9].port,digital_out_rx[9].line);
-    //value |= 0x300;
-    stepper_move_to(adcv);
+    if(adcv > 500 &&  value != 0x0){
+      if(value & 0x100){
+        palSetPad(digital_out_rx[8].port,digital_out_rx[8].line);
+      }
+      else{
+        palClearPad(digital_out_rx[8].port,digital_out_rx[8].line);
+      }
+      palSetPad(digital_out_rx[9].port,digital_out_rx[9].line);
     }
     else{
       palClearPad(digital_out_rx[8].port,digital_out_rx[8].line);
       palClearPad(digital_out_rx[9].port,digital_out_rx[9].line);
-      stepMoveHome();
+      pwm_width2 = PWM_PERIOD_COUNT;
     }
+    int8_t newDirection[4] = {0,0,0,0};
+    for(uint8_t i=0;i<4;i++){
+      mask = (1 << (i*2));
+      if((mask & value) != 0){
+        newDirection[i] = 1;
+      }
+      mask = (1 << (i*2+1));
+      if((mask & value) != 0){
+        newDirection[i] = -1;
+      }
+    }
+  
+  //#if PWM_REVERSE_POLARITY
+  //  width = 500 - ((500 * adcv) >> 12);
+  //#else
+  //  if(adcv > 500){
+  //    width = ((PWM_VALVE_PERIOD * (adcv-500))/1500); 
+  //    if(width >PWM_VALVE_PERIOD) width = PWM_VALVE_PERIOD;
+  //    width += PWM_VALVE_BASE;
+  //  }
+    // #endif
+    if(adcv < db_read_df_u16(PWM_MAP_RAW_PT_1)){
+  //    width = nvmParam.deviceConfig.rx_control.pwm_map[0].counter;
+      width = db_read_df_u16(PWM_MAP_COUNTER_PT_1);
+    }
+    else if(adcv < db_read_df_u16(PWM_MAP_RAW_PT_2)){
+      fv = (db_read_df_u16(PWM_MAP_COUNTER_PT_2) - db_read_df_u16(PWM_MAP_COUNTER_PT_1));
+      fv /= (db_read_df_u16(PWM_MAP_RAW_PT_2) - db_read_df_u16(PWM_MAP_RAW_PT_1));
+      fv *= (adcv - db_read_df_u16(PWM_MAP_RAW_PT_1));
+      width = (uint16_t)(fv + db_read_df_u16(PWM_MAP_COUNTER_PT_1));
+    }
+    else if(adcv < db_read_df_u16(PWM_MAP_RAW_PT_3)){
+      fv = (db_read_df_u16(PWM_MAP_COUNTER_PT_3) - db_read_df_u16(PWM_MAP_COUNTER_PT_2));
+      fv /= (db_read_df_u16(PWM_MAP_RAW_PT_3) - db_read_df_u16(PWM_MAP_RAW_PT_2));
+      fv *= (adcv - db_read_df_u16(PWM_MAP_RAW_PT_2));
+      width = (uint16_t)(fv + db_read_df_u16(PWM_MAP_COUNTER_PT_2));
+    }
+    else if(adcv < db_read_df_u16(PWM_MAP_RAW_PT_4)){
+      fv = (db_read_df_u16(PWM_MAP_COUNTER_PT_4) - db_read_df_u16(PWM_MAP_COUNTER_PT_3));
+      fv /= (db_read_df_u16(PWM_MAP_RAW_PT_4) - db_read_df_u16(PWM_MAP_RAW_PT_3));
+      fv *= (adcv - db_read_df_u16(PWM_MAP_RAW_PT_3));
+      width = (uint16_t)(fv + db_read_df_u16(PWM_MAP_COUNTER_PT_3));
+    }
+    else{
+      width = db_read_df_u16(PWM_MAP_COUNTER_PT_4);
+    }
+  
+    db_write_ld_u32(LIVE_DATA_VALVE_CONTROL,width);
+
+    for(uint8_t i=0;i<4;i++){
+  //    if((newDirection[i] != 0) && (newDirection[i] != runTime.pwmDirection[i]) && (runTime.pwmDirection[i] != 0)){
+  //      runTime.pwmDirection[i] = 0;
+  //    }
+  //    else {
+  //      runTime.pwmDirection[i] = newDirection[i];
+  //    }
+      
+      if(runTime.pwmDirection[i] == 0 || newDirection[i] == 0){
+        runTime.pwmDirection[i] = newDirection[i];
+      }
+      else if(newDirection[i] != runTime.pwmDirection[i]){
+        runTime.pwmDirection[i] = 0;
+      }
+    }
+    
+    if(runTime.pwmDirection[0] == 0){
+      pwmEnableChannel(&PWMD3,0,PWM_VALVE_IDLE_OUTPUT);
+      pwmEnableChannel(&PWMD3,1,PWM_VALVE_IDLE_OUTPUT);
+    }
+    else if(runTime.pwmDirection[0] == 1){
+      pwmEnableChannel(&PWMD3,0,width);
+    }
+    else if(runTime.pwmDirection[0] == -1){
+      pwmEnableChannel(&PWMD3,1,width);
+    }
+   
+    if(runTime.pwmDirection[1] == 0){
+      pwmEnableChannel(&PWMD3,2,PWM_VALVE_IDLE_OUTPUT);
+      pwmEnableChannel(&PWMD3,3,PWM_VALVE_IDLE_OUTPUT);
+    }
+    else if(runTime.pwmDirection[1] == 1){
+      pwmEnableChannel(&PWMD3,2,width);
+    } 
+    else if(runTime.pwmDirection[1] == -1){
+      pwmEnableChannel(&PWMD3,3,width);
+    }
+   
+
+    if(runTime.pwmDirection[2] == 0){
+      pwmEnableChannel(&PWMD4,3,PWM_VALVE_IDLE_OUTPUT);
+      pwmEnableChannel(&PWMD4,2,PWM_VALVE_IDLE_OUTPUT);
+    }
+    else if(runTime.pwmDirection[2] == 1){
+      pwmEnableChannel(&PWMD4,3,width);
+    }
+    else if(runTime.pwmDirection[2] == -1){
+      pwmEnableChannel(&PWMD4,2,width);
+    }
+   
+    if(runTime.pwmDirection[3] == 0){
+      pwmEnableChannel(&PWMD4,1,PWM_VALVE_IDLE_OUTPUT);
+      pwmEnableChannel(&PWMD4,0,PWM_VALVE_IDLE_OUTPUT);
+    }
+    else if(runTime.pwmDirection[3] == 1){
+      pwmEnableChannel(&PWMD4,1,width);
+    } 
+    else if(runTime.pwmDirection[3] == -1){
+      pwmEnableChannel(&PWMD4,0,width);
+    } 
+  }
+  else{
     for(uint8_t i=0;i<8;i++){
       mask = (1 << i);
       if((mask & value) == 0){
@@ -655,6 +688,8 @@ static void gpio_init()
       palSetPadMode(digital_in_tx[i].port, digital_in_tx[i].line, PAL_MODE_INPUT_PULLUP);
     }
     
+    palClearLine(LINE_TX_ACT);
+    palClearLine(LINE_LBT_ACT);
     palSetPadMode(digital_out_tx[0].port, digital_out_tx[0].line, PAL_MODE_OUTPUT_OPENDRAIN);
     palSetPadMode(digital_out_tx[1].port, digital_out_tx[1].line, PAL_MODE_OUTPUT_PUSHPULL);
     palSetPadMode(digital_out_tx[2].port, digital_out_tx[2].line, PAL_MODE_OUTPUT_PUSHPULL);
@@ -737,6 +772,57 @@ static THD_FUNCTION(procRemoteIO ,p)
     }
   }
 }
+
+static THD_WORKING_AREA(waOperation,512);
+static THD_FUNCTION(procOperation ,p)
+{
+  bool bStop = false;
+  struct{
+    uint16_t packet_id;
+    uint16_t start_address;
+    uint8_t buf[64];
+  }data;
+  data.packet_id = 0;
+  data.start_address = LIVD_DATA_RSSI;
+  uint8_t *ptr = data.buf;
+  while(!bStop)
+  {
+    ptr = data.buf;
+    ptr += db_read_livedata(0,0xff,LIVD_DATA_RSSI,ptr);
+    ptr += db_read_livedata(0,0xff,LIVE_DATA_DIO_STATE,ptr);
+    ptr += db_read_livedata(0,0xff,LIVE_DATA_AIN_CH1,ptr);
+    ptr += db_read_livedata(0,0xff,LIVE_DATA_AIN_CH2,ptr);
+    ptr += db_read_livedata(0,0xff,LIVE_DATA_VALVE_CONTROL,ptr);
+    ptr += db_read_livedata(0,0xff,LIVE_DATA_SERVO_CONTROL,ptr);
+    ptr += db_read_livedata(0,0xff,LIVE_DATA_STEPPER,ptr);
+    
+    send_packet((uint8_t*)&data,68);
+    data.packet_id++;
+    bStop = chThdShouldTerminateX();
+    if(bStop){
+      
+    }
+    chThdSleepMilliseconds(100);
+  }
+}
+
+void start_transfer()
+{
+  if(!runTime.opThread){
+    runTime.opThread = chThdCreateStatic(waOperation,sizeof(waOperation),NORMALPRIO-1,procOperation,NULL);
+  }
+}
+
+void stop_transfer()
+{
+  if(runTime.opThread){
+    chThdTerminate(runTime.opThread);
+    chThdWait(runTime.opThread);
+    runTime.opThread = NULL;
+    //chVTReset(&runTime.vt);
+  }
+}
+
 
 int main()
 {
@@ -833,6 +919,9 @@ int main()
       if(evt & EV_RX_PACKET){
         process_rxv01(runTime.dio_state,runTime.ain_value);
         rxFailStart = chVTGetSystemTimeX();
+        db_write_ld_u8(LIVD_DATA_RSSI,runTime.rssi);
+        db_write_ld_u16(LIVE_DATA_DIO_STATE,runTime.dio_state);
+        db_write_ld_u16(LIVE_DATA_AIN_CH1,runTime.ain_value);
       }
       
       if(evt & EV_RX_ERROR){
@@ -847,6 +936,13 @@ int main()
         if(rxErrorPeriod > 1000){
           process_rxv01(0x0,0x0);
         }
+      }
+      
+      if(evt & EVENT_MASK(CMD_START)){
+        start_transfer();
+      }
+      if(evt & EVENT_MASK(CMD_STOP)){
+        stop_transfer();
       }
     }
     
@@ -1040,7 +1136,7 @@ static void rx_control_loop()
         case 1:
           reg = bc3601_irqState(&bc3601);
           if(reg & (IRQ3_RXCMPIF | IRQ3_RXERRIF)){
-            runTime.rssi = bc3601_readRSSI(&bc3601);       
+            runTime.rssi = bc3601_readRSSI(&bc3601);   
             BC3601_REG_READ(&bc3601,RX_DATA_LENG_REGS,&reg);       
             if(reg > 0){
               BC3601_FIFO_READ(&bc3601,rx,reg);

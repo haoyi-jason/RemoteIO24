@@ -29,6 +29,7 @@ typedef struct{
       uint8_t u8_param[NOF_U8_PARAM];
       float f32_param[NOF_F32_PARAM];
     }LiveData;    
+    uint16_t pendWrite;
 }_db_runtime_t;
 
 static _db_runtime_t db_runtime;
@@ -261,6 +262,7 @@ void database_init()
   
  
   // other initialization
+  db_runtime.pendWrite = 0x00;
 }
 
 uint32_t db_read_u32_param(uint16_t index)
@@ -446,10 +448,23 @@ int8_t db_write_dataflash(uint8_t class, uint8_t type,uint16_t address, uint8_t 
 		memcpy(sptr,dptr,sz);
                 if(save_on_write)
                   db_save_section(ptype);
+                else
+                  db_runtime.pendWrite |= (1 << ptype);
 	}
 
 	return sz;
 }
+
+void db_save_pendWrite()
+{
+  for(uint8_t i=0;i<7;i++){
+    if((db_runtime.pendWrite & (1 << i))){
+      db_save_section(i);
+    }
+    
+  }
+}
+
 
 int8_t db_read_df_i8(uint16_t address)
 {
