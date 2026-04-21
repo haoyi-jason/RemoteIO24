@@ -22,12 +22,26 @@ typedef struct{
 struct reg_cmd{
   uint8_t cfg1;
   uint8_t rc1;
-  uint8_t irq[3];
-  uint8_t io[3];
-  uint8_t fifo[2];
-  uint8_t pkt[9];
+  uint8_t irq_ctl;
+  uint8_t irq_enable;
+  uint8_t irq_status;
+  uint8_t clock_ctl2;
+  uint8_t gpio12_ctl;
+  uint8_t gpio34_ctl;
+  uint8_t gpio_pullup;
+  uint8_t tx_fifo_sa;
+  uint8_t fifo_ctl2;
+  uint8_t preamble_leng;
+  uint8_t packet_ctl2;
+  uint8_t packet_ctl3;
+  uint8_t whiten_ctl;
+  uint8_t tx_data_len;
+  uint8_t rx_data_len;
+  uint8_t trx_mode_delay;
+  uint8_t header_addr0;
+  uint8_t header_addr1;
   uint8_t mod[3];
-  uint8_t dm[8];
+  uint8_t dm[8]; // 0x1C reserved
 };
 
 struct reg_bk0{

@@ -93,9 +93,8 @@ enum
    DEMOULATOR_CTL3_REGS,
    DEMOULATOR_CTL4_REGS,
    DEMOULATOR_CTL5_REGS,
-   DEMOULATOR_CTL6_REGS,
-   DEMOULATOR_CTL7_REGS,
    DEMOULATOR_CTL8_REGS = 0x1E,
+   DEMOULATOR_CTL9_REGS,
    OPERATION_CTL_REGS = 0x20,
    FRACTIONAL_N_DN_REGS = 0x22,   
    FRACTIONAL_N_DKL_REGS,   
@@ -301,6 +300,12 @@ enum
 #define CMD_STANDBY                     (0x0D)
 #define CMD_TX_MODE                     (0x0E)
 #define CMD_RX_MODE                     (0x1E)
+
+/* Definitions of XO control register                                    								*/
+#define	XO_TRIM_MASK					(u8)(0x1F << 0)
+#define	XO_SHIFT_MASK					(u8)(3 << 6)
+#define	XO_DIV2							(u8)(1 << 3)
+#define	XO_EFUSE_TRIM              (u8)(1 << 4)
 
 
 #endif

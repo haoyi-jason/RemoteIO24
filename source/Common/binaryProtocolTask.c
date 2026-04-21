@@ -195,8 +195,9 @@ void cmd_live_data(BaseSequentialStream *chp, uint8_t *data, uint8_t size)
   
   uint8_t sz_to_read = pkt_sz - 2;
   int8_t sz_read = 0;
+  address = (data[2]<<8 | data[1]);
   for(i=0;i<nof_reg;i++){
-    sz_read = db_read_livedata(0,0,address,wptr);
+    sz_read = db_read_livedata(0,0xff,address,wptr);
     address += sz_read;
     wptr+= sz_read;
   }

@@ -4,10 +4,16 @@
         <path>$WS_DIR$\..\AT32_16030\AT32_16030.ewp</path>
     </project>
     <project>
+        <path>$WS_DIR$\..\Chibios\Chibios_21_11_4.ewp</path>
+    </project>
+    <project>
         <path>$WS_DIR$\..\DBG_DISP\DBG_DISP.ewp</path>
     </project>
     <project>
         <path>$WS_DIR$\..\doorControllerV22\DoorController_V22.ewp</path>
+    </project>
+    <project>
+        <path>$WS_DIR$\..\FlexLogger\FlexLogger_V1.ewp</path>
     </project>
     <project>
         <path>$WS_DIR$\..\PBC_BMS_V01\pbc_bms_v01.ewp</path>

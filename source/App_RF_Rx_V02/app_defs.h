@@ -2,28 +2,68 @@
 #define _APP_DEFS_
 #include "grididea_global.h"
 
-#define OP_MODE_TX      0x10
-#define OP_MODE_RX      0x20
+// bit 7 for TX/RX (0/1)
+#define OP_MODE_MASK            0x80
+#define OP_MODE_TX              0x00
+#define OP_MODE_RX              0x80            
 
-#define TX_MODE_SWITCH  0x01
-#define TX_MODE_CONTROL 0x02
+// bit 6 for Control/Switch (0/1)
+#define CONTROL_MODE_MASK       0x40
+#define OP_MODE_CONTROL        0x00
+#define OP_MODE_SWITCH          0x40
 
-#define RX_MODE_SWITCH  0x00
-#define RX_MODE_CONTROL 0x01
+enum GEAR_TYPE_E{
+  GEAR_STEPPER,  // i/o
+  GEAR_SERVO,    // pwmd2.3
+  GEAR_DAC,      // pwmd2.3
+  GEAR_PWM,       // pwmd3.4
+  GEAR_STEPPER_DAC,
+};
 
-#define RX_GEAR_STEPPER 0x00
-#define RX_GEAR_SERVO   0x02
+//bit [2:0] for gear type
+#define GEAR_TYPE(x)            (x << 0)
+#define TYPE_OF_GEAR(x)         (x & 0x7)
+enum VALVE_TYPE_E{
+  VALVE_IO,
+  VALVE_PWM
+};
 
-#define RX_VALVE_IO     0x00
-#define RX_VALVE_PWM    0x04
+// bit [4:3] for VALVE TYPE
+#define VALVE_TYPE(x)           (x << 3)
+#define TYPE_OF_VALVE(x)        ((x >> 3) & 0x3)
 
-#define RX_VALVE_PWM_REV        0x08
+// bit[4:3] for tx type
+enum TX_TYPE_e{
+  TX_IO,
+  TX_ADC
+};
 
-#define MODE_TX_CONTROL         (OP_MODE_TX | TX_MODE_CONTROL)
-#define MODE_TX_SWITCH          (OP_MODE_TX | TX_MODE_SWITCH)
+#define TX_TYPE(x)              (x << 3)
+#define TYPE_OF_TX(x)           ((x >> 3) & 0x03)
 
-#define MODE_RX_CONTROL_V1      (OP_MODE_RX | RX_MODE_CONTROL | RX_GEAR_STEPPER | RX_VALVE_IO)
-#define MODE_RX_CONTROL_V2      (OP_MODE_RX | RX_MODE_CONTROL | RX_GEAR_SERVO | RX_VALVE_PWM)
+//#define OP_MODE_TX      0x10
+//#define OP_MODE_RX      0x20
+//
+//#define TX_MODE_SWITCH  0x01
+//#define TX_MODE_CONTROL 0x02
+//
+//#define RX_MODE_SWITCH  0x00
+//#define RX_MODE_CONTROL 0x01
+//
+//#define RX_GEAR_STEPPER 0x00
+//#define RX_GEAR_SERVO   0x02
+//#define RX_GEAR_DAC    0x08
+//
+//#define RX_VALVE_IO     0x00
+//#define RX_VALVE_PWM    0x04
+//
+//#define RX_VALVE_PWM_REV        0x08
+//
+//#define MODE_TX_CONTROL         (OP_MODE_TX | TX_MODE_CONTROL)
+//#define MODE_TX_SWITCH          (OP_MODE_TX | TX_MODE_SWITCH)
+//
+//#define MODE_RX_CONTROL_V1      (OP_MODE_RX | RX_MODE_CONTROL | RX_GEAR_STEPPER | RX_VALVE_IO)
+//#define MODE_RX_CONTROL_V2      (OP_MODE_RX | RX_MODE_CONTROL | RX_GEAR_SERVO | RX_VALVE_PWM)
 
 
 enum DATAFLASH_DEF_e{
@@ -72,6 +112,7 @@ enum DATAFLASH_DEF_e{
   BLINK_PERIOD_MS,
   TX_LBT_LOW_BOUND,
   TX_LBT_HIGH_BOUND,
+  DIO_ON_MASK,
   NOF_UINT16_VARS,
 
   BOARD_SECTION_HW_VERSION = PARAM_U32,
@@ -138,10 +179,14 @@ enum DATAFLASH_DEF_e{
 
 
 enum LIVE_DATA_e{
-  LIVD_DATA_RSSI = PARAM_U8,
+  LIVE_DATA_RSSI = PARAM_U8,
+  LIVE_DATA_USER_CONTROL,
   LIVE_DATA_DIO_STATE = PARAM_U16,
   LIVE_DATA_AIN_CH1,
   LIVE_DATA_AIN_CH2,
+  LIVE_DATA_AIN_CH3,
+  LIVE_DATA_AIN_CH4,
+  LIVE_DATA_BAT_MV,
   LIVE_DATA_VALVE_CONTROL = PARAM_U32,
   LIVE_DATA_SERVO_CONTROL,
   LIVE_DATA_STEPPER = PARAM_I32,

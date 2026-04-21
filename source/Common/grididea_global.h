@@ -17,13 +17,13 @@ enum DataType
 	BIT
 };
 
-#define PARAM_U8                (0x0 << 12)
-#define PARAM_U16               (0x1 << 12)
-#define PARAM_U32               (0x2 << 12)
-#define PARAM_I8                (0x3 << 12)
-#define PARAM_I16               (0x4 << 12)
-#define PARAM_I32               (0x5 << 12)
-#define PARAM_F32               (0x6 << 12)
+#define PARAM_U8                (U8 << 12)
+#define PARAM_U16               (U16 << 12)
+#define PARAM_U32               (U32 << 12)
+#define PARAM_I8                (I8 << 12)
+#define PARAM_I16               (I16 << 12)
+#define PARAM_I32               (I32 << 12)
+#define PARAM_F32               (F32 << 12)
 #define PARAM_TYPE(x)           ((x & 0x7000)>>12)
 #define PARAM_INDEX(x)          (x & 0x0FFF)
 #define PARAM_LIVE              (0x8000)

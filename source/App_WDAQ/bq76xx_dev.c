@@ -57,11 +57,11 @@ static void bq76xx_i2c_ram_read(uint16_t address, uint8_t *dptr, uint8_t sz)
    
   ret = i2cMasterTransmitTimeout(&I2C_DEV,SLAVE_ADDR,tx,5,NULL,0,TIME_MS2I(100));
   tx[0] = 0x40;
-  crc8 = crc8_smbus_single_byte((SLAVE_ADDR<<1)+1,0x0);
+  crc8 = crc8_smbus_single_byte((SLAVE_ADDR<<1),0x0);
   crc8 = crc8_smbus_single_byte(tx[0],crc8);
   tx[1] = crc8;
   
-  ret = i2cMasterTransmitTimeout(&I2C_DEV,SLAVE_ADDR,tx,1,rx,sz<<1,TIME_MS2I(100));
+  ret = i2cMasterTransmitTimeout(&I2C_DEV,SLAVE_ADDR,tx,2,dptr,sz+1,TIME_MS2I(100));
   
   
   i2cStop(&I2C_DEV);
@@ -117,7 +117,7 @@ static void bq76xx_protocol_transaction(uint8_t *tx, uint8_t *rx)
       break;
     }
     retry++;
-    if(retry > 50){
+    if(retry > 10){
       break;
     }
     chThdSleepMicroseconds(100);
@@ -261,7 +261,7 @@ static void bq76xx_subcommand_read(uint16_t command, uint8_t *dptr, uint8_t sz)
   bq76xx_read_data(dptr,sz);
 }
 #define COMM_TYPE       0x12 // fast IIC w/ CRC
-void bq76xx_spi_to_iic()
+uint8_t bq76xx_spi_to_iic()
 {
   uint8_t buf[32];
   uint16_t u16 ;
@@ -276,7 +276,7 @@ void bq76xx_spi_to_iic()
   
   bq76xx_direct_command_read(0x12,buf,2);
   if((buf[1] & 0x03) != 0x01){
-    return;
+    return 0;
   }
   
   // enter config update mode
@@ -291,7 +291,7 @@ void bq76xx_spi_to_iic()
     bq76xx_ReadDataFlash(0x9239,buf,1);
 
     if(buf[0] != COMM_TYPE){
-      while(1);
+      return 0;
     }
     bq76xx_direct_command_read(0x12,buf,2); // battery status
     if((buf[0] & 0x80) == 0){
@@ -316,7 +316,14 @@ void bq76xx_spi_to_iic()
   //bq76xx_subcommand(0x0090); // enter config update
   
   //bq76xx_subcommand(0x0092); // exit config update
-  
+ return 1; 
+}
+
+void bq76xx_set_miso_level()
+{
+  uint8_t buf[1] = {0x60};
+  bq76xx_WriteDataFlash(0x932c,buf,1);
+  bq76xx_WriteDataFlash(0x932c,buf,1);
 }
 
 uint8_t bq76xx_spi_check()
@@ -334,5 +341,5 @@ uint8_t bq76xx_i2c_check()
   uint8_t buf[32];
   bq76xx_i2c_ram_read(0x9239,buf,1);
   
-  return 0;
+  return buf[0];
 }

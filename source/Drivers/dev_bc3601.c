@@ -4,6 +4,8 @@
 #include "bc3601_def.h"
 #include "bc3601.h"
 #include <string.h>
+#include "rf_parameters.h"
+#include "bc3603_cmd_reg.h"
 
 #define  _IRQ_ENABLE_   (1)
 #define _IRQ_LINE_  (1)		
@@ -27,11 +29,20 @@ enum
 uint8_t   rf_power_value[][5] = 
 {
 	//   0,   5,  10,  13,  17
-	{ 0x09,0x27,0x3C,0x46,0x85 },		//315 
-	{ 0x08,0x1A,0x3C,0x49,0x8A },		//433
-	{ 0x08,0x19,0x3A,0x45,0x82 },		//470 no gived and copy from 433
-	{ 0x06,0x17,0x3A,0x47,0x7A },		//868
-	{ 0x16,0x27,0x3B,0x47,0x95 }		//915
+  /* BC3601 */
+//	{ 0x09,0x27,0x3C,0x46,0x85 },		//315 
+//	{ 0x08,0x1A,0x3C,0x49,0x8A },		//433
+//	{ 0x08,0x19,0x3A,0x45,0x82 },		//470 no gived and copy from 433
+//	{ 0x06,0x17,0x3A,0x47,0x7A },		//868
+//	{ 0x16,0x27,0x3B,0x47,0x95 }		//915
+  
+  /* BC3603*/
+  	/*0dBm,10dBm,13dBm,17dBm,19dBm */
+	{ 0x18, 0x29, 0x32, 0x3B, 0x3B },		/* 315MHz */
+	{ 0x18, 0x27, 0x30, 0x37, 0x3B },		/* 433MHz */
+	{ 0x16, 0x2B, 0x33, 0x39, 0x3C },		/* 470MHz */
+	{ 0x20, 0x2F, 0x35, 0x3A, 0x3D },		/* 868MHz */
+	{ 0x16, 0x2B, 0x33, 0x3A, 0x3D }	        /* 915MHz */
 };
 
 //uc8		margin_len[] = { 4, 8, 16, 32};
@@ -51,26 +62,151 @@ uint8_t pn9_data[] =
 	0xEA,0x24,0x33,0x85,0xED,0x9A,0x1D,0xE0,
 };
 
+//#define RF_SPI_line     3
+const unsigned short IRQIO_REGS_TABLE[]=
+{
+	((	IO2_REGS	<< 8)	+	0x00	),	//b[3:0]=GIO3S[3:0]
+#if (RF_SPI_line!=3)
+	((	IO1_REGS	<< 8)	+	0x69	),	//b[7:6]=PADDS[1:0],b[5:3]=GIO2S[2:0],b[2:0]=GIO1S[2:0]
+	((	IO3_REGS	<< 8)	+	0xF9	),	//b7=SDO_TEN,b6=SPIPU,b[5:4]=reserved,b[3:1]=GIOPU[3:1],b0=reserved
+#else
+	((	IO1_REGS	<< 8)	+	0x45	),	//b[7:6]=PADDS[1:0],b[5:3]=GIO2S[2:0],b[2:0]=GIO1S[2:0]
+#endif
+	((	IRQ1_REGS	<< 8)	+	0x0D	),	//b7=RXTO, b6=RXFFOW, b4=RXCRCF, b[3:2]=RXDETS[1:0], b1=IRQCPOR, b0=IRQPOR
+	((	IRQ2_REGS	<< 8)	+	0x13	),	//b7=ARKTFIE, b6=ARTCIE, b5=FIFOLTIE, b4=RXERRIE, b3=RXDETIE, b2=CALCMPIE, b1=RXCMPIE, b0=TXCMPIE
+	((	IRQ3_REGS	<< 8)	+	0x13	),	//b7=ARKTFIF, b6=ARTCIF, b5=FIFOLTIF, b4=RXERRIF, b3=RXDETIF, b2=CALCMPIF, b1=RXCMPIF, b0=TXCMPIF
+};
+
+#define	RF_SYNCLEN_			((RF_SYNC_Length-1)>>1)
+#define	RF_SYNCLENLB_			((RF_SYNC_Length-1)&0x01)
+#define	RF_WHTFMT1_			((RF_whitening_Format)>>1)
+#define	RF_WHTFMT0_			((RF_whitening_Format)&0x01)
+
+#define	RF_TX_PREAMBLE_PATTERN_H	((RF_TX_PREAMBLE_PATTERN>>8)&0xFF)
+#define	RF_TX_PREAMBLE_PATTERN_L	((RF_TX_PREAMBLE_PATTERN)&0xFF)
+
+#define	RF_CRC_SEED_H			((RF_CRC_SEED>>8)&0xFF)
+#define	RF_CRC_SEED_L			((RF_CRC_SEED)&0xFF)
+
+
+#define	RF_PLHEA			((RF_PLHA_Address>>8)&0xFF)
+#define	RF_PLHA				((RF_PLHA_Address)&0x3F)
+
+
+
+
+//	BC3603 packet format Configure	//
+/* CRC_EN=1, PLLEN_EN=0, PAYLOAD = 16-byte */
+const unsigned short PACKET_REGS_TABLE[]=
+{
+	((	FIFO1_REGS	<< 8)	+	0x00	),	//b[5:0]=TXFFSA[5:0]
+	((	FIFO2_REGS	<< 8)	+	0x01	),	//b4=RXPL2F_EN,b3=FFINF_EN,b2=FFMG_EN,b[1:0]=FFMG[1:0]
+	((	PKT1_REGS	<< 8)	+	RF_TxPreamble_Length	),	//TXPMLEN[7:0] (+1)
+	((	PKT2_REGS	<< 8)	+	((RF_Trailer_EN<<5)|(RF_WHTFMT0_<<4)|(RF_SYNCLEN_<<2))),	//b[7:6]=PID[1:0],b[5]=TRAILER_EN,b[4]=WHTFMT[0],b[3:2]=SYNCLEN[1:0],b[1:0]=reserved
+//	((	PKT2_REGS	<< 8)	+	(0x08|(RF_Trailer_EN<<5))	),
+	#if	RF_ARK_Enable == 1
+	((	PKT3_REGS	<< 8)	+	(0x00|(RF_Manchester_EN<<7)|(RF_FEC_EN<<6)|(RF_ARK_Enable<<5)|(RF_CRC_Format<<4)|(RF_ARK_Enable<<3)|(RF_PLHAC_EN<<2)|(RF_Header_Length<<1)|RF_ARK_Enable)	),	//b7=MCH_EN, b6=FEC_EN, b5=CRC_EN, b4=CRCFMT, b3=PLLEN_EN, b2=PLHAC_EN, b1=PLHLEN, b0=PLH_EN
+	#else
+	((	PKT3_REGS	<< 8)	+	(0x00|(RF_Manchester_EN<<7)|(RF_FEC_EN<<6)|(RF_CRC_EN<<5)|(RF_CRC_Format<<4)|(RF_PLLEN_EN<<3)|(RF_PLHAC_EN<<2)|(RF_Header_Length<<1)|RF_Header_EN)	),	//b7=MCH_EN, b6=FEC_EN, b5=CRC_EN, b4=CRCFMT, b3=PLLEN_EN, b2=PLHAC_EN, b1=PLHLEN, b0=PLH_EN
+	#endif
+	((	PKT4_REGS	<< 8)	+	(0x00|(RF_whitening_EN<<7)|RF_whitening_Seed)	),	//b7=WHT_EN, b[6:0]=WHTSD[6:0]
+	((	PKT5_REGS	<< 8)	+	RF_Payload_Length	),	//TXDLEN
+	#if RF_ARK_Enable==1
+	((	PKT6_REGS	<< 8)	+	0x00	),				//RXDLEN
+	#else
+	((	PKT6_REGS	<< 8)	+	RF_Payload_Length	),	//RXDLEN
+	#endif
+	((	PKT7_REGS	<< 8)	+	0x27	),	//b[7:6]=RXPID[1:0], b[5:3]=DLY_RXS[2:0], b[2:0]=DLY_TXS[2:0]
+	((	PKT8_REGS	<< 8)	+	RF_PLHA	),	//b[5:0]=PLHA[5:0]
+	((	PKT9_REGS	<< 8)	+	RF_PLHEA	),	//b[7:0]=PLHEA[7:0]
+	((	PKT10_REGS	<< 8)	+	((RF_WHTFMT1_<<6)|(RF_CRC_BYTE_ORDER<<5)|(RF_CRC_BIT_ORDER<<4)|(RF_CRC_INVERTED<<3)|(RF_SYNCLENLB_<<2)|(RF_TX_PREAMBLE_CLASS<<1)|(RF_Preamble_Pattern_EN))),//b[7:]=reserved,b[6]=WHTFMT[1],b[5]=CRCBYTEO,b[4]=CRCBITO,b[3]=CRCINV,b[2]=SYNCLENLB,b[1]=PMLPLEN,b[0]=PMLP_EN
+	((	PKT11_REGS	<< 8)	+	RF_TX_PREAMBLE_PATTERN_L	),	//b[7:0]=PMLPAT[7:0]
+	((	PKT12_REGS	<< 8)	+	RF_TX_PREAMBLE_PATTERN_H	),	//b[7:0]=PMLPAT[15:8]
+	((	PKT13_REGS	<< 8)	+	RF_CRC_SEED_L	),	//b[7:0]=CRCSD[7:0]
+	((	PKT14_REGS	<< 8)	+	RF_CRC_SEED_H	),	//b[7:0]=CRCSD[15:8]
+	((	PKT15_REGS	<< 8)	+	RF_CRC_SEED_H	),	//b[7:6]=WHTSD[8:7] 
+	((	XO1_REGS	<< 8)	+	(RF_CYL_COARSE_TUNE_<<6|RF_CYL_FINE_TUNE_)),	//b[7:6]=XSHIFT[1:0] b[4:0]= XO_TRIM[4:0]
+};
+
+const unsigned short COMMON_REGS_TABLE[]=
+{
+	((	CFG1_REGS	<< 8)	+	0x40	),	//b[5:0]=TXFFSA[5:0]
+};
+
+
+#define		ATR_Cycle			(((RF_ATR_Cycle*1024L)/125)-1)
+#define		ATR_Cycle_low		(ATR_Cycle&0xff)
+#define		ATR_Cycle_high		((ATR_Cycle>>8)&0xff)
+#define		ATR_RX_Window		(RF_ATR_RX_Window/250L)
+#define		ATR_RX_Window_low	(ATR_RX_Window&0xff)
+#define		ATR_RX_Window_high	((ATR_RX_Window>>8)&0x07)
+#define		ATR_RX_extra		(RF_ATR_RX_extra*4L)
+#define		ATR_RX_extra_low	(ATR_RX_extra&0xff)
+#define		ATR_RX_extra_high	((ATR_RX_extra>>8)&0xff)
+#define		ARK_RX_Window		(RF_ARK_RX_Window/250L)
+
+
+
+//	BC3603 Bank0 Configure	//
+const unsigned short BANK0_REG_TABLE[]=
+{
+	((	ATR1_REGS	<< 8)	+	0x42	),	                //_ATR1_		ATRCLK = 8192Hz / WOR
+	((	ATR2_REGS	<< 8)	+	ATR_Cycle_low	),	        //_ATR2_
+	((	ATR3_REGS	<< 8)	+	ATR_Cycle_high	),	        //_ATR3_	ATR Cycle = 0x8000 * 0.125 = 4s
+	((	ATR4_REGS	<< 8)	+	ATR_RX_Window_low	),	//_ATR4_	RX cycle = (0x25+1) * 250us = 9.5ms
+	((	ATR5_REGS	<< 8)	+	ATR_RX_extra_low	),	//_ATR5_	
+	((	ATR6_REGS	<< 8)	+	ATR_RX_extra_high	),	//_ATR6_	RX extra time = (0x3E7+1) * 250us = 250ms
+	((	ATR7_REGS	<< 8)	+	(((0x02|((RF_ARK_Resend_Count)<<4)))|RF_ARK_Enable	)),	//_ATR7_
+	((	ATR8_REGS	<< 8)	+	(ARK_RX_Window&0xFF)		),	//_ATR8_	RX cycle = (ARK_RX_Window+1) * 250us = ms
+	((	ATR11_REGS	<< 8)	+	ATR_RX_Window_high		),
+	((	XO1_REGS	<< 8)	+	0x20	),	//
+	((	XO2_REGS	<< 8)	+	0x03	),	//
+};
+//	BC3603 Bank1 Configure	//
+const unsigned short BANK1_REG_TABLE[]=
+{
+	((	AGC2_REGS	<< 8)	+	0x14	),	//
+};
+
 // Bank2		
 uint8_t   Analog_RegisterTable[][2] = 
 {  {0x2A,0x57},{0x3A,0x94},{0x34,0xD0}};     
 
+
+//---BC3603---
+const uint16_t BANK2_REG_TABLE[]={
+#if	RF_BAND==_915MHz_	
+	((	RXG_REGS	<< 8)	+	0X97	),
+	((	RX1_REGS	<< 8)	+	0x68	),	
+#if	(RF_Datarate==_125kbps_	||RF_Datarate==_250kbps_)
+	((	RX2_REGS	<< 8)	+	0x96	),
+#else
+	((	RX2_REGS	<< 8)	+	0x86	),
+#endif
+	((	TX3_REGS	<< 8)	+	0x41	),
+	((	CA1_REGS	<< 8)	+	0x90	),
+	((	LDC1_REGS	<< 8)	+	0x9C	),	
+#endif	
+	((	0x3B	   << 8)	+	0x5D	),
+};
 /* Crystal = 16MHz */ 
 
+//uint32_t data_rate_Table16[] =
+//{
+//	2000,5000,10000,25000,50000,125000,250000
+//};
 uint32_t data_rate_Table16[] =
 {
-	2000,5000,10000,25000,50000,125000,250000
+	2000,10000,50000,125000,250000
 };
 
 #define DEFAULT_RX_Preamble _RX_Preamble_4B_
 uint8_t MOD_RegisterTable16[][8]=
 {
  /* MOD1 MOD2 MOD3     Crystal 16MHz    */
-   {0xF9,0x60,0x66},   /*data rate = 2K */	//h=8
-   {0x63,0x60,0x66},   /*data rate = 5K */
+   {0xF9,0x60,0x67},   /*data rate = 2K */	//h=8
    {0x31,0x60,0x66},   /*data rate = 10K */
-   {0x13,0x60,0x66},   /*data rate = 25K */ 	//h=4	DM1 & DM2 different than Excel 
-   {0x09,0x60,0x66},   /*data rate = 50K */	//h=0.75
+   {0x09,0x60,0x67},   /*data rate = 50K */	//h=0.75
    {0x03,0x90,0x9A},   /*data rate = 125K */ 
    {0x01,0x90,0x9A}    /*data rate = 250K */
 };
@@ -80,9 +216,9 @@ uint8_t DM_RegisterTable16[][8]=
 {
  /*  DM1  DM2  DM3  DM4  DM5  DM6  DM7  DM8     Crystal 16MHz    */
    {0x31,0x09,0xE6,0x08,0x1F,0x40,0x66,0x05},   /*data rate = 2K */
-   {0x13,0x09,0xE6,0x08,0x1F,0x40,0x66,0x0D},   /*data rate = 5K */
+//   {0x13,0x09,0xE6,0x08,0x1F,0x40,0x66,0x0D},   /*data rate = 5K */
    {0x09,0x09,0xE6,0x08,0x1F,0x00,0x66,0x1A},   /*data rate = 10K */
-   {0x07,0x04,0xE6,0x08,0x1F,0x00,0x66,0x20},   /*data rate = 25K */
+//   {0x07,0x04,0xE6,0x08,0x1F,0x00,0x66,0x20},   /*data rate = 25K */
    {0x13,0x00,0xE0,0x08,0x3A,0x40,0x66,0x0D},   /*data rate = 50K */
    {0x07,0x00,0xE0,0x08,0x3A,0x00,0x9A,0x20},   /*data rate = 125K */
    {0x03,0x00,0xE0,0x08,0x3A,0x00,0x9A,0x40}    /*data rate = 250K */
@@ -91,39 +227,66 @@ uint8_t DM_RegisterTable16[][8]=
 uint8_t DM_RegisterTable16[][8]=
 {
  /*  DM1  DM2  DM3  DM4  DM5            DM8     Crystal 16MHz    */
-   {0x31,0x49,0xE6,0x08,0x1A,0x40,0x66,0x05},   /*data rate = 2K */
-   {0x13,0x49,0xE6,0x08,0x1A,0x40,0x66,0x0D},   /*data rate = 5K */
-   {0x09,0x49,0xE6,0x08,0x1A,0x00,0x66,0x1A},   /*data rate = 10K */
-   {0x07,0x44,0xE6,0x08,0x1A,0x00,0x66,0x20},   /*data rate = 25K */
-   {0x13,0x40,0xE0,0x08,0x30,0x40,0x66,0x0D},   /*data rate = 50K */
-   {0x07,0x40,0xE0,0x08,0x30,0x00,0x9A,0x20},   /*data rate = 125K */
-   {0x03,0x40,0xE0,0x08,0x30,0x00,0x9A,0x40}    /*data rate = 250K */
+   {0x31,0x09,0xE6,0x08,0x1F,0x40,0x66,0x05},   /*data rate = 2K */
+   {0x09,0xC9,0xE6,0x08,0x1F,0x00,0x66,0x1A},   /*data rate = 10K */
+   {0x13,0xC0,0xE0,0x08,0x30,0x40,0x66,0x0D},   /*data rate = 50K */
+   {0x07,0xC0,0xE0,0x08,0x30,0x00,0x9A,0x20},   /*data rate = 125K */
+   {0x03,0x40,0x40,0x08,0x30,0x00,0x9A,0x40}    /*data rate = 250K */
 };
 #elif (DEFAULT_RX_Preamble ==_RX_Preamble_4B_)
 uint8_t DM_RegisterTable16[][8]=
 {
  /*  DM1  DM2  DM3  DM4  DM5            DM8     Crystal 16MHz    */
    {0x31,0xC9,0xE6,0x48,0x1A,0x40,0x66,0x05},   /*data rate = 2K */
-   {0x13,0xC9,0xE6,0x48,0x1A,0x40,0x66,0x0D},   /*data rate = 5K */
+//   {0x13,0xC9,0xE6,0x48,0x1A,0x40,0x66,0x0D},   /*data rate = 5K */
    {0x09,0xC9,0xE6,0x48,0x1A,0x00,0x66,0x1A},   /*data rate = 10K */
-   {0x07,0xC4,0xE6,0x48,0x1A,0x00,0x66,0x20},   /*data rate = 25K */
+//  {0x07,0xC4,0xE6,0x48,0x1A,0x00,0x66,0x20},   /*data rate = 25K */
    {0x13,0xC0,0xE0,0x48,0x30,0x40,0x66,0x0D},   /*data rate = 50K */
    {0x07,0xC0,0xE0,0x48,0x30,0x00,0x9A,0x20},   /*data rate = 125K */
    {0x03,0xC0,0xE0,0x48,0x30,0x00,0x9A,0x40}    /*data rate = 250K */
 };
 #endif
 
+uint8_t RX2_REGS_Table[] ={
+  0x86, // 2K
+//  0x86, // 5k
+  0x86, // 10k
+//  0x86, // 25k
+  0x86, // 50k
+  0x96, // 125k
+  0x96, // 125k
+};
+
+uint8_t AGC_CTL1_REGS_Table[][3] = {
+  // {AGC1, AGC3, AGC7}
+  {0x00,0x04,0x30}, // 2k
+  {0x00,0x04,0x30}, // 5k
+//  {0x00,0x04,0x30}, // 10k
+  {0x00,0x04,0x30}, // 25k
+//  {0x00,0x04,0x30}, // 50k
+  {0x1C,0x07,0x50}, // 125k
+  {0x18,0x04,0x50}, // 250k
+  
+};
+
 uint16_t FCF_RegisterTable16[][10] = 
 {
-//	FCF1		FCF3,2, 5,4		7,6	 9,8	  11,10	13,12	 15,14  17,16  19,18		
-/*     SFR    FSC   CB12   CB13   CA12   CA13   CB22   CB23   CA22   CA23  Crystal 16MHz */   
-   {0x0036,0x0021,0x0000,0x0000,0x0302,0x0000,0x0000,0x0000,0x0000,0x0000 }, /* data rate=2K */ 	
-   {0x0036,0x0052,0x0000,0x0000,0x0302,0x0000,0x0000,0x0000,0x0000,0x0000 }, /* data rate=5K */	
-   {0x0016,0x00A4,0x0000,0x0000,0x0310,0x0000,0x0000,0x0000,0x0000,0x0000 }, /* data rate=10K */ 	
-   {0x0016,0x00CD,0x0000,0x0000,0x0310,0x0000,0x0000,0x0000,0x0000,0x0000 }, /* data rate=25K */	
+//	FCF1 FCF3,2,  5,4   7,6	    9,8	  11,10	 13,12	15,14  17,16  19,18		
+//   {0x0036,0x0021,0x0000,0x0000,0x0302,0x0000,0x0000,0x0000,0x0000,0x0000 }, /* data rate=2K */ 	
+//   {0x0036,0x0052,0x0000,0x0000,0x0302,0x0000,0x0000,0x0000,0x0000,0x0000 }, /* data rate=5K */	
+//   {0x0016,0x00A4,0x0000,0x0000,0x0310,0x0000,0x0000,0x0000,0x0000,0x0000 }, /* data rate=10K */ 	
+//   {0x0016,0x00CD,0x0000,0x0000,0x0310,0x0000,0x0000,0x0000,0x0000,0x0000 }, /* data rate=25K */	
+//   {0x0000,0x004C,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000 }, /* data rate=50K */ 	
+//   {0x0000,0x0119,0x001D,0x0346,0x0022,0x0331,0x0386,0x0012,0x0008,0x0008 }, /* data rate=125K */ 	
+//   {0x0000,0x0444,0x0285,0x008A,0x0012,0x032B,0x0114,0x0021,0x0078,0x0028 }  /* data rate=250K */   
+//	FCF1 FCF3,2,  5,4   7,6	    9,8	  11,10	 13,12	15,14  17,16  19,18		
+   {0x0030,0x0020,0x0000,0x0000,0x0302,0x0000,0x0000,0x0000,0x0000,0x0000 }, /* data rate=2K */ 	
+//   {0x0036,0x0052,0x0000,0x0000,0x0302,0x0000,0x0000,0x0000,0x0000,0x0000 }, /* data rate=5K */	
+   {0x0010,0x00A4,0x0000,0x0000,0x0310,0x0000,0x0000,0x0000,0x0000,0x0000 }, /* data rate=10K */ 	
+//   {0x0016,0x00CD,0x0000,0x0000,0x0310,0x0000,0x0000,0x0000,0x0000,0x0000 }, /* data rate=25K */	
    {0x0000,0x004C,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000 }, /* data rate=50K */ 	
    {0x0000,0x0119,0x001D,0x0346,0x0022,0x0331,0x0386,0x0012,0x0008,0x0008 }, /* data rate=125K */ 	
-   {0x0000,0x0444,0x0285,0x008A,0x0012,0x032B,0x0114,0x0021,0x0078,0x0028 }  /* data rate=250K */   
+   {0x0006,0x9402,0xCA02,0x0062,0x0358,0x03E9,0x03B3,0x3E00,0x03E9,0x0039 }  /* data rate=250K */   
 };
 
 uint32_t *data_rate_index[1] =
@@ -229,14 +392,20 @@ void irq_config(BC3601Driver *dev, uint8_t enable)
   BC3601_REG_WRITE(dev,IRQ_ENABLE_REGS,&reg);
 }
 
-static void crystal_ready(BC3601Driver *dev)
+static bool wait_crystal_ready(BC3601Driver *dev)
 {
   uint8_t reg;
   BC3601_SETBANK(dev,REGS_BANK0);
+  uint32_t cntr = 0xFFFF;
   do{
     chThdSleepMilliseconds(1);
+    cntr--;
     BC3601_REG_READ(dev,CLOCK_CTL_REGS,&reg);
+    if(cntr == 0) break;
   }while(!(reg & 0x20));
+  
+  if(cntr == 0) return false;
+  return true;
 }
 
 
@@ -273,6 +442,16 @@ static void crysstal_config(BC3601Driver *dev)
   BC3601_SETBANK(dev,REGS_BANK0);
   BC3601_REG_WRITE(dev,XO_SEL_CTL_REGS,&reg);
   reg = 0x18;
+  BC3601_REG_WRITE(dev,XO_CAP_CTL_REGS,&reg);
+}
+
+static void set_crystal_cload(BC3601Driver *dev,uint8_t xshift, uint8_t xtim)
+{
+  uint8_t reg = 0x03; // 16MHz
+  BC3601_SETBANK(dev,REGS_BANK0);
+  BC3601_REG_READ(dev,XO_CAP_CTL_REGS,&reg);
+  reg = (reg & ~XO_SHIFT_MASK) | ((xshift  << 6) & XO_SHIFT_MASK);
+  reg = (reg & ~XO_TRIM_MASK) | (xtim & XO_TRIM_MASK);
   BC3601_REG_WRITE(dev,XO_CAP_CTL_REGS,&reg);
 }
 
@@ -424,20 +603,20 @@ void bc3601_datarateConfig(BC3601Driver *dev,uint8_t dr)
   //bc3601StrobeCommand(dev,REGS_BANK_CMD + REGS_BANK0);
   BC3601_SETBANK(dev,REGS_BANK2);
   
-  if(dr < 5){
-    reg = 0x44;
-  }
-  else{
-    reg = 0x54;
-  }
-  BC3601_REG_WRITE(dev,RX2_CTL_REGS,&reg);
+
+  BC3601_REG_WRITE(dev,RX2_CTL_REGS,&RX2_REGS_Table[dr]);
   
   BC3601_SETBANK(dev,REGS_BANK0);
   
   /* MOD configuration */
   BC3601_REGS_WRITE(dev,MODULATOR_CTL1_REGS,(void*)&MOD_RegisterTable16[dr],3);
 
-  BC3601_REGS_WRITE(dev,DEMOULATOR_CTL1_REGS,(void*)&DM_RegisterTable16[dr],8);
+//  BC3601_REGS_WRITE(dev,DEMOULATOR_CTL1_REGS,(void*)&DM_RegisterTable16[dr],8);
+  BC3601_REG_WRITE(dev,DEMOULATOR_CTL1_REGS,(void*)&DM_RegisterTable16[dr][0]);
+  BC3601_REG_WRITE(dev,DEMOULATOR_CTL2_REGS,(void*)&DM_RegisterTable16[dr][1]);
+  BC3601_REG_WRITE(dev,DEMOULATOR_CTL3_REGS,(void*)&DM_RegisterTable16[dr][2]);
+  BC3601_REG_WRITE(dev,DEMOULATOR_CTL5_REGS,(void*)&DM_RegisterTable16[dr][4]);
+  BC3601_REG_WRITE(dev,DEMOULATOR_CTL8_REGS,(void*)&DM_RegisterTable16[dr][7]);
   
   /* filter coefficient */
   BC3601_SETBANK(dev,REGS_BANK1);
@@ -446,6 +625,11 @@ void bc3601_datarateConfig(BC3601Driver *dev,uint8_t dr)
   reg = *(ptr+dr*10) & 0xFF;
   BC3601_REG_WRITE(dev,FILTER_CTL1_REGS,&reg);
   BC3601_REGS_WRITE(dev,FILTER_CTL2_REGS,(uint8_t*)(&FCF_RegisterTable16[dr][1]),18);
+  
+  BC3601_REG_WRITE(dev,AGC_CTL1_REGS,&AGC_CTL1_REGS_Table[0][dr]);
+  BC3601_REG_WRITE(dev,AGC_CTL3_REGS,&AGC_CTL1_REGS_Table[1][dr]);
+  BC3601_REG_WRITE(dev,AGC_CTL7_REGS,&AGC_CTL1_REGS_Table[2][dr]);
+  
   BC3601_SETBANK(dev,REGS_BANK0);
   
 }
@@ -465,8 +649,14 @@ static void bc3601_extenedMarginConfig(BC3601Driver *dev,uint8_t mar_en, uint8_t
 static void bc3601_analogRegisterconfig(BC3601Driver *dev)
 {
   BC3601_SETBANK(dev,REGS_BANK2);
-  for(uint8_t i=0;i<3;i++){
-    BC3601_REG_WRITE(dev,Analog_RegisterTable[i][0],&Analog_RegisterTable[i][1]); 
+//  for(uint8_t i=0;i<3;i++){
+//    BC3601_REG_WRITE(dev,Analog_RegisterTable[i][0],&Analog_RegisterTable[i][1]); 
+//  }
+  uint8_t addr, value;
+  for(uint8_t i=0;i<sizeof(BANK2_REG_TABLE)/2;i++){
+    addr = BANK2_REG_TABLE[i]>>8;
+    value = BANK2_REG_TABLE[i]&0xff;
+    BC3601_REG_WRITE(dev,addr,&value); 
   }
   BC3601_SETBANK(dev,REGS_BANK0);
 }
@@ -799,23 +989,66 @@ uint16_t bc3601_getAutoCycleCounter(BC3601Driver *dev)
 
 void parameter_initialization(BC3601Driver *dev)
 {
-	memcpy((void *)TxPayloadData, (void *)pn9_data, DEFAULT_PKT_Length);
-	memcpy((void *)RxPayloadData, (void *)pn9_data, DEFAULT_PKT_Length);
+  
+    uint8_t addr, value;
+    uint8_t *ptr = (uint8_t*)&dev->reg_cmd;
+    BC3601_SETBANK(dev,REGS_BANK0);
+    for(uint8_t i=0;i<sizeof(IRQIO_REGS_TABLE)/2;i++){
+      addr = IRQIO_REGS_TABLE[i]>>8;
+      value = IRQIO_REGS_TABLE[i]&0xff;
+      BC3601_REG_WRITE(dev,addr,&value); 
+    }  
+    
+    for(uint8_t i=0;i<sizeof(PACKET_REGS_TABLE)/2;i++){
+      addr = PACKET_REGS_TABLE[i]>>8;
+      value = PACKET_REGS_TABLE[i]&0xff;
+      BC3601_REG_WRITE(dev,addr,&value); 
+    }  
+
+    for(uint8_t i=0;i<sizeof(COMMON_REGS_TABLE)/2;i++){
+      addr = COMMON_REGS_TABLE[i]>>8;
+      value = COMMON_REGS_TABLE[i]&0xff;
+      BC3601_REG_WRITE(dev,addr,&value); 
+    }  
+    
+    BC3601_SETBANK(dev,REGS_BANK0);
+    for(uint8_t i=0;i<sizeof(BANK0_REG_TABLE)/2;i++){
+      addr = BANK0_REG_TABLE[i]>>8;
+      value = BANK0_REG_TABLE[i]&0xff;
+      BC3601_REG_WRITE(dev,addr,&value); 
+    }  
+    
+    BC3601_SETBANK(dev,REGS_BANK1);
+    for(uint8_t i=0;i<sizeof(BANK1_REG_TABLE)/2;i++){
+      addr = BANK1_REG_TABLE[i]>>8;
+      value = BANK1_REG_TABLE[i]&0xff;
+      BC3601_REG_WRITE(dev,addr,&value); 
+    }  
+    
+    BC3601_SETBANK(dev,REGS_BANK2);
+    for(uint8_t i=0;i<sizeof(BANK2_REG_TABLE)/2;i++){
+      addr = BANK2_REG_TABLE[i]>>8;
+      value = BANK2_REG_TABLE[i]&0xff;
+      BC3601_REG_WRITE(dev,addr,&value); 
+    }  
+    BC3601_SETBANK(dev,REGS_BANK0);
+
+//	memcpy((void *)TxPayloadData, (void *)pn9_data, DEFAULT_PKT_Length);
+//	memcpy((void *)RxPayloadData, (void *)pn9_data, DEFAULT_PKT_Length);
 	
 	/* set BC3601 bank2 register */	 
-	bc3601_analogRegisterconfig(dev);
+//	bc3601_analogRegisterconfig(dev);
         
 	/* set Crystal */
-	crysstal_config(dev);
+	//crysstal_config(dev);
 
-	/* set AGC */
-	agc_configuration(dev,Enable);
+	/* set AGC, not necessary for 3603 */
+	//agc_configuration(dev,Enable);
 	
 	/* set tx and rx preamble */
 	premble_config(dev,DEFAULT_TX_Preamble,DEFAULT_RX_Preamble);
 
 	/* set Syncword */
-	syncword_config(dev,DEFAULT_SyncWidth, DEFAULT_DeviceID);
 
 	/* set tx packet length */
 	//bc3601_setTxPayloadWidth(dev,DEFAULT_PKT_Length);   
@@ -824,8 +1057,8 @@ void parameter_initialization(BC3601Driver *dev)
 	//bc3601_setRxPayloadWidth(dev,DEFAULT_PKT_Length);   
 
   /* set header type */
-	//header_config(dev,DEFAULT_PLLEN_EN, DEFAULT_PLHAC_EN, DEFAULT_PLHLEN, DEFAULT_PLH_EN); 
-    header_config(dev,1, 1, 1, 1); 
+	header_config(dev,DEFAULT_PLLEN_EN, DEFAULT_PLHAC_EN, DEFAULT_PLHLEN, DEFAULT_PLH_EN); 
+    //header_config(dev,1, 1, 1, 1); 
 
 	/* set codeing type */
 	bc3601_menchesterConfig(dev,DEFAULT_Man_EN);
@@ -837,7 +1070,7 @@ void parameter_initialization(BC3601Driver *dev)
 
 	/* set RF band */
 //  bc3601_freqConfig(dev,DEFAULT_RF_Fr0equency);
-  bc3601_freqConfig(dev,dev->frequency);
+  
 
   /* set Tx power */
 //  bc3601_powerConfig(dev,DEFAULT_TX_Power);
@@ -845,15 +1078,15 @@ void parameter_initialization(BC3601Driver *dev)
   
   /* set data rate */
 //  bc3601_datarateConfig(dev,DEFAULT_DATA_RATE);
-  bc3601_datarateConfig(dev,dev->dataRate);
+  
    
-	crystal_ready(dev);	  
+	wait_crystal_ready(dev);	  
 }
 
 void bc3601_vcoCalibration(BC3601Driver *dev)
 {
   uint8_t reg;
-  
+  BC3601_SETBANK(dev,REGS_BANK0);
   BC3601_REG_READ(dev,OPERATION_CTL_REGS,&reg);
   reg |= 0x08;
 
@@ -868,6 +1101,7 @@ void bc3601_lircCalibration(BC3601Driver *dev)
 {
   uint8_t reg;
   
+  BC3601_SETBANK(dev,REGS_BANK0);
   BC3601_REG_READ(dev,LIRC_CTL_REGS,&reg);
   reg |= 0x80;
 
@@ -927,10 +1161,18 @@ void dev_bc3601Init(BC3601Driver *dev,const bc3601_config_t *config)
   // 4-wire spi
 //  gio_config(dev,_GPIO1_,1);
   // set to sleep mode
-  bc3601_lightSleepMode(dev);
-  
   // reset chip
   BC3601_RESET_CHIP(dev);
+  bc3601_refresh_registers(dev);
+
+  bc3601_lightSleepMode(dev);
+  
+  if(!wait_crystal_ready(dev)){
+    return;
+  }
+  set_crystal_cload(dev,RF_CYL_COARSE_TUNE_,RF_CYL_FINE_TUNE_);
+
+  parameter_initialization(dev);
   bc3601_refresh_registers(dev);
   
   BC3601_SETBANK(dev,REGS_BANK0);
@@ -939,32 +1181,112 @@ void dev_bc3601Init(BC3601Driver *dev,const bc3601_config_t *config)
   //reg = IO1_PADDS_1MA | IO1_GIO2S_SDO | IO1_GIO1S_INPUT;
   //BC3601_REG_WRITE(dev,GIO12_CTL_REGS,&reg);
   
-  reg = IO3_GIOPU2;
-  BC3601_REG_WRITE(dev,GPIO_PULL_UP_REGS,&reg);
+  //reg = IO3_GIOPU2;
+  //BC3601_REG_WRITE(dev,GPIO_PULL_UP_REGS,&reg);
   
   // set gio 1 as interrupt
   //gio_config(dev,_IRQ_LINE, INT_REQUEST);
   
   /* 1.2v rstll */
   
-  BC3601_REG_READ(dev,CLOCK_CTL_REGS,&reg);
-  reg |= 0x01;
-  BC3601_REG_WRITE(dev,CLOCK_CTL_REGS,&reg);
-  reg &= ~0x01;
-  BC3601_REG_WRITE(dev,CLOCK_CTL_REGS,&reg);
+//  BC3601_REG_READ(dev,CLOCK_CTL_REGS,&reg);
+//  reg |= 0x01;
+//  BC3601_REG_WRITE(dev,CLOCK_CTL_REGS,&reg);
+//  reg &= ~0x01;
+//  BC3601_REG_WRITE(dev,CLOCK_CTL_REGS,&reg);
   
   //BC3601_REG_READ(dev,CLOCK_CTL_REGS,&reg);
 
-  parameter_initialization(dev);
+  
+  // write sync word
+  syncword_config(dev,DEFAULT_SyncWidth, DEFAULT_DeviceID);
+  
+  // write freq table
+  bc3601_freqConfig(dev,dev->frequency);
+  // set dr param
+  bc3601_datarateConfig(dev,dev->dataRate);
+  // set power
+  
+  // stalready
   
   bc3601_vcoCalibration(dev);
   bc3601_lircCalibration(dev);
   bc3601_gotoDefaultMode(dev);
 
   // set pid
-  reg = dev->destAddr & 0xFF;
-  BC3601_REG_WRITE(dev,GPIO_PULL_UP_REGS,&reg);
+  //reg = dev->destAddr & 0xFF;
+  //BC3601_REG_WRITE(dev,GPIO_PULL_UP_REGS,&reg);
   
   bc3601_refresh_registers(dev);
+  
+}
+
+void dev_bc3601DeInit(BC3601Driver *dev)
+{
+  BC3601_RESET_CHIP(dev);
+  BC3601_SETBANK(dev,REGS_BANK0);
+  uint8_t reg = 0x98;
+  BC3601_REG_WRITE(dev,0x39,&reg);
+  bc3601_lightSleepMode(dev);
+  
+  // set to default 
+  BC3601_SETBANK(dev,REGS_BANK0);
+  reg = 0x11;
+  BC3601_REG_WRITE(dev,CLOCK_CTL_REGS,&reg);
+  reg = 0x10;
+  BC3601_REG_WRITE(dev,CLOCK_CTL_REGS,&reg);
+  reg = 0x40;
+  BC3601_REG_WRITE(dev,CONFIG_REGS,&reg);
+  reg = 0x38;
+  BC3601_REG_WRITE(dev,TRX_MODE_DELAY_REGS,&reg);
+  reg = 0x58;
+  BC3601_REG_WRITE(dev,DEMOULATOR_CTL4_REGS,&reg);
+  
+  BC3601_SETBANK(dev,REGS_BANK1);
+  reg = 0x14;
+  BC3601_REG_WRITE(dev,AGC_CTL2_REGS,&reg);
+  
+  BC3601_SETBANK(dev,REGS_BANK2);
+  reg = 0x03;
+  BC3601_REG_WRITE(dev,0x26,&reg);
+  reg = 0x88;
+  BC3601_REG_WRITE(dev,0x29,&reg);
+  reg = 0x68;
+  BC3601_REG_WRITE(dev,0x2e,&reg);
+  reg = 0x06;
+  BC3601_REG_WRITE(dev,0x2F,&reg);
+  reg = 0x90;
+  BC3601_REG_WRITE(dev,0x34,&reg);
+  reg = 0x9C;
+  BC3601_REG_WRITE(dev,0x39,&reg);
+  reg = 0x5D;
+  BC3601_REG_WRITE(dev,0x3B,&reg);
+  BC3601_SETBANK(dev,REGS_BANK0);
+
+  if(!wait_crystal_ready(dev)){
+    return;
+  }
+//  BC3601_STBY(dev);
+  BC3601_DEEP_SLEEP(dev);
+
+  
+}
+
+void bc3601_WaitCrystalReady(BC3601Driver *dev)
+{
+  wait_crystal_ready(dev);
+}
+
+void bc3601_clearIRQ(BC3601Driver *dev, uint8_t flag_mask)
+{
+  uint8_t reg;
+  BC3601_REG_READ(dev,IRQ_CTL_REGS,&reg);
+  if(reg & 0x01){
+    reg = flag_mask;
+  }
+  else{
+    reg = ~flag_mask;
+  }
+  BC3601_REG_WRITE(dev,IRQ_CTL_REGS,&reg);
   
 }
