@@ -26,7 +26,7 @@
 #define VR_POWER_DIS()  palSetLine(VR_POWER_LINE)
 #define VR_POWER_EN() palClearLine(VR_POWER_LINE) 
 
-#define APP_SIGNATURE_KEY       0xCC
+#define APP_SIGNATURE_KEY       0xD0
 #define APP_SIGNATURE_OFFSET    0
 
 //#define MOTOR_CONTROL   
@@ -43,8 +43,8 @@
 
 #define BOARD_B2
 
-//#define MODE_TX
-#define MODE_RX
+#define MODE_TX
+//#define MODE_RX
 
 static void tx_control_loop();
 static void rx_control_loop();
@@ -209,17 +209,17 @@ static void load_settings()
       db_write_df_u16(DEST_ADDR,0x01);
 #ifdef MODE_RX
 //      db_write_df_u8(OP_MODE,0x27);
-      db_write_df_u8(OP_MODE,OP_MODE_RX | OP_MODE_CONTROL | GEAR_TYPE(GEAR_SERVO) | VALVE_TYPE(VALVE_PWM));
+      db_write_df_u8(OP_MODE,OP_MODE_RX | OP_MODE_CONTROL | GEAR_TYPE(GEAR_SERVO) | VALVE_TYPE(VALVE_IO));
 #endif
 #ifdef MODE_TX
 //      db_write_df_u8(OP_MODE,0x12);
-      db_write_df_u8(OP_MODE,OP_MODE_TX | OP_MODE_CONNTROL);
+      db_write_df_u8(OP_MODE,OP_MODE_TX | OP_MODE_CONTROL);
 #endif
       db_write_df_u8(TX_INTERVAL_MS,50);
       db_write_df_u16(TIMEOUT_MS,2000);
       //db_write_df_u16(TX_COUNTS,90);
       
-      db_write_df_u8(RF_DATA_RATE_CODE, 1);
+      db_write_df_u8(RF_DATA_RATE_CODE, 2);
       db_write_df_f32(RF_BASE_FREQUENCY,915.00);
       db_write_df_u8(RF_TX_POWER,1);
       
@@ -270,21 +270,6 @@ static void load_settings()
       db_save_section(F32);
   }
   
-  // test mode for TX Control
-  //db_write_df_u8(OP_MODE, OP_MODE_TX | TX_MODE_CONTROL);
-  // test mode for TX Switch
-  //db_write_df_u8(OP_MODE, OP_MODE_TX | TX_MODE_SWITCH);
-  
-  // test mode for TX Control, Servo, PWM
-  //db_write_df_u8(OP_MODE, OP_MODE_RX | RX_MODE_CONTROL | RX_GEAR_SERVO | RX_VALVE_PWM);
-
-  // test mode for TX Control, Stepper, PWM
-  //db_write_df_u8(OP_MODE, OP_MODE_RX | RX_MODE_CONTROL  | RX_VALVE_PWM);
-
-  // test mode for TX Control, Stepper, IO
-  //db_write_df_u8(OP_MODE, OP_MODE_RX | RX_MODE_CONTROL);
-  
-  db_write_df_u8(OP_MODE, OP_MODE_RX | OP_MODE_CONTROL | GEAR_TYPE(GEAR_PWM) | VALVE_TYPE(VALVE_IO));
 }
 
 void rf_save_nvm()
@@ -1178,10 +1163,10 @@ int main()
   database_init();
 
   load_settings();
-//  uint8_t opMode = db_read_df_u8(OP_MODE);
+  uint8_t opMode = db_read_df_u8(OP_MODE);
 
   // 2 TX mode
-//  opMode = OP_MODE_TX | OP_MODE_CONTROL | TX_TYPE(TX_IO); //OK
+  //opMode = OP_MODE_TX | OP_MODE_CONTROL | TX_TYPE(TX_IO); //OK
 //  opMode = OP_MODE_TX | OP_MODE_CONTROL | TX_TYPE(TX_ADC);
 //  
 //  opMode = OP_MODE_RX | OP_MODE_CONTROL | GEAR_TYPE(GEAR_STEPPER) | VALVE_TYPE(VALVE_IO); //OK
@@ -1198,7 +1183,7 @@ int main()
 //  opMode = OP_MODE_RX | OP_MODE_CONTROL | GEAR_TYPE(GEAR_STEPPER_DAC) | VALVE_TYPE(VALVE_PWM);//ok
 
 //  db_write_df_u8(OP_MODE,opMode);
-  
+//  
 //  db_write_df_u16(SERVO_MAP_RAW_PT_1,200);
 //  db_write_df_u16(SERVO_MAP_RAW_PT_2,3300);
 //  db_write_df_u16(SERVO_MAP_RAW_PT_3,3800);
@@ -1208,7 +1193,7 @@ int main()
 //  db_write_df_u16(SERVO_MAP_COUNTER_PT_3,3000);
 //  db_write_df_u16(SERVO_MAP_COUNTER_PT_4,5000);
 
-  db_write_df_u16(DIO_ON_MASK,0x0100);
+  //db_write_df_u16(DIO_ON_MASK,0x0100);
   gpio_init();
   binaryProtocolInit();
   //rf_task_init();
@@ -1222,11 +1207,11 @@ int main()
    
   systime_t rxFailStart = chVTGetSystemTimeX();
   systime_t rxErrorPeriod = 0;
-  if(opMode & OP_MODE_RX){
+  if((opMode & OP_MODE_MASK) == OP_MODE_RX){
     start_rx_process();  
   }
   
-  if(opMode & OP_MODE_TX){
+  if((opMode & OP_MODE_MASK) == OP_MODE_TX){
     VR_POWER_EN();
   }
 

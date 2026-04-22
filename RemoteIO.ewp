@@ -9341,7 +9341,7 @@
                 </option>
                 <option>
                     <name>OOCOutputFile</name>
-                    <state>RemoteIO_260122_B2_RX.hex</state>
+                    <state>RemoteIO_260422_B2_TX.hex</state>
                 </option>
                 <option>
                     <name>OOCCommandLineProducer</name>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="RfRxV02Host.Maui.MainPage"
+             Title="RFConfiguration">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="12">
+            <Label Text="裝置連接" FontSize="24" FontAttributes="Bold" />
+
+            <Label Text="連接埠" />
+            <Picker x:Name="EndpointPicker" />
+
+            <Label Text="速率" />
+            <Entry x:Name="BaudRateEntry" Text="115200" Keyboard="Numeric" />
+
+            <HorizontalStackLayout Spacing="8">
+                <Button Text="重新整理" Clicked="OnRefreshClicked" />
+                <Button Text="連線" Clicked="OnConnectClicked" />
+                <Button Text="中斷連線" Clicked="OnDisconnectClicked" />
+                <Button Text="重新開機" Clicked="OnResetMcuClicked" />
+            </HorizontalStackLayout>
+
+            <Label x:Name="ConnectionStatus" Text="已斷線" />
+
+            <Button Text="參數設定" Clicked="OnOpenParametersClicked" />
+
+            <Label Text="即時資料" FontAttributes="Bold" />
+            <HorizontalStackLayout Spacing="8">
+                <Button Text="訊號強度" Clicked="OnReadRssiClicked" />
+                <Button Text="電芯電壓" Clicked="OnReadBatClicked" />
+            </HorizontalStackLayout>
+            <Label x:Name="LiveValueLabel" Text="-" />
+
+            <Label Text="即時數據(1點/秒)" FontAttributes="Bold" />
+            <HorizontalStackLayout Spacing="8">
+                <Button Text="啟動即時記錄" Clicked="OnStartTrendClicked" />
+                <Button Text="停止即時記錄" Clicked="OnStopTrendClicked" />
+            </HorizontalStackLayout>
+
+            <Border StrokeShape="RoundRectangle 8" Padding="8">
+                <VerticalStackLayout Spacing="6">
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="6">
+                        <Label Grid.Row="0" Grid.Column="0" Text="Trend A" VerticalTextAlignment="Center" />
+                        <Picker x:Name="TrendAPicker" Grid.Row="0" Grid.Column="1" />
+
+                        <Label Grid.Row="1" Grid.Column="0" Text="Trend B" VerticalTextAlignment="Center" />
+                        <Picker x:Name="TrendBPicker" Grid.Row="1" Grid.Column="1" />
+                    </Grid>
+                    <HorizontalStackLayout Spacing="12">
+                        <Label x:Name="TrendAValueLabel" Text="A: -" TextColor="#4DD0E1" />
+                        <Label x:Name="TrendBValueLabel" Text="B: -" TextColor="#FFB74D" />
+                    </HorizontalStackLayout>
+                    <GraphicsView x:Name="TrendGraphics" HeightRequest="180" BackgroundColor="#101820" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

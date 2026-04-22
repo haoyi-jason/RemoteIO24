@@ -4,6 +4,7 @@
 #include "protocol/bin_protocol/bin_protocol.h"
 
 void binaryProtocolInit();
+void send_packet(uint8_t *data, uint8_t size);
 void bp_send_packet(uint8_t *data, uint8_t size);
 
 #endif

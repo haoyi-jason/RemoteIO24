@@ -1,0 +1,3 @@
+D:\SourceRespo\IAR_SRC_WS\RemoteIO\host\RfRxV02Host.Maui\bin\Release\net9.0-android\publish\com.remoteio.rfrxv02host-Signed.apk
+D:\SourceRespo\IAR_SRC_WS\RemoteIO\host\RfRxV02Host.Maui\bin\Release\net9.0-android\publish\com.remoteio.rfrxv02host.apk
+D:\SourceRespo\IAR_SRC_WS\RemoteIO\host\RfRxV02Host.Maui\bin\Release\net9.0-android\publish\_Microsoft.Android.Resource.Designer.dll

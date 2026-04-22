@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="RfRxV02Host.Maui.ParametersPage"
+             Title="模組參數">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="12">
+            <Label Text="控制參數表" FontAttributes="Bold" />
+            <Border StrokeShape="RoundRectangle 8" Padding="10">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="步進馬達對應表(VR->角度)" FontAttributes="Bold" />
+                    <Grid ColumnDefinitions="Auto,*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="6">
+                        <Label Grid.Row="0" Grid.Column="0" Text="編號" FontAttributes="Bold" />
+                        <Label Grid.Row="0" Grid.Column="1" Text="VR數值(0~4000)" FontAttributes="Bold" />
+                        <Label Grid.Row="0" Grid.Column="2" Text="角度(0~180)" FontAttributes="Bold" />
+
+                        <Label Grid.Row="1" Grid.Column="0" Text="1" />
+                        <Entry x:Name="VrPt1XEntry" Grid.Row="1" Grid.Column="1" Keyboard="Numeric" />
+                        <Entry x:Name="VrPt1YEntry" Grid.Row="1" Grid.Column="2" Keyboard="Numeric" />
+
+                        <Label Grid.Row="2" Grid.Column="0" Text="2" />
+                        <Entry x:Name="VrPt2XEntry" Grid.Row="2" Grid.Column="1" Keyboard="Numeric" />
+                        <Entry x:Name="VrPt2YEntry" Grid.Row="2" Grid.Column="2" Keyboard="Numeric" />
+
+                        <Label Grid.Row="3" Grid.Column="0" Text="3" />
+                        <Entry x:Name="VrPt3XEntry" Grid.Row="3" Grid.Column="1" Keyboard="Numeric" />
+                        <Entry x:Name="VrPt3YEntry" Grid.Row="3" Grid.Column="2" Keyboard="Numeric" />
+
+                        <Label Grid.Row="4" Grid.Column="0" Text="4" />
+                        <Entry x:Name="VrPt4XEntry" Grid.Row="4" Grid.Column="1" Keyboard="Numeric" />
+                        <Entry x:Name="VrPt4YEntry" Grid.Row="4" Grid.Column="2" Keyboard="Numeric" />
+                    </Grid>
+                    <HorizontalStackLayout Spacing="8">
+                        <Button Text="讀取步進參數" Clicked="OnReadVrGroupClicked" />
+                        <Button Text="寫入步進參數" Clicked="OnWriteVrGroupClicked" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border StrokeShape="RoundRectangle 8" Padding="10">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="比例閥對應表(VR->輸出值)" FontAttributes="Bold" />
+                    <Grid ColumnDefinitions="Auto,*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="6">
+                        <Label Grid.Row="0" Grid.Column="0" Text="編號" FontAttributes="Bold" />
+                        <Label Grid.Row="0" Grid.Column="1" Text="VR數值(0~4000)" FontAttributes="Bold" />
+                        <Label Grid.Row="0" Grid.Column="2" Text="輸出數值(0~5000)" FontAttributes="Bold" />
+
+                        <Label Grid.Row="1" Grid.Column="0" Text="1" />
+                        <Entry x:Name="PwmPt1XEntry" Grid.Row="1" Grid.Column="1" Keyboard="Numeric" />
+                        <Entry x:Name="PwmPt1YEntry" Grid.Row="1" Grid.Column="2" Keyboard="Numeric" />
+
+                        <Label Grid.Row="2" Grid.Column="0" Text="2" />
+                        <Entry x:Name="PwmPt2XEntry" Grid.Row="2" Grid.Column="1" Keyboard="Numeric" />
+                        <Entry x:Name="PwmPt2YEntry" Grid.Row="2" Grid.Column="2" Keyboard="Numeric" />
+
+                        <Label Grid.Row="3" Grid.Column="0" Text="3" />
+                        <Entry x:Name="PwmPt3XEntry" Grid.Row="3" Grid.Column="1" Keyboard="Numeric" />
+                        <Entry x:Name="PwmPt3YEntry" Grid.Row="3" Grid.Column="2" Keyboard="Numeric" />
+
+                        <Label Grid.Row="4" Grid.Column="0" Text="4" />
+                        <Entry x:Name="PwmPt4XEntry" Grid.Row="4" Grid.Column="1" Keyboard="Numeric" />
+                        <Entry x:Name="PwmPt4YEntry" Grid.Row="4" Grid.Column="2" Keyboard="Numeric" />
+                    </Grid>
+                    <HorizontalStackLayout Spacing="8">
+                        <Button Text="讀取比例閥參數" Clicked="OnReadPwmGroupClicked" />
+                        <Button Text="寫入比例閥參數" Clicked="OnWritePwmGroupClicked" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border StrokeShape="RoundRectangle 8" Padding="10">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="伺服機/電腦對應表(VR->輸出值)" FontAttributes="Bold" />
+                    <Grid ColumnDefinitions="Auto,*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="6">
+                        <Label Grid.Row="0" Grid.Column="0" Text="編號" FontAttributes="Bold" />
+                        <Label Grid.Row="0" Grid.Column="1" Text="VR數值(0~4000)" FontAttributes="Bold" />
+                        <Label Grid.Row="0" Grid.Column="2" Text="輸出數值(0~5000)" FontAttributes="Bold" />
+
+                        <Label Grid.Row="1" Grid.Column="0" Text="1" />
+                        <Entry x:Name="ServoPt1XEntry" Grid.Row="1" Grid.Column="1" Keyboard="Numeric" />
+                        <Entry x:Name="ServoPt1YEntry" Grid.Row="1" Grid.Column="2" Keyboard="Numeric" />
+
+                        <Label Grid.Row="2" Grid.Column="0" Text="2" />
+                        <Entry x:Name="ServoPt2XEntry" Grid.Row="2" Grid.Column="1" Keyboard="Numeric" />
+                        <Entry x:Name="ServoPt2YEntry" Grid.Row="2" Grid.Column="2" Keyboard="Numeric" />
+
+                        <Label Grid.Row="3" Grid.Column="0" Text="3" />
+                        <Entry x:Name="ServoPt3XEntry" Grid.Row="3" Grid.Column="1" Keyboard="Numeric" />
+                        <Entry x:Name="ServoPt3YEntry" Grid.Row="3" Grid.Column="2" Keyboard="Numeric" />
+
+                        <Label Grid.Row="4" Grid.Column="0" Text="4" />
+                        <Entry x:Name="ServoPt4XEntry" Grid.Row="4" Grid.Column="1" Keyboard="Numeric" />
+                        <Entry x:Name="ServoPt4YEntry" Grid.Row="4" Grid.Column="2" Keyboard="Numeric" />
+                    </Grid>
+                    <HorizontalStackLayout Spacing="8">
+                        <Button Text="讀取伺服/電腦參數" Clicked="OnReadServoGroupClicked" />
+                        <Button Text="寫入伺服/電腦參數" Clicked="OnWriteServoGroupClicked" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <Button Text="讀取所有參數" Clicked="OnReadAllLerpGroupsClicked" />
+
+            <Border StrokeShape="RoundRectangle 8" Padding="10">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="運作模式設定" FontAttributes="Bold" />
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="6">
+                        <Label Grid.Row="0" Grid.Column="0" Text="發射/接收" VerticalTextAlignment="Center" />
+                        <Picker x:Name="OpModeDirectionPicker" Grid.Row="0" Grid.Column="1" SelectedIndexChanged="OnOpModePickerChanged" />
+
+                        <Label Grid.Row="1" Grid.Column="0" Text="控制/過捲" VerticalTextAlignment="Center" />
+                        <Picker x:Name="OpModeControlPicker" Grid.Row="1" Grid.Column="1" SelectedIndexChanged="OnOpModePickerChanged" />
+
+                        <Label Grid.Row="2" Grid.Column="0" Text="油門控制功能" VerticalTextAlignment="Center" />
+                        <Picker x:Name="OpModeGearPicker" Grid.Row="2" Grid.Column="1" SelectedIndexChanged="OnOpModePickerChanged" />
+
+                        <Label x:Name="OpModeTypeLabel" Grid.Row="3" Grid.Column="0" Text="Type" VerticalTextAlignment="Center" />
+                        <Picker x:Name="OpModeTypePicker" Grid.Row="3" Grid.Column="1" SelectedIndexChanged="OnOpModePickerChanged" />
+
+                        <Label Grid.Row="4" Grid.Column="0" Text="控制內碼" VerticalTextAlignment="Center" />
+                        <Label x:Name="OpModeValueLabel" Grid.Row="4" Grid.Column="1" Text="-" FontAttributes="Bold" />
+                    </Grid>
+
+                    <HorizontalStackLayout Spacing="8">
+                        <Button Text="讀取運作模式" Clicked="OnReadOpModeClicked" />
+                        <Button Text="寫入運作模式" Clicked="OnWriteOpModeClicked" />
+                        <Button Text="Use In Single Tool" Clicked="OnUseOpModeInSingleToolClicked" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border StrokeShape="RoundRectangle 8" Padding="10">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="同動控制" FontAttributes="Bold" />
+                    <HorizontalStackLayout Spacing="16">
+                        <CheckBox x:Name="Aux1CheckBox" CheckedChanged="OnAuxMaskCheckedChanged" />
+                        <Label Text="接點9" VerticalTextAlignment="Center" />
+                        <CheckBox x:Name="Aux2CheckBox" CheckedChanged="OnAuxMaskCheckedChanged" />
+                        <Label Text="接點10" VerticalTextAlignment="Center" />
+                    </HorizontalStackLayout>
+                    <Label x:Name="DioOnMaskValueLabel" Text="Mask: 0 (0x0000)" />
+                    <HorizontalStackLayout Spacing="8">
+                        <Button Text="讀取同動控制" Clicked="OnReadDioOnMaskClicked" />
+                        <Button Text="寫入同動控制" Clicked="OnWriteDioOnMaskClicked" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border StrokeShape="RoundRectangle 8" Padding="10">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="電池低壓檢測" FontAttributes="Bold" />
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="6">
+                        <Label Grid.Row="0" Grid.Column="0" Text="電池低壓檢測-下限" VerticalTextAlignment="Center" />
+                        <Entry x:Name="LbtLowBoundEntry" Grid.Row="0" Grid.Column="1" Keyboard="Numeric" Placeholder="0..65535" />
+
+                        <Label Grid.Row="1" Grid.Column="0" Text="電池低壓檢測-上限" VerticalTextAlignment="Center" />
+                        <Entry x:Name="LbtHighBoundEntry" Grid.Row="1" Grid.Column="1" Keyboard="Numeric" Placeholder="0..65535" />
+                    </Grid>
+                    <HorizontalStackLayout Spacing="8">
+                        <Button Text="讀取低壓設定" Clicked="OnReadLbtBoundsClicked" />
+                        <Button Text="寫入低壓設定" Clicked="OnWriteLbtBoundsClicked" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <BoxView HeightRequest="1" Color="#808080" Opacity="0.4" Margin="0,6" />
+            <Label Text="參數讀寫" FontAttributes="Bold" />
+            <Picker x:Name="ParamPicker" ItemDisplayBinding="{Binding PickerDisplayName}" />
+            <Entry x:Name="ValueEntry" Keyboard="Numeric" Placeholder="Value" />
+            <Label x:Name="RangeLabel" Text="Range: -" />
+
+            <HorizontalStackLayout Spacing="8">
+                <Button Text="讀取" Clicked="OnReadClicked" />
+                <Button Text="寫入" Clicked="OnWriteClicked" />
+                <Button Text="全部讀回" Clicked="OnReadAllClicked" />
+            </HorizontalStackLayout>
+
+            <Editor x:Name="ResultEditor" HeightRequest="300" IsReadOnly="True" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

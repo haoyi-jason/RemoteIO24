@@ -1,0 +1,886 @@
+###############################################################################
+#
+# IAR ELF Linker V8.32.3.193/W32 for ARM                  25/Dec/2025  15:58:58
+# Copyright 2007-2019 IAR Systems AB.
+#
+#    Output file  =  
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Exe\RemoteIO.out
+#    Map file     =  
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\List\RemoteIO.map
+#    Command line =  
+#        -f C:\Users\jjyeh\AppData\Local\Temp\EW1407.tmp
+#        (D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\ad7124.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\adxl355_dev.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\app_bq76952.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\at32_flash.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\at32f4xx_flash.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\bin_protocol.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\bmi160.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\board.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\bq76xx_dev.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\chcond.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\chcore.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\chcore_v7m.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\chcoreasm_v7m.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\chdebug.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\chdelegates.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\chdynamic.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\chevents.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\chfactory.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\chmboxes.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\chmemcore.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\chmemheaps.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\chmempools.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\chmsg.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\chmtx.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\chobjcaches.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\chpipes.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\chprintf.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\chregistry.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\chschd.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\chsem.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\chstats.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\chsys.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\chthreads.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\chtm.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\chtrace.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\chvt.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\cmsis_os.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\crc16-ccitt.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\crc8.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\cstartup.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\database.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\evtimer.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_adc.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_adc_lld.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_buffers.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_can.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_can_lld.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_crypto.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_dac.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_efl.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_efl_lld.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_flash.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_gpt.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_gpt_lld.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_i2c.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_i2c_lld.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_i2s.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_i2s_lld.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_icu.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_icu_lld.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_lld.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_mac.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_mmc_spi.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_mmcsd.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_pal.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_pal_lld.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_pwm.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_pwm_lld.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_queues.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_rtc.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_rtc_lld.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_sdc.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_serial.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_serial_lld.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_serial_usb.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_sio.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_spi.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_spi_lld.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_st.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_st_lld.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_trng.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_uart.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_uart_lld.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_usb.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_usb_lld.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_wdg.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\hal_wspi.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\iir.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\memstreams.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\nullstreams.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\nvic.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\nvm.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\osal.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\pca9555.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\shell.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\shell_cmd.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\stm32_dma.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\stm32_isr.o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj\vectors.o
+#        --no_out_extension -o
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Exe\RemoteIO.out
+#        --map
+#        D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\List\RemoteIO.map
+#        --config D:\SourceRespo\IAR_SRC_WS\RemoteIO\ch_at32.icf --semihosting
+#        --entry __iar_program_start --vfe --text_out locale)
+#
+###############################################################################
+
+*******************************************************************************
+*** RUNTIME MODEL ATTRIBUTES
+***
+
+CppFlavor       = *
+__SystemLibrary = DLib
+__dlib_version  = 6
+
+
+*******************************************************************************
+*** HEAP SELECTION
+***
+
+The basic heap was selected because no calls to memory allocation
+functions were found in the application outside of system library
+functions, and there are calls to deallocation functions in the
+application.
+
+
+*******************************************************************************
+*** PLACEMENT SUMMARY
+***
+
+"A0":  place at 0x800'0000 { section .intvec };
+"P1":  place in [from 0x800'0000 to 0x803'ffff] { ro };
+define block IRQSTACK with size = 1K, alignment = 8 { };
+"A1":  place at start of [from 0x2000'0000 to 0x2000'ffff] { block IRQSTACK };
+define block DATABSS with alignment = 8 { rw, zi };
+"P2":  place in [from 0x2000'0000 to 0x2000'ffff] { block DATABSS };
+define block HEAP with size = 4K, alignment = 8 { };
+"P3":  place in [from 0x2000'0000 to 0x2000'ffff] { block HEAP };
+define block SYSHEAP with alignment = 8 { section SYSHEAP };
+"P4":  place in [from 0x2000'0000 to 0x2000'ffff] { block SYSHEAP };
+define block CSTACK with size = 4K, alignment = 8 { section CSTACK };
+"A2":  place at end of [from 0x2000'0000 to 0x2000'ffff] { block CSTACK };
+initialize by copy { rw };
+keep { section .intvec };
+
+No sections matched the following patterns:
+
+  section CSTACK  in block CSTACK
+
+
+  Section            Kind         Address    Size  Object
+  -------            ----         -------    ----  ------
+"A0":                                       0x180
+  .intvec            ro code   0x800'0000   0x180  vectors.o [1]
+                             - 0x800'0180   0x180
+
+"P1", part 1 of 2:                            0x0
+  .rodata            const     0x800'0180     0x0  zero_init3.o [4]
+  .rodata            const     0x800'0180     0x0  copy_init3.o [4]
+
+Absolute sections:                            0x8
+  .rodata            const     0x800'0400     0x8  app_bq76952.o [1]
+                             - 0x800'0408     0x8
+
+"P1", part 2 of 2:                         0x4374
+  .text              ro code   0x800'0408   0x7e2  hal_i2c_lld.o [1]
+  .text              ro code   0x800'0bea    0x3a  zero_init3.o [4]
+  .text              ro code   0x800'0c24    0x68  hal_st.o [1]
+  .text              ro code   0x800'0c8c    0x90  chstats.o [1]
+  .text              ro code   0x800'0d1c   0x17c  chsys.o [1]
+  .text              ro code   0x800'0e98   0x232  chthreads.o [1]
+  .rodata            const     0x800'10ca     0x2  hal_usb.o [1]
+  .text              ro code   0x800'10cc   0x108  chcore_v7m.o [1]
+  .text              ro code   0x800'11d4   0x106  hal_i2c.o [1]
+  .rodata            const     0x800'12da     0x2  hal_usb.o [1]
+  .text              ro code   0x800'12dc   0x278  stm32_dma.o [1]
+  .text              ro code   0x800'1554    0x58  nvic.o [1]
+  .text              ro code   0x800'15ac    0xe6  hal_st_lld.o [1]
+  .rodata            const     0x800'1692     0x2  hal_usb.o [1]
+  .text              ro code   0x800'1694    0xbc  chtm.o [1]
+  .text              ro code   0x800'1750    0x80  chmemcore.o [1]
+  .text              ro code   0x800'17d0    0x20  chmemheaps.o [1]
+  .text              ro code   0x800'17f0    0x78  chfactory.o [1]
+  .text              ro code   0x800'1868   0x29c  chschd.o [1]
+  .text              ro code   0x800'1b04   0x1a8  chvt.o [1]
+  .text              ro code   0x800'1cac   0x174  chmtx.o [1]
+  .text              ro code   0x800'1e20    0x10  chmempools.o [1]
+  .text              ro code   0x800'1e30    0x3e  chcoreasm_v7m.o [1]
+  .text              ro code   0x800'1e6e     0x2  vectors.o [1]
+  .text              ro code   0x800'1e70   0x6be  hal_usb.o [1]
+  .text              ro code   0x800'2530   0x630  hal_usb_lld.o [1]
+  .text              ro code   0x800'2b60   0x468  bq76xx_dev.o [1]
+  .text              ro code   0x800'2fc8    0x34  crc8.o [1]
+  .text              ro code   0x800'2ffc    0xe6  hal_spi.o [1]
+  .text              ro code   0x800'30e4   0x2c4  hal_spi_lld.o [1]
+  .text              ro code   0x800'33a8   0x386  hal_queues.o [1]
+  .text              ro code   0x800'3730    0xa6  ABImemcpy.o [4]
+  .text              ro code   0x800'37d8   0x2b4  app_bq76952.o [1]
+  .text              ro code   0x800'3a8c    0x3c  hal.o [1]
+  .text              ro code   0x800'3ac8   0x12c  hal_pal_lld.o [1]
+  .text              ro code   0x800'3bf4    0xe4  hal_lld.o [1]
+  .text              ro code   0x800'3cd8    0x32  hal_adc.o [1]
+  .text              ro code   0x800'3d0a    0x12  hal_gpt.o [1]
+  .text              ro code   0x800'3d1c   0x100  hal_serial.o [1]
+  .text              ro code   0x800'3e1c     0x2  hal_serial_usb.o [1]
+  .text              ro code   0x800'3e1e     0xa  board.o [1]
+  .text              ro code   0x800'3e28   0x22c  stm32_isr.o [1]
+  .text              ro code   0x800'4054    0x68  hal_adc_lld.o [1]
+  .text              ro code   0x800'40bc    0xa4  hal_gpt_lld.o [1]
+  .text              ro code   0x800'4160    0x60  chevents.o [1]
+  .text              ro code   0x800'41c0   0x178  hal_serial_lld.o [1]
+  Initializer bytes  const     0x800'4338   0x104  <for DATABSS-1>
+  .rodata            const     0x800'443c    0xb0  stm32_dma.o [1]
+  .text              ro code   0x800'44ec    0x90  cstartup.o [1]
+  .text              ro code   0x800'457c    0x22  fpinit_M.o [3]
+  .text              ro code   0x800'45a0    0x1e  cmain.o [4]
+  .text              ro code   0x800'45be     0x4  low_level_init.o [2]
+  .text              ro code   0x800'45c4    0x28  data_init.o [4]
+  .text              ro code   0x800'45ec     0x4  exit.o [2]
+  .text              ro code   0x800'45f0     0xa  cexit.o [4]
+  .text              ro code   0x800'45fc    0x14  exit.o [5]
+  .rodata            const     0x800'4610    0x3c  board.o [1]
+  .text              ro code   0x800'464c    0x2c  copy_init3.o [4]
+  .rodata            const     0x800'4678    0x28  hal_serial.o [1]
+  .rodata            const     0x800'46a0    0x24  hal_usb_lld.o [1]
+  .iar.init_table    const     0x800'46c4    0x24  - Linker created -
+  .rodata            const     0x800'46e8    0x18  chregistry.o [1]
+  .rodata            const     0x800'4700    0x18  chsys.o [1]
+  .rodata            const     0x800'4718    0x14  bq76xx_dev.o [1]
+  .rodata            const     0x800'472c    0x14  hal_pal_lld.o [1]
+  .rodata            const     0x800'4740    0x10  chschd.o [1]
+  .rodata            const     0x800'4750     0xc  bq76xx_dev.o [1]
+  .rodata            const     0x800'475c     0xc  hal_i2c_lld.o [1]
+  .rodata            const     0x800'4768     0xc  hal_spi_lld.o [1]
+  .rodata            const     0x800'4774     0x8  chsys.o [1]
+                             - 0x800'477c  0x4374
+
+"A1":                                       0x400
+  IRQSTACK                    0x2000'0000   0x400  <Block>
+    IRQSTACK         uninit   0x2000'0000   0x400  <Block tail>
+                            - 0x2000'0400   0x400
+
+"P2-P4":                                    0xf98
+  DATABSS                     0x2000'0400   0xf94  <Block>
+    HEAP             rw data  0x2000'0400     0x0  cstartup.o [1]
+    DATABSS-1                 0x2000'0400   0x101  <Init block>
+      .data          inited   0x2000'0400   0x100  crc8.o [1]
+      .data          inited   0x2000'0500     0x1  app_bq76952.o [1]
+    .bss             zero     0x2000'0508    0xd0  chschd.o [1]
+    .bss             zero     0x2000'05d8   0x180  chsys.o [1]
+    .bss             zero     0x2000'0758    0x48  chfactory.o [1]
+    .bss             zero     0x2000'07a0     0x8  chmemcore.o [1]
+    .bss             zero     0x2000'07a8   0x800  chmemcore.o [1]
+    .bss             zero     0x2000'0fa8    0x1c  chmemheaps.o [1]
+    .bss             zero     0x2000'0fc4    0x34  hal_adc_lld.o [1]
+    .bss             zero     0x2000'0ff8    0x10  hal_gpt_lld.o [1]
+    .bss             zero     0x2000'1008    0x10  hal_gpt_lld.o [1]
+    .bss             zero     0x2000'1018    0x38  hal_i2c_lld.o [1]
+    .bss             zero     0x2000'1050    0x38  hal_i2c_lld.o [1]
+    .bss             zero     0x2000'1088    0x80  hal_pal_lld.o [1]
+    .bss             zero     0x2000'1108   0x15c  hal_serial_lld.o [1]
+    .bss             zero     0x2000'1264    0x30  hal_spi_lld.o [1]
+    .bss             zero     0x2000'1294    0x88  hal_usb_lld.o [1]
+    .bss             zero     0x2000'131c    0x10  hal_usb_lld.o [1]
+    .bss             zero     0x2000'132c     0x8  hal_usb_lld.o [1]
+    .bss             zero     0x2000'1334    0x60  stm32_dma.o [1]
+  SYSHEAP                     0x2000'1398     0x0  <Block>
+    SYSHEAP          rw data  0x2000'1398     0x0  cstartup.o [1]
+                            - 0x2000'1398   0xf98
+
+"A2":                                      0x1000
+  CSTACK                      0x2000'f000  0x1000  <Block>
+    CSTACK           uninit   0x2000'f000  0x1000  <Block tail>
+                            - 0x2001'0000  0x1000
+
+Unused ranges:
+
+         From           To      Size
+         ----           --      ----
+   0x800'0180   0x800'03ff     0x280
+   0x800'477c   0x803'ffff  0x3'b884
+  0x2000'1398  0x2000'efff    0xdc68
+
+
+*******************************************************************************
+*** INIT TABLE
+***
+
+          Address      Size
+          -------      ----
+Zero (__iar_zero_init3)
+    1 destination range, total size 0xe8c:
+          0x2000'0508  0xe8c
+
+Copy (__iar_copy_init3)
+    1 source range, total size 0x104 (101% of destination):
+           0x800'4338  0x104
+    1 destination range, total size 0x101:
+          0x2000'0400  0x101
+
+
+
+*******************************************************************************
+*** MODULE SUMMARY
+***
+
+    Module            ro code  ro data  rw data  ro data
+                                                  (abs)
+    ------            -------  -------  -------  -------
+command line/config:
+    ----------------------------------------------------
+    Total:
+
+D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj: [1]
+    app_bq76952.o         692        1        1        8
+    board.o                10       60
+    bq76xx_dev.o        1 128       32
+    chcore_v7m.o          264
+    chcoreasm_v7m.o        62
+    chevents.o             96
+    chfactory.o           120                72
+    chmemcore.o           128             2 056
+    chmemheaps.o           32                28
+    chmempools.o           16
+    chmtx.o               372
+    chregistry.o                    24
+    chschd.o              668       16      208
+    chstats.o             144
+    chsys.o               380       32      384
+    chthreads.o           562
+    chtm.o                188
+    chvt.o                424
+    crc8.o                 52      256      256
+    cstartup.o            144
+    hal.o                  60
+    hal_adc.o              50
+    hal_adc_lld.o         104                52
+    hal_gpt.o              18
+    hal_gpt_lld.o         164                32
+    hal_i2c.o             262
+    hal_i2c_lld.o       2 018       12      112
+    hal_lld.o             228
+    hal_pal_lld.o         300       20      128
+    hal_queues.o          902
+    hal_serial.o          256       40
+    hal_serial_lld.o      376               348
+    hal_serial_usb.o        2
+    hal_spi.o             230
+    hal_spi_lld.o         708       12       48
+    hal_st.o              104
+    hal_st_lld.o          230
+    hal_usb.o           1 726        6
+    hal_usb_lld.o       1 584       36      160
+    nvic.o                 88
+    stm32_dma.o           632      176       96
+    stm32_isr.o           556
+    vectors.o             386
+    ----------------------------------------------------
+    Total:             16 466      723    3 981        8
+
+dl7M_tln.a: [2]
+    exit.o                  4
+    low_level_init.o        4
+    ----------------------------------------------------
+    Total:                  8
+
+m7M_tls.a: [3]
+    fpinit_M.o             34
+    ----------------------------------------------------
+    Total:                 34
+
+rt7M_tl.a: [4]
+    ABImemcpy.o           166
+    cexit.o                10
+    cmain.o                30
+    copy_init3.o           44
+    data_init.o            40
+    zero_init3.o           58
+    ----------------------------------------------------
+    Total:                348
+
+shb_l.a: [5]
+    exit.o                 20
+    ----------------------------------------------------
+    Total:                 20
+
+    Gaps                   14                 7
+    Linker created                  39    5 120
+--------------------------------------------------------
+    Grand Total:       16 890      762    9 108        8
+
+
+*******************************************************************************
+*** ENTRY LIST
+***
+
+Entry                       Address   Size  Type      Object
+-----                       -------   ----  ----      ------
+.iar.init_table$$Base    0x800'46c4          --   Gb  - Linker created -
+.iar.init_table$$Limit   0x800'46e8          --   Gb  - Linker created -
+?main                    0x800'45a1         Code  Gb  cmain.o [4]
+ADCD1                   0x2000'0fc4   0x34  Data  Gb  hal_adc_lld.o [1]
+BuildVersion             0x800'0400    0x8  Data  Gb  app_bq76952.o [1]
+CSTACK$$Base            0x2000'f000          --   Gb  - Linker created -
+CSTACK$$Limit           0x2001'0000          --   Gb  - Linker created -
+DATABSS$$Base           0x2000'0400          --   Gb  - Linker created -
+DATABSS$$Limit          0x2000'1394          --   Gb  - Linker created -
+GPTD1                   0x2000'0ff8   0x10  Data  Gb  hal_gpt_lld.o [1]
+GPTD3                   0x2000'1008   0x10  Data  Gb  hal_gpt_lld.o [1]
+I2CD1                   0x2000'1018   0x38  Data  Gb  hal_i2c_lld.o [1]
+I2CD2                   0x2000'1050   0x38  Data  Gb  hal_i2c_lld.o [1]
+IRQSTACK$$Base          0x2000'0000          --   Gb  - Linker created -
+IRQSTACK$$Limit         0x2000'0400          --   Gb  - Linker created -
+Region$$Table$$Base      0x800'46c4          --   Gb  - Linker created -
+Region$$Table$$Limit     0x800'46e8          --   Gb  - Linker created -
+SD1                     0x2000'1108  0x15c  Data  Gb  hal_serial_lld.o [1]
+SPID1                   0x2000'1264   0x30  Data  Gb  hal_spi_lld.o [1]
+SVC_Handler              0x800'110b   0x1c  Code  Gb  chcore_v7m.o [1]
+SYSHEAP$$Base           0x2000'1398          --   Gb  - Linker created -
+SYSHEAP$$Limit          0x2000'1398          --   Gb  - Linker created -
+USBD1                   0x2000'1294   0x88  Data  Gb  hal_usb_lld.o [1]
+Vector120                0x800'135b   0x12  Code  Gb  stm32_dma.o [1]
+Vector124                0x800'136d   0x12  Code  Gb  stm32_dma.o [1]
+Vector128                0x800'137f   0x12  Code  Gb  stm32_dma.o [1]
+Vector12C                0x800'1391   0x12  Code  Gb  stm32_dma.o [1]
+Vector58                 0x800'3e29   0x2e  Code  Gb  stm32_isr.o [1]
+Vector5C                 0x800'3e57   0x2e  Code  Gb  stm32_isr.o [1]
+Vector60                 0x800'3e85   0x2e  Code  Gb  stm32_isr.o [1]
+Vector64                 0x800'3eb3   0x2e  Code  Gb  stm32_isr.o [1]
+Vector68                 0x800'3ee1   0x2e  Code  Gb  stm32_isr.o [1]
+Vector6C                 0x800'12dd   0x12  Code  Gb  stm32_dma.o [1]
+Vector70                 0x800'12ef   0x12  Code  Gb  stm32_dma.o [1]
+Vector74                 0x800'1301   0x12  Code  Gb  stm32_dma.o [1]
+Vector78                 0x800'1313   0x12  Code  Gb  stm32_dma.o [1]
+Vector7C                 0x800'1325   0x12  Code  Gb  stm32_dma.o [1]
+Vector80                 0x800'1337   0x12  Code  Gb  stm32_dma.o [1]
+Vector84                 0x800'1349   0x12  Code  Gb  stm32_dma.o [1]
+Vector90                 0x800'272b   0x96  Code  Gb  hal_usb_lld.o [1]
+Vector9C                 0x800'3f0f   0x76  Code  Gb  stm32_isr.o [1]
+VectorA4                 0x800'40bd   0x12  Code  Gb  hal_gpt_lld.o [1]
+VectorB0                 0x800'15e1   0x10  Code  Gb  hal_st_lld.o [1]
+VectorB4                 0x800'40cf   0x12  Code  Gb  hal_gpt_lld.o [1]
+VectorBC                 0x800'0865   0x12  Code  Gb  hal_i2c_lld.o [1]
+VectorC0                 0x800'0877   0x2a  Code  Gb  hal_i2c_lld.o [1]
+VectorC4                 0x800'08a1   0x12  Code  Gb  hal_i2c_lld.o [1]
+VectorC8                 0x800'08b3   0x2a  Code  Gb  hal_i2c_lld.o [1]
+VectorD4                 0x800'42ff   0x12  Code  Gb  hal_serial_lld.o [1]
+VectorE0                 0x800'3f85   0x88  Code  Gb  stm32_isr.o [1]
+__NVIC_SetPriority       0x800'10e7   0x24  Code  Lc  chcore_v7m.o [1]
+__NVIC_SetPriorityGrouping
+                         0x800'10cd   0x1a  Code  Lc  chcore_v7m.o [1]
+__aeabi_memcpy           0x800'3731         Code  Gb  ABImemcpy.o [4]
+__aeabi_memcpy4          0x800'3751         Code  Gb  ABImemcpy.o [4]
+__aeabi_memcpy8          0x800'3751         Code  Gb  ABImemcpy.o [4]
+__cmain                  0x800'45a1         Code  Gb  cmain.o [4]
+__early_init             0x800'3e1f    0x8  Code  Gb  board.o [1]
+__exit                   0x800'45fd   0x14  Code  Gb  exit.o [5]
+__heap_base__           0x2000'0400         Data  Gb  cstartup.o [1]
+__heap_end__            0x2000'1398         Data  Gb  cstartup.o [1]
+__iar_copy_init3         0x800'464d   0x2c  Code  Gb  copy_init3.o [4]
+__iar_data_init3         0x800'45c5   0x28  Code  Gb  data_init.o [4]
+__iar_init_vfp           0x800'457d         Code  Gb  fpinit_M.o [3]
+__iar_program_start      0x800'44ed         Code  Gb  cstartup.o [1]
+__iar_zero_init3         0x800'0beb   0x3a  Code  Gb  zero_init3.o [4]
+__low_level_init         0x800'45bf    0x4  Code  Gb  low_level_init.o [2]
+__main_stack_base__ {Abs}
+                        0x2000'0000         Data  Gb  <internal module>
+__main_stack_end__ {Abs}
+                        0x2000'0400         Data  Gb  <internal module>
+__main_thread_stack_base__ {Abs}
+                        0x2000'0400         Data  Gb  <internal module>
+__process_stack_base__ {Abs}
+                        0x2000'0400         Data  Gb  <internal module>
+__process_stack_end__ {Abs}
+                        0x2000'1400         Data  Gb  <internal module>
+__vector_table           0x800'0000         Data  Gb  vectors.o [1]
+_call_main               0x800'45ad         Code  Gb  cmain.o [4]
+_core_init               0x800'176d    0xe  Code  Gb  chmemcore.o [1]
+_core_init::static_heap
+                        0x2000'07a8  0x800  Data  Lc  chmemcore.o [1]
+_ctl                     0x800'3d95   0x10  Code  Lc  hal_serial.o [1]
+_exit                    0x800'45f1         Code  Gb  cexit.o [4]
+_factory_init            0x800'180b   0x56  Code  Gb  chfactory.o [1]
+_get                     0x800'3d5d    0xe  Code  Lc  hal_serial.o [1]
+_gett                    0x800'3d77    0xa  Code  Lc  hal_serial.o [1]
+_heap_init               0x800'17d1   0x18  Code  Gb  chmemheaps.o [1]
+_idle_thread             0x800'0e2b    0x2  Code  Lc  chsys.o [1]
+_main                    0x800'45bb         Code  Gb  cmain.o [4]
+_oslib_init              0x800'0e1b   0x10  Code  Lc  chsys.o [1]
+_pal_events             0x2000'1088   0x80  Data  Gb  hal_pal_lld.o [1]
+_pal_lld_init            0x800'3ac9   0x82  Code  Gb  hal_pal_lld.o [1]
+_pal_lld_setgroupmode    0x800'3b4b   0x60  Code  Gb  hal_pal_lld.o [1]
+_pal_lld_setgroupmode::cfgtab
+                         0x800'472c   0x14  Data  Lc  hal_pal_lld.o [1]
+_port_exit_from_isr      0x800'1e6b         Code  Gb  chcoreasm_v7m.o [1]
+_port_irq_epilogue       0x800'1161   0x48  Code  Gb  chcore_v7m.o [1]
+_port_switch             0x800'1e31         Code  Gb  chcoreasm_v7m.o [1]
+_port_switch_from_isr    0x800'1e5f         Code  Gb  chcoreasm_v7m.o [1]
+_port_thread_start       0x800'1e49         Code  Gb  chcoreasm_v7m.o [1]
+_put                     0x800'3d4d   0x10  Code  Lc  hal_serial.o [1]
+_putt                    0x800'3d6b    0xc  Code  Lc  hal_serial.o [1]
+_read                    0x800'3d3f    0xe  Code  Lc  hal_serial.o [1]
+_readt                   0x800'3d8b    0xa  Code  Lc  hal_serial.o [1]
+_scheduler_init          0x800'18d7   0x14  Code  Gb  chschd.o [1]
+_stats_ctxswc            0x800'0cc9   0x1e  Code  Gb  chstats.o [1]
+_stats_increase_irq      0x800'0caf   0x1a  Code  Gb  chstats.o [1]
+_stats_init              0x800'0c8d   0x22  Code  Gb  chstats.o [1]
+_stats_start_measure_crit_isr
+                         0x800'0cfb    0xa  Code  Gb  chstats.o [1]
+_stats_start_measure_crit_thd
+                         0x800'0ce7    0xa  Code  Gb  chstats.o [1]
+_stats_stop_measure_crit_isr
+                         0x800'0d05    0xa  Code  Gb  chstats.o [1]
+_stats_stop_measure_crit_thd
+                         0x800'0cf1    0xa  Code  Gb  chstats.o [1]
+_stm32_dma_streams       0x800'443c   0xb0  Data  Gb  stm32_dma.o [1]
+_thread_init             0x800'0f29   0x50  Code  Gb  chthreads.o [1]
+_thread_memfill          0x800'0f79    0xc  Code  Gb  chthreads.o [1]
+_tm_init                 0x800'16d1   0x30  Code  Gb  chtm.o [1]
+_unhandled_exception     0x800'1e6f         Code  Gb  vectors.o [1]
+_usb_ep0in               0x800'23ed   0xbe  Code  Gb  hal_usb.o [1]
+_usb_ep0out              0x800'24ab   0x84  Code  Gb  hal_usb.o [1]
+_usb_ep0setup            0x800'22e9  0x104  Code  Gb  hal_usb.o [1]
+_usb_reset               0x800'2251   0x54  Code  Gb  hal_usb.o [1]
+_usb_suspend             0x800'22a5   0x2a  Code  Gb  hal_usb.o [1]
+_usb_wakeup              0x800'22cf   0x1a  Code  Gb  hal_usb.o [1]
+_vt_init                 0x800'1b3d   0x16  Code  Gb  chvt.o [1]
+_write                   0x800'3d31    0xe  Code  Lc  hal_serial.o [1]
+_writet                  0x800'3d81    0xa  Code  Lc  hal_serial.o [1]
+active_status            0x800'12da    0x2  Data  Lc  hal_usb.o [1]
+adcInit                  0x800'3ce1    0x8  Code  Gb  hal_adc.o [1]
+adcObjectInit            0x800'3ce9   0x22  Code  Gb  hal_adc.o [1]
+adc_lld_init             0x800'4055   0x54  Code  Gb  hal_adc_lld.o [1]
+boardInit                0x800'3e27    0x2  Code  Gb  board.o [1]
+bq76xx_ReadDataFlash     0x800'2d83   0x18  Code  Lc  bq76xx_dev.o [1]
+bq76xx_WriteDataFlash    0x800'2d9b   0x62  Code  Lc  bq76xx_dev.o [1]
+bq76xx_direct_command_read
+                         0x800'2e35   0x3a  Code  Lc  bq76xx_dev.o [1]
+bq76xx_direct_command_write
+                         0x800'2dfd   0x38  Code  Lc  bq76xx_dev.o [1]
+bq76xx_i2c_check         0x800'2fb1   0x18  Code  Gb  bq76xx_dev.o [1]
+bq76xx_i2c_ram_read      0x800'2b6d   0xbc  Code  Lc  bq76xx_dev.o [1]
+bq76xx_protocol_transaction
+                         0x800'2c29   0x80  Code  Lc  bq76xx_dev.o [1]
+bq76xx_read_data         0x800'2d41   0x42  Code  Lc  bq76xx_dev.o [1]
+bq76xx_spi_check         0x800'2f9d   0x14  Code  Gb  bq76xx_dev.o [1]
+bq76xx_spi_to_iic        0x800'2e97   0xee  Code  Gb  bq76xx_dev.o [1]
+bq76xx_subcommand        0x800'2e6f    0xa  Code  Lc  bq76xx_dev.o [1]
+bq76xx_subcommand_read   0x800'2e79   0x1e  Code  Lc  bq76xx_dev.o [1]
+bq76xx_write_address     0x800'2ca9   0x2c  Code  Lc  bq76xx_dev.o [1]
+bq76xx_write_checksum    0x800'2d15   0x16  Code  Lc  bq76xx_dev.o [1]
+bq76xx_write_data        0x800'2cd5   0x40  Code  Lc  bq76xx_dev.o [1]
+bq76xx_write_length      0x800'2d2b   0x16  Code  Lc  bq76xx_dev.o [1]
+ch                      0x2000'0508   0xd0  Data  Gb  chschd.o [1]
+chCoreAllocAlignedI      0x800'17f1    0xa  Code  Lc  chfactory.o [1]
+chCoreAllocFromTop       0x800'17a9   0x20  Code  Gb  chmemcore.o [1]
+chCoreAllocFromTopI      0x800'177b   0x2e  Code  Gb  chmemcore.o [1]
+chEvtBroadcastFlagsI     0x800'4161   0x2a  Code  Gb  chevents.o [1]
+chEvtObjectInit          0x800'3d1d    0x4  Code  Lc  hal_serial.o [1]
+chEvtSignalI             0x800'418b   0x36  Code  Gb  chevents.o [1]
+chMtxLock                0x800'1d35   0x14  Code  Gb  chmtx.o [1]
+chMtxLockS               0x800'1d49   0x74  Code  Gb  chmtx.o [1]
+chMtxObjectInit          0x800'1d25   0x10  Code  Gb  chmtx.o [1]
+chMtxQueueNotEmptyS      0x800'1d1d    0x8  Code  Lc  chmtx.o [1]
+chMtxUnlock              0x800'1dbd   0x60  Code  Gb  chmtx.o [1]
+chPoolObjectInit         0x800'17fb    0xc  Code  Lc  chfactory.o [1]
+chPoolObjectInitAligned
+                         0x800'1e21   0x10  Code  Gb  chmempools.o [1]
+chSchDoReschedule        0x800'1ab3   0x42  Code  Gb  chschd.o [1]
+chSchDoRescheduleAhead   0x800'1a71   0x42  Code  Gb  chschd.o [1]
+chSchGoSleepS            0x800'192b   0x3e  Code  Gb  chschd.o [1]
+chSchGoSleepTimeoutS     0x800'19b9   0x44  Code  Gb  chschd.o [1]
+chSchIsPreemptionRequired
+                         0x800'1a59   0x18  Code  Gb  chschd.o [1]
+chSchIsRescRequiredI     0x800'188b   0x18  Code  Lc  chschd.o [1]
+chSchReadyAheadI         0x800'190b   0x20  Code  Gb  chschd.o [1]
+chSchReadyI              0x800'18eb   0x20  Code  Gb  chschd.o [1]
+chSchRescheduleS         0x800'1a49   0x10  Code  Gb  chschd.o [1]
+chSchWakeupS             0x800'19fd   0x4c  Code  Gb  chschd.o [1]
+chSemFastSignalI         0x800'18cf    0x8  Code  Lc  chschd.o [1]
+chSysEnable              0x800'0d43    0xa  Code  Lc  chsys.o [1]
+chSysHalt                0x800'0e79    0x8  Code  Gb  chsys.o [1]
+chSysInit                0x800'0e2d   0x4c  Code  Gb  chsys.o [1]
+chSysInit{3}::idle_descriptor
+                         0x800'4700   0x18  Data  Lc  chsys.o [1]
+chSysLock                0x800'1751    0xe  Code  Lc  chmemcore.o [1]
+chSysLock                0x800'1d01    0xe  Code  Lc  chmtx.o [1]
+chSysLock                0x800'0ee9    0xe  Code  Lc  chthreads.o [1]
+chSysLock                0x800'11d5    0xe  Code  Lc  hal_i2c.o [1]
+chSysLock                0x800'042d    0xe  Code  Lc  hal_i2c_lld.o [1]
+chSysLock                0x800'33af    0xe  Code  Lc  hal_queues.o [1]
+chSysLock                0x800'2ffd    0xe  Code  Lc  hal_spi.o [1]
+chSysLockFromISR         0x800'18a3    0xe  Code  Lc  chschd.o [1]
+chSysLockFromISR         0x800'0d4d    0xe  Code  Lc  chsys.o [1]
+chSysLockFromISR         0x800'0449    0xe  Code  Lc  hal_i2c_lld.o [1]
+chSysLockFromISR         0x800'41c1    0xe  Code  Lc  hal_serial_lld.o [1]
+chSysLockFromISR         0x800'30e5    0xe  Code  Lc  hal_spi_lld.o [1]
+chSysLockFromISR         0x800'15ad    0xe  Code  Lc  hal_st_lld.o [1]
+chSysLockFromISR         0x800'1e71    0xe  Code  Lc  hal_usb.o [1]
+chSysTimerHandlerI       0x800'0e81    0x8  Code  Gb  chsys.o [1]
+chSysUnlock              0x800'175f    0xe  Code  Lc  chmemcore.o [1]
+chSysUnlock              0x800'1d0f    0xe  Code  Lc  chmtx.o [1]
+chSysUnlock              0x800'0ef7    0xe  Code  Lc  chthreads.o [1]
+chSysUnlock              0x800'11e3    0xe  Code  Lc  hal_i2c.o [1]
+chSysUnlock              0x800'043b    0xe  Code  Lc  hal_i2c_lld.o [1]
+chSysUnlock              0x800'33bd    0xe  Code  Lc  hal_queues.o [1]
+chSysUnlock              0x800'300b    0xe  Code  Lc  hal_spi.o [1]
+chSysUnlockFromISR       0x800'18b1    0xe  Code  Lc  chschd.o [1]
+chSysUnlockFromISR       0x800'0d5b    0xe  Code  Lc  chsys.o [1]
+chSysUnlockFromISR       0x800'0457    0xe  Code  Lc  hal_i2c_lld.o [1]
+chSysUnlockFromISR       0x800'41cf    0xe  Code  Lc  hal_serial_lld.o [1]
+chSysUnlockFromISR       0x800'30f3    0xe  Code  Lc  hal_spi_lld.o [1]
+chSysUnlockFromISR       0x800'15bb    0xe  Code  Lc  hal_st_lld.o [1]
+chSysUnlockFromISR       0x800'1e7f    0xe  Code  Lc  hal_usb.o [1]
+chTMChainMeasurementToX
+                         0x800'1737   0x12  Code  Gb  chtm.o [1]
+chTMObjectInit           0x800'1701   0x1c  Code  Gb  chtm.o [1]
+chTMStartMeasurementX    0x800'171d    0x8  Code  Gb  chtm.o [1]
+chTMStopMeasurementX     0x800'1725   0x12  Code  Gb  chtm.o [1]
+chThdCreate              0x800'0fb5   0x2a  Code  Gb  chthreads.o [1]
+chThdCreateSuspendedI    0x800'0f85   0x30  Code  Gb  chthreads.o [1]
+chThdDequeueNextI        0x800'10b1   0x1a  Code  Gb  chthreads.o [1]
+chThdDoDequeueNextI      0x800'0f19   0x10  Code  Lc  chthreads.o [1]
+chThdEnqueueTimeoutS     0x800'1085   0x22  Code  Gb  chthreads.o [1]
+chThdExit                0x800'0fdf   0x10  Code  Gb  chthreads.o [1]
+chThdExitS               0x800'0fef   0x48  Code  Gb  chthreads.o [1]
+chThdGetSelfX            0x800'0f05    0x8  Code  Lc  chthreads.o [1]
+chThdQueueObjectInit     0x800'33cb    0x8  Code  Lc  hal_queues.o [1]
+chThdResumeI             0x800'106d   0x18  Code  Gb  chthreads.o [1]
+chThdSleep               0x800'1037   0x14  Code  Gb  chthreads.o [1]
+chThdSleepS              0x800'0f0d    0xc  Code  Lc  chthreads.o [1]
+chThdSuspendTimeoutS     0x800'104b   0x22  Code  Gb  chthreads.o [1]
+chTimeAddX               0x800'0d1d    0x6  Code  Lc  chsys.o [1]
+chTimeAddX               0x800'1b05    0x6  Code  Lc  chvt.o [1]
+chTimeAddX               0x800'0409    0x6  Code  Lc  hal_i2c_lld.o [1]
+chTimeDiffX              0x800'0d23    0x6  Code  Lc  chsys.o [1]
+chTimeDiffX              0x800'1b0b    0x6  Code  Lc  chvt.o [1]
+chTimeIsInRangeX         0x800'040f   0x16  Code  Lc  hal_i2c_lld.o [1]
+chVTDoResetI             0x800'1c0f   0x9a  Code  Gb  chvt.o [1]
+chVTDoSetI               0x800'1b53   0xbc  Code  Gb  chvt.o [1]
+chVTDoTickI              0x800'0d71   0xaa  Code  Lc  chsys.o [1]
+chVTGetSystemTimeX       0x800'0d69    0x8  Code  Lc  chsys.o [1]
+chVTGetSystemTimeX       0x800'1b35    0x8  Code  Lc  chvt.o [1]
+chVTGetSystemTimeX       0x800'0465    0x8  Code  Lc  hal_i2c_lld.o [1]
+chVTIsArmedI             0x800'18bf   0x10  Code  Lc  chschd.o [1]
+ch_debug                 0x800'46e8   0x18  Data  Gb  chregistry.o [1]
+ch_factory              0x2000'0758   0x48  Data  Gb  chfactory.o [1]
+ch_idle_thread_wa       0x2000'05d8  0x180  Data  Gb  chsys.o [1]
+ch_memcore              0x2000'07a0    0x8  Data  Gb  chmemcore.o [1]
+crc8_smbus_single_byte   0x800'2feb    0xe  Code  Gb  crc8.o [1]
+crc8_smbus_table         0x800'2fc9   0x22  Code  Gb  crc8.o [1]
+crc_table_smbus         0x2000'0400  0x100  Data  Gb  crc8.o [1]
+cs_delay                 0x800'2b61    0xc  Code  Lc  bq76xx_dev.o [1]
+default_handler          0x800'1ed7  0x2bc  Code  Lc  hal_usb.o [1]
+default_heap            0x2000'0fa8   0x1c  Data  Lc  chmemheaps.o [1]
+dma                     0x2000'1334   0x60  Data  Lc  stm32_dma.o [1]
+dmaInit                  0x800'13a3   0x3a  Code  Gb  stm32_dma.o [1]
+dmaServeInterrupt        0x800'14db   0x3e  Code  Gb  stm32_dma.o [1]
+dmaStreamAllocI          0x800'13dd   0x9a  Code  Gb  stm32_dma.o [1]
+dmaStreamFreeI           0x800'1477   0x64  Code  Gb  stm32_dma.o [1]
+dyn_list_init            0x800'1807    0x4  Code  Lc  chfactory.o [1]
+ep0_state               0x2000'131c   0x10  Data  Lc  hal_usb_lld.o [1]
+ep0config                0x800'46a0   0x24  Data  Lc  hal_usb_lld.o [1]
+ep0setup_buffer         0x2000'132c    0x8  Data  Lc  hal_usb_lld.o [1]
+exit                     0x800'45ed    0x4  Code  Gb  exit.o [2]
+get_hword                0x800'1e9d   0x10  Code  Lc  hal_usb.o [1]
+gptInit                  0x800'3d0b    0x8  Code  Gb  hal_gpt.o [1]
+gptObjectInit            0x800'3d13    0xa  Code  Gb  hal_gpt.o [1]
+gpt_lld_init             0x800'40e1   0x18  Code  Gb  hal_gpt_lld.o [1]
+gpt_lld_serve_interrupt
+                         0x800'4123   0x3e  Code  Gb  hal_gpt_lld.o [1]
+gpt_lld_stop_timer       0x800'4109   0x1a  Code  Gb  hal_gpt_lld.o [1]
+halInit                  0x800'3a8f   0x36  Code  Gb  hal.o [1]
+hal_lld_backup_domain_init
+                         0x800'3bf5    0xc  Code  Lc  hal_lld.o [1]
+hal_lld_init             0x800'3c01   0x46  Code  Gb  hal_lld.o [1]
+halted_status            0x800'1692    0x2  Data  Lc  hal_usb.o [1]
+i2cAcquireBus            0x800'12c7    0xa  Code  Gb  hal_i2c.o [1]
+i2cInit                  0x800'1219    0x8  Code  Gb  hal_i2c.o [1]
+i2cMasterTransmitTimeout
+                         0x800'126b   0x5c  Code  Gb  hal_i2c.o [1]
+i2cObjectInit            0x800'1221   0x12  Code  Gb  hal_i2c.o [1]
+i2cReleaseBus            0x800'12d1    0xa  Code  Gb  hal_i2c.o [1]
+i2cStart                 0x800'1233   0x1c  Code  Gb  hal_i2c.o [1]
+i2cStop                  0x800'124f   0x1c  Code  Gb  hal_i2c.o [1]
+i2c_lld_abort_operation
+                         0x800'04c5   0x56  Code  Lc  hal_i2c_lld.o [1]
+i2c_lld_init             0x800'08dd   0x34  Code  Gb  hal_i2c_lld.o [1]
+i2c_lld_master_transmit_timeout
+                         0x800'0ab9  0x132  Code  Gb  hal_i2c_lld.o [1]
+i2c_lld_serve_error_interrupt
+                         0x800'0789   0xdc  Code  Lc  hal_i2c_lld.o [1]
+i2c_lld_serve_event_interrupt
+                         0x800'05dd  0x114  Code  Lc  hal_i2c_lld.o [1]
+i2c_lld_serve_rx_end_irq
+                         0x800'06f1   0x5e  Code  Lc  hal_i2c_lld.o [1]
+i2c_lld_serve_tx_end_irq
+                         0x800'074f   0x3a  Code  Lc  hal_i2c_lld.o [1]
+i2c_lld_set_clock        0x800'051b   0x8c  Code  Lc  hal_i2c_lld.o [1]
+i2c_lld_set_opmode       0x800'05a7   0x36  Code  Lc  hal_i2c_lld.o [1]
+i2c_lld_start            0x800'0911  0x112  Code  Gb  hal_i2c_lld.o [1]
+i2c_lld_stop             0x800'0a23   0x62  Code  Gb  hal_i2c_lld.o [1]
+i2ccfg                   0x800'4750    0xc  Data  Lc  bq76xx_dev.o [1]
+iqGetTimeout             0x800'3555   0x56  Code  Gb  hal_queues.o [1]
+iqObjectInit             0x800'34df   0x30  Code  Gb  hal_queues.o [1]
+iqPutI                   0x800'350f   0x46  Code  Gb  hal_queues.o [1]
+iqReadTimeout            0x800'35ab   0x5c  Code  Gb  hal_queues.o [1]
+iq_read                  0x800'33fb   0x6e  Code  Lc  hal_queues.o [1]
+irqInit                  0x800'4019   0x3c  Code  Gb  stm32_isr.o [1]
+list_init                0x800'0e99    0x4  Code  Lc  chthreads.o [1]
+list_notempty            0x800'0e9d   0x10  Code  Lc  chthreads.o [1]
+list_remove              0x800'0ec3    0xa  Code  Lc  chthreads.o [1]
+main                     0x800'37d9  0x2b4  Code  Gb  app_bq76952.o [1]
+main::comm_type         0x2000'0500    0x1  Data  Lc  app_bq76952.o [1]
+notify1                  0x800'42f3    0xc  Code  Lc  hal_serial_lld.o [1]
+nvicDisableVector        0x800'1583   0x1a  Code  Gb  nvic.o [1]
+nvicEnableVector         0x800'1555   0x2e  Code  Gb  nvic.o [1]
+oqGetI                   0x800'368b   0x48  Code  Gb  hal_queues.o [1]
+oqObjectInit             0x800'3607   0x2e  Code  Gb  hal_queues.o [1]
+oqPutTimeout             0x800'3635   0x56  Code  Gb  hal_queues.o [1]
+oqWriteTimeout           0x800'36d3   0x5c  Code  Gb  hal_queues.o [1]
+oq_write                 0x800'3469   0x76  Code  Lc  hal_queues.o [1]
+osalEventBroadcastFlagsI
+                         0x800'3d29    0x8  Code  Lc  hal_serial.o [1]
+osalEventBroadcastFlagsI
+                         0x800'41ed    0x8  Code  Lc  hal_serial_lld.o [1]
+osalEventObjectInit      0x800'3d21    0x8  Code  Lc  hal_serial.o [1]
+osalInit                 0x800'3a8d    0x2  Code  Lc  hal.o [1]
+osalMutexLock            0x800'1209    0x8  Code  Lc  hal_i2c.o [1]
+osalMutexLock            0x800'303d    0x8  Code  Lc  hal_spi.o [1]
+osalMutexObjectInit      0x800'3cd9    0x8  Code  Lc  hal_adc.o [1]
+osalMutexObjectInit      0x800'1201    0x8  Code  Lc  hal_i2c.o [1]
+osalMutexObjectInit      0x800'3035    0x8  Code  Lc  hal_spi.o [1]
+osalMutexUnlock          0x800'1211    0x8  Code  Lc  hal_i2c.o [1]
+osalMutexUnlock          0x800'3045    0x8  Code  Lc  hal_spi.o [1]
+osalOsGetSystemTimeX     0x800'0495    0x8  Code  Lc  hal_i2c_lld.o [1]
+osalOsTimerHandlerI      0x800'15d9    0x8  Code  Lc  hal_st_lld.o [1]
+osalSysHalt              0x800'046d    0x8  Code  Lc  hal_i2c_lld.o [1]
+osalSysHalt              0x800'3101    0x8  Code  Lc  hal_spi_lld.o [1]
+osalSysLock              0x800'11f1    0x8  Code  Lc  hal_i2c.o [1]
+osalSysLock              0x800'0475    0x8  Code  Lc  hal_i2c_lld.o [1]
+osalSysLock              0x800'33d3    0x8  Code  Lc  hal_queues.o [1]
+osalSysLock              0x800'3019    0x8  Code  Lc  hal_spi.o [1]
+osalSysLockFromISR       0x800'0485    0x8  Code  Lc  hal_i2c_lld.o [1]
+osalSysLockFromISR       0x800'41dd    0x8  Code  Lc  hal_serial_lld.o [1]
+osalSysLockFromISR       0x800'3109    0x8  Code  Lc  hal_spi_lld.o [1]
+osalSysLockFromISR       0x800'15c9    0x8  Code  Lc  hal_st_lld.o [1]
+osalSysLockFromISR       0x800'1e8d    0x8  Code  Lc  hal_usb.o [1]
+osalSysUnlock            0x800'11f9    0x8  Code  Lc  hal_i2c.o [1]
+osalSysUnlock            0x800'047d    0x8  Code  Lc  hal_i2c_lld.o [1]
+osalSysUnlock            0x800'33db    0x8  Code  Lc  hal_queues.o [1]
+osalSysUnlock            0x800'3021    0x8  Code  Lc  hal_spi.o [1]
+osalSysUnlockFromISR     0x800'048d    0x8  Code  Lc  hal_i2c_lld.o [1]
+osalSysUnlockFromISR     0x800'41e5    0x8  Code  Lc  hal_serial_lld.o [1]
+osalSysUnlockFromISR     0x800'3111    0x8  Code  Lc  hal_spi_lld.o [1]
+osalSysUnlockFromISR     0x800'15d1    0x8  Code  Lc  hal_st_lld.o [1]
+osalSysUnlockFromISR     0x800'1e95    0x8  Code  Lc  hal_usb.o [1]
+osalThreadDequeueNextI   0x800'33f3    0x8  Code  Lc  hal_queues.o [1]
+osalThreadEnqueueTimeoutS
+                         0x800'33eb    0x8  Code  Lc  hal_queues.o [1]
+osalThreadQueueObjectInit
+                         0x800'33e3    0x8  Code  Lc  hal_queues.o [1]
+osalThreadResumeI        0x800'04bd    0x8  Code  Lc  hal_i2c_lld.o [1]
+osalThreadResumeI        0x800'3119    0x8  Code  Lc  hal_spi_lld.o [1]
+osalThreadSuspendS       0x800'3029    0xc  Code  Lc  hal_spi.o [1]
+osalThreadSuspendTimeoutS
+                         0x800'04b5    0x8  Code  Lc  hal_i2c_lld.o [1]
+osalTimeAddX             0x800'049d    0xa  Code  Lc  hal_i2c_lld.o [1]
+osalTimeIsInRangeX       0x800'04a7    0xe  Code  Lc  hal_i2c_lld.o [1]
+pal_default_config       0x800'4610   0x3c  Data  Gb  board.o [1]
+port_init                0x800'1127   0x3a  Code  Gb  chcore_v7m.o [1]
+port_timer_get_time      0x800'0d3b    0x8  Code  Lc  chsys.o [1]
+port_timer_get_time      0x800'1b2d    0x8  Code  Lc  chvt.o [1]
+port_timer_get_time      0x800'0425    0x8  Code  Lc  hal_i2c_lld.o [1]
+port_timer_set_alarm     0x800'0d31    0xa  Code  Lc  chsys.o [1]
+port_timer_set_alarm     0x800'1b23    0xa  Code  Lc  chvt.o [1]
+port_timer_start_alarm   0x800'1b11    0xa  Code  Lc  chvt.o [1]
+port_timer_stop_alarm    0x800'0d29    0x8  Code  Lc  chsys.o [1]
+port_timer_stop_alarm    0x800'1b1b    0x8  Code  Lc  chvt.o [1]
+queue_dequeue            0x800'1cf3    0xe  Code  Lc  chmtx.o [1]
+queue_dequeue            0x800'187d    0xe  Code  Lc  chschd.o [1]
+queue_fifo_remove        0x800'1ce5    0xe  Code  Lc  chmtx.o [1]
+queue_fifo_remove        0x800'186f    0xe  Code  Lc  chschd.o [1]
+queue_fifo_remove        0x800'0edb    0xe  Code  Lc  chthreads.o [1]
+queue_init               0x800'1cad    0x6  Code  Lc  chmtx.o [1]
+queue_init               0x800'1869    0x6  Code  Lc  chschd.o [1]
+queue_init               0x800'0ead    0x6  Code  Lc  chthreads.o [1]
+queue_init               0x800'33a9    0x6  Code  Lc  hal_queues.o [1]
+queue_insert             0x800'0ecd    0xe  Code  Lc  chthreads.o [1]
+queue_notempty           0x800'1cb3   0x10  Code  Lc  chmtx.o [1]
+queue_notempty           0x800'0eb3   0x10  Code  Lc  chthreads.o [1]
+queue_prio_insert        0x800'1cc3   0x22  Code  Lc  chmtx.o [1]
+sdIncomingDataI          0x800'3ded   0x30  Code  Gb  hal_serial.o [1]
+sdInit                   0x800'3da5    0x8  Code  Gb  hal_serial.o [1]
+sdObjectInit             0x800'3dad   0x3c  Code  Gb  hal_serial.o [1]
+sd_lld_init              0x800'4311   0x16  Code  Gb  hal_serial_lld.o [1]
+sduInit                  0x800'3e1d    0x2  Code  Gb  hal_serial_usb.o [1]
+serve_interrupt          0x800'4223   0xd0  Code  Lc  hal_serial_lld.o [1]
+set_address              0x800'1ead   0x2a  Code  Lc  hal_usb.o [1]
+set_error                0x800'41f5   0x2e  Code  Lc  hal_serial_lld.o [1]
+spiAcquireBus            0x800'30cf    0xa  Code  Gb  hal_spi.o [1]
+spiExchange              0x800'30a3   0x2c  Code  Gb  hal_spi.o [1]
+spiInit                  0x800'304d    0x8  Code  Gb  hal_spi.o [1]
+spiObjectInit            0x800'3055   0x16  Code  Gb  hal_spi.o [1]
+spiReleaseBus            0x800'30d9    0xa  Code  Gb  hal_spi.o [1]
+spiStart                 0x800'306b   0x1c  Code  Gb  hal_spi.o [1]
+spiStop                  0x800'3087   0x1c  Code  Gb  hal_spi.o [1]
+spi_lld_exchange         0x800'333b   0x56  Code  Gb  hal_spi_lld.o [1]
+spi_lld_init             0x800'31f7   0x24  Code  Gb  hal_spi_lld.o [1]
+spi_lld_serve_rx_interrupt
+                         0x800'3121   0xc8  Code  Lc  hal_spi_lld.o [1]
+spi_lld_serve_tx_interrupt
+                         0x800'31e9    0xe  Code  Lc  hal_spi_lld.o [1]
+spi_lld_start            0x800'321b   0xd6  Code  Gb  hal_spi_lld.o [1]
+spi_lld_stop             0x800'32f1   0x4a  Code  Gb  hal_spi_lld.o [1]
+spicfg                   0x800'4718   0x14  Data  Lc  bq76xx_dev.o [1]
+stGetCounter             0x800'0c85    0x8  Code  Gb  hal_st.o [1]
+stInit                   0x800'0c61    0x8  Code  Gb  hal_st.o [1]
+stSetAlarm               0x800'0c7b    0xa  Code  Gb  hal_st.o [1]
+stStartAlarm             0x800'0c69    0xa  Code  Gb  hal_st.o [1]
+stStopAlarm              0x800'0c73    0x8  Code  Gb  hal_st.o [1]
+st_lld_get_counter       0x800'0c25    0x8  Code  Lc  hal_st.o [1]
+st_lld_init              0x800'15f1   0x58  Code  Gb  hal_st_lld.o [1]
+st_lld_serve_interrupt   0x800'166d   0x26  Code  Gb  hal_st_lld.o [1]
+st_lld_set_alarm         0x800'0c49    0x8  Code  Lc  hal_st.o [1]
+st_lld_start_alarm       0x800'0c2d   0x14  Code  Lc  hal_st.o [1]
+st_lld_stop_alarm        0x800'0c41    0x8  Code  Lc  hal_st.o [1]
+stm32_clock_init         0x800'3c47   0x70  Code  Gb  hal_lld.o [1]
+tm_stop                  0x800'1695   0x3c  Code  Lc  chtm.o [1]
+usbDisableEndpointsI     0x800'21c7   0x2a  Code  Gb  hal_usb.o [1]
+usbInit                  0x800'2193    0x8  Code  Gb  hal_usb.o [1]
+usbObjectInit            0x800'219b   0x2c  Code  Gb  hal_usb.o [1]
+usbStartReceiveI         0x800'21f1   0x28  Code  Gb  hal_usb.o [1]
+usbStartTransmitI        0x800'2219   0x28  Code  Gb  hal_usb.o [1]
+usb_lld_clear_in         0x800'2af7   0x32  Code  Gb  hal_usb_lld.o [1]
+usb_lld_clear_out        0x800'2ac7   0x30  Code  Gb  hal_usb_lld.o [1]
+usb_lld_disable_endpoints
+                         0x800'2931   0x26  Code  Gb  hal_usb_lld.o [1]
+usb_lld_get_status_in    0x800'297b   0x22  Code  Gb  hal_usb_lld.o [1]
+usb_lld_get_status_out   0x800'2957   0x24  Code  Gb  hal_usb_lld.o [1]
+usb_lld_init             0x800'27c1    0xc  Code  Gb  hal_usb_lld.o [1]
+usb_lld_init_endpoint    0x800'2823  0x10e  Code  Gb  hal_usb_lld.o [1]
+usb_lld_read_setup       0x800'299d   0x28  Code  Gb  hal_usb_lld.o [1]
+usb_lld_reset            0x800'27cd   0x48  Code  Gb  hal_usb_lld.o [1]
+usb_lld_set_address      0x800'2815    0xe  Code  Gb  hal_usb_lld.o [1]
+usb_lld_stall_in         0x800'2aa5   0x22  Code  Gb  hal_usb_lld.o [1]
+usb_lld_stall_out        0x800'2a83   0x22  Code  Gb  hal_usb_lld.o [1]
+usb_lld_start_in         0x800'2a27   0x5c  Code  Gb  hal_usb_lld.o [1]
+usb_lld_start_out        0x800'29c5   0x62  Code  Gb  hal_usb_lld.o [1]
+usb_packet_read_to_buffer
+                         0x800'2551   0x44  Code  Lc  hal_usb_lld.o [1]
+usb_packet_write_from_buffer
+                         0x800'2595   0x3a  Code  Lc  hal_usb_lld.o [1]
+usb_pm_alloc             0x800'2539   0x18  Code  Lc  hal_usb_lld.o [1]
+usb_pm_reset             0x800'2531    0x8  Code  Lc  hal_usb_lld.o [1]
+usb_serve_endpoints      0x800'25cf  0x15c  Code  Lc  hal_usb_lld.o [1]
+vmt                      0x800'4678   0x28  Data  Lc  hal_serial.o [1]
+wakeup                   0x800'1969   0x50  Code  Lc  chschd.o [1]
+zero_status              0x800'10ca    0x2  Data  Lc  hal_usb.o [1]
+
+
+[1] = D:\SourceRespo\IAR_SRC_WS\RemoteIO\BQ76952_Modifier\Obj
+[2] = dl7M_tln.a
+[3] = m7M_tls.a
+[4] = rt7M_tl.a
+[5] = shb_l.a
+
+  16 890 bytes of readonly  code memory
+     762 bytes of readonly  data memory (+ 8 absolute)
+   9 108 bytes of readwrite data memory
+
+Errors: none
+Warnings: none
