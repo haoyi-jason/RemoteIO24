@@ -33,6 +33,10 @@ public partial class ParametersPage : ContentPage
                 [DfParamId.PwmMapRawPt1, DfParamId.PwmMapRawPt2, DfParamId.PwmMapRawPt3, DfParamId.PwmMapRawPt4],
                 [DfParamId.PwmMapCounterPt1, DfParamId.PwmMapCounterPt2, DfParamId.PwmMapCounterPt3, DfParamId.PwmMapCounterPt4]),
             new(
+                "PWM_TURTLE",
+                [DfParamId.PwmMap4xRawPt1, DfParamId.PwmMap4xRawPt2, DfParamId.PwmMap4xRawPt3, DfParamId.PwmMap4xRawPt4],
+                [DfParamId.PwmMap4xCounterPt1, DfParamId.PwmMap4xCounterPt2, DfParamId.PwmMap4xCounterPt3, DfParamId.PwmMap4xCounterPt4]),
+            new(
                 "SERVO",
                 [DfParamId.ServoMapRawPt1, DfParamId.ServoMapRawPt2, DfParamId.ServoMapRawPt3, DfParamId.ServoMapRawPt4],
                 [DfParamId.ServoMapCounterPt1, DfParamId.ServoMapCounterPt2, DfParamId.ServoMapCounterPt3, DfParamId.ServoMapCounterPt4])
@@ -153,10 +157,20 @@ public partial class ParametersPage : ContentPage
 
     private async void OnReadServoGroupClicked(object? sender, EventArgs e)
     {
-        await ReadGroupAsync(_lerpGroups[2]);
+        await ReadGroupAsync(_lerpGroups[3]);
     }
 
     private async void OnWriteServoGroupClicked(object? sender, EventArgs e)
+    {
+        await WriteGroupAsync(_lerpGroups[3]);
+    }
+
+    private async void OnReadPwmTurtleGroupClicked(object? sender, EventArgs e)
+    {
+        await ReadGroupAsync(_lerpGroups[2]);
+    }
+
+    private async void OnWritePwmTurtleGroupClicked(object? sender, EventArgs e)
     {
         await WriteGroupAsync(_lerpGroups[2]);
     }
@@ -512,6 +526,7 @@ public partial class ParametersPage : ContentPage
     {
         "VR" => [VrPt1XEntry, VrPt2XEntry, VrPt3XEntry, VrPt4XEntry],
         "PWM" => [PwmPt1XEntry, PwmPt2XEntry, PwmPt3XEntry, PwmPt4XEntry],
+        "PWM_TURTLE" => [PwmTurtlePt1XEntry, PwmTurtlePt2XEntry, PwmTurtlePt3XEntry, PwmTurtlePt4XEntry],
         "SERVO" => [ServoPt1XEntry, ServoPt2XEntry, ServoPt3XEntry, ServoPt4XEntry],
         _ => throw new ArgumentOutOfRangeException(nameof(groupName), groupName, "Unknown interpolation group.")
     };
@@ -520,6 +535,7 @@ public partial class ParametersPage : ContentPage
     {
         "VR" => [VrPt1YEntry, VrPt2YEntry, VrPt3YEntry, VrPt4YEntry],
         "PWM" => [PwmPt1YEntry, PwmPt2YEntry, PwmPt3YEntry, PwmPt4YEntry],
+        "PWM_TURTLE" => [PwmTurtlePt1YEntry, PwmTurtlePt2YEntry, PwmTurtlePt3YEntry, PwmTurtlePt4YEntry],
         "SERVO" => [ServoPt1YEntry, ServoPt2YEntry, ServoPt3YEntry, ServoPt4YEntry],
         _ => throw new ArgumentOutOfRangeException(nameof(groupName), groupName, "Unknown interpolation group.")
     };

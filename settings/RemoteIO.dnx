@@ -16,10 +16,10 @@
         <MemConfigValue>C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.2\arm\CONFIG\debugger\ArteryTek\AT32F413xC.ddf</MemConfigValue>
     </PlDriver>
     <Jet>
-        <JetConnSerialNo>AT-Link(WinUSB) CMSIS-DAP:0</JetConnSerialNo>
-        <JetConnFoundProbes>AT-Link CMSIS-DAP:A7DC415101C0C12904973502:AT-Link(WinUSB) CMSIS-DAP:0:</JetConnFoundProbes>
-        <PrevWtdReset>Hardware</PrevWtdReset>
         <OnlineReset>Software</OnlineReset>
+        <PrevWtdReset>Connect during reset</PrevWtdReset>
+        <JetConnSerialNo>AT-Link(WinUSB) CMSIS-DAP:0</JetConnSerialNo>
+        <JetConnFoundProbes>AT-Link CMSIS-DAP:499850320000B32905970D02:AT-Link(WinUSB) CMSIS-DAP:0:</JetConnFoundProbes>
         <DisableInterrupts>0</DisableInterrupts>
         <LeaveRunning>0</LeaveRunning>
         <MultiCoreRunAll>0</MultiCoreRunAll>
@@ -28,7 +28,7 @@
         <EnableCache>1</EnableCache>
     </ArmDriver>
     <DebugChecksum>
-        <Checksum>3949247571</Checksum>
+        <Checksum>3342346895</Checksum>
     </DebugChecksum>
     <Exceptions>
         <StopOnUncaught>_ 0</StopOnUncaught>
@@ -38,8 +38,8 @@
         <Enabled>_ 0</Enabled>
     </CodeCoverage>
     <Disassembly>
-        <InstrCount>0</InstrCount>
         <MixedMode>1</MixedMode>
+        <InstrCount>0</InstrCount>
     </Disassembly>
     <CallStack>
         <ShowArgs>0</ShowArgs>
@@ -69,8 +69,8 @@
     <SWOManager>
         <SamplingDivider>8192</SamplingDivider>
         <OverrideClock>0</OverrideClock>
-        <CpuClock>319544896</CpuClock>
-        <SwoClock>319525184</SwoClock>
+        <CpuClock>322967496</CpuClock>
+        <SwoClock>322971848</SwoClock>
         <DataLogMode>0</DataLogMode>
         <ItmPortsEnabled>63</ItmPortsEnabled>
         <ItmTermIOPorts>1</ItmTermIOPorts>
@@ -79,6 +79,42 @@
         <PowerForcePC>1</PowerForcePC>
         <PowerConnectPC>1</PowerConnectPC>
     </SWOManager>
+    <ETMTraceWindow>
+        <PortWidth>4</PortWidth>
+        <PortMode>0</PortMode>
+        <CaptureDataValues>0</CaptureDataValues>
+        <CaptureDataAddresses>0</CaptureDataAddresses>
+        <CaptureDataRange>0</CaptureDataRange>
+        <DataFirst>0</DataFirst>
+        <DataLast>4294967295</DataLast>
+        <StopWhen>0</StopWhen>
+        <StallCPU>0</StallCPU>
+        <NoPCCapture>0</NoPCCapture>
+    </ETMTraceWindow>
+    <array_types>
+        <Fmt0>stkalign_t[110]	4	0</Fmt0>
+        <Fmt1>uint32_t[16]	4	0</Fmt1>
+        <Fmt2>uint32_t[64]	3	0</Fmt2>
+        <Fmt3>uint8_t[64]	4	0</Fmt3>
+    </array_types>
+    <Trace1>
+        <Enabled>0</Enabled>
+        <ShowSource>1</ShowSource>
+    </Trace1>
+    <Trace2>
+        <Enabled>0</Enabled>
+        <ShowSource>0</ShowSource>
+    </Trace2>
+    <SWOTraceWindow>
+        <PcSampling>0</PcSampling>
+        <InterruptLogs>0</InterruptLogs>
+        <ForcedTimeStamps>0</ForcedTimeStamps>
+        <EventCPI>0</EventCPI>
+        <EventEXC>0</EventEXC>
+        <EventFOLD>0</EventFOLD>
+        <EventLSU>0</EventLSU>
+        <EventSLEEP>0</EventSLEEP>
+    </SWOTraceWindow>
     <PowerLog>
         <Title_0>I0</Title_0>
         <Symbol_0>0 4 0</Symbol_0>
@@ -119,6 +155,11 @@
         <ShowTimeSum>1</ShowTimeSum>
         <SumSortOrder>0</SumSortOrder>
     </EventLog>
+    <LogFile>
+        <LoggingEnabled>_ 0</LoggingEnabled>
+        <LogFile>_ ""</LogFile>
+        <Category>_ 0</Category>
+    </LogFile>
     <DriverProfiling>
         <Enabled>0</Enabled>
         <Mode>1</Mode>
@@ -137,52 +178,10 @@
         <Probe0>I0</Probe0>
         <ProbeSetup0>2 1 1 2 0 0</ProbeSetup0>
     </PowerProbe>
-    <array_types>
-        <Fmt0>stkalign_t[110]	4	0</Fmt0>
-        <Fmt1>uint16_t[64]	4	0</Fmt1>
-        <Fmt2>uint32_t[16]	4	0</Fmt2>
-        <Fmt3>uint32_t[64]	4	0</Fmt3>
-        <Fmt4>uint8_t[64]	4	0</Fmt4>
-    </array_types>
-    <Trace1>
-        <Enabled>0</Enabled>
-        <ShowSource>1</ShowSource>
-    </Trace1>
-    <ETMTraceWindow>
-        <PortWidth>4</PortWidth>
-        <PortMode>0</PortMode>
-        <CaptureDataValues>0</CaptureDataValues>
-        <CaptureDataAddresses>0</CaptureDataAddresses>
-        <CaptureDataRange>0</CaptureDataRange>
-        <DataFirst>0</DataFirst>
-        <DataLast>4294967295</DataLast>
-        <StopWhen>0</StopWhen>
-        <StallCPU>0</StallCPU>
-        <NoPCCapture>0</NoPCCapture>
-    </ETMTraceWindow>
-    <Trace2>
-        <Enabled>0</Enabled>
-        <ShowSource>0</ShowSource>
-    </Trace2>
-    <SWOTraceWindow>
-        <ForcedPcSampling>0</ForcedPcSampling>
-        <ForcedInterruptLogs>0</ForcedInterruptLogs>
-        <ForcedItmLogs>0</ForcedItmLogs>
-        <EventCPI>0</EventCPI>
-        <EventEXC>0</EventEXC>
-        <EventFOLD>0</EventFOLD>
-        <EventLSU>0</EventLSU>
-        <EventSLEEP>0</EventSLEEP>
-    </SWOTraceWindow>
     <TermIOLog>
         <LoggingEnabled>_ 0</LoggingEnabled>
         <LogFile>_ ""</LogFile>
     </TermIOLog>
-    <LogFile>
-        <LoggingEnabled>_ 0</LoggingEnabled>
-        <LogFile>_ ""</LogFile>
-        <Category>_ 0</Category>
-    </LogFile>
     <DisassembleMode>
         <mode>0</mode>
     </DisassembleMode>
@@ -207,24 +206,21 @@
         <Bp17>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\doorControllerV22\Source\database.h}.53.1" 0 0 1 "" 0 "" 0</Bp17>
         <Bp18>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\App_PPMu\task_binProtocol.c}.145.3" 0 0 1 "" 0 "" 0</Bp18>
         <Bp19>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\App_PPMu\task_binProtocol.c}.129.3" 0 0 1 "" 0 "" 0</Bp19>
-        <Bp20>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\App_RF_Rx_V02\app_rf_rx_v02.c}.858.11" 0 0 1 "" 0 "" 0</Bp20>
-        <Bp21>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\App_WDAQ\bq76xx_dev.c}.269.3" 0 0 1 "" 0 "" 0</Bp21>
-        <Bp22>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\App_WDAQ\bq76xx_dev.c}.296.5" 0 0 1 "" 0 "" 0</Bp22>
-        <Bp23>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\App_RF_Rx_V02\app_rf_rx_v02.c}.43.1" 0 0 1 "" 0 "" 0</Bp23>
-        <Bp24>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\Drivers\dev_bc3601.c}.1160.3" 0 0 1 "" 0 "" 0</Bp24>
-        <Bp25>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\Drivers\dev_bc3601.c}.1226.3" 0 0 1 "" 0 "" 0</Bp25>
-        <Bp26>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\App_BQ76952\app_bq76952.c}.45.3" 0 0 1 "" 0 "" 0</Bp26>
-        <Bp27>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\App_BQ76952\app_bq76952.c}.191.9" 0 0 1 "" 0 "" 0</Bp27>
-        <Bp28>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\App_BQ76952\app_bq76952.c}.120.7" 0 0 1 "" 0 "" 0</Bp28>
-        <Bp29>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\App_BQ76952\app_bq76952.c}.132.7" 0 0 1 "" 0 "" 0</Bp29>
-        <Bp30>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\App_RF_Rx_V02\app_rf_rx_v02.c}.1401.9" 0 0 1 "" 0 "" 0</Bp30>
-        <Bp31>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\Drivers\dev_bc3601.c}.1175.3" 0 0 1 "" 0 "" 0</Bp31>
-        <Bp32>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\Drivers\dev_bc3601.c}.604.3" 0 0 1 "" 0 "" 0</Bp32>
-        <Bp33>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\App_WDAQ\task_ad.c}.233.5" 0 0 1 "" 0 "" 0</Bp33>
-        <Bp34>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\..\ylib\protocol\bin_protocol\bin_protocol.c}.65.9" 0 0 1 "" 0 "" 0</Bp34>
-        <Bp35>_ 1 "EMUL_CODE" "{$PROJ_DIR$\source\Common\database.c}.447.2" 0 0 1 "" 0 "" 0</Bp35>
-        <Bp36>_ 1 "EMUL_CODE" "{$PROJ_DIR$\source\App_RF_Rx_V02\app_rf_rx_v02.c}.1331.3" 0 0 1 "" 0 "" 0</Bp36>
-        <Count>37</Count>
+        <Bp20>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\App_WDAQ\bq76xx_dev.c}.269.3" 0 0 1 "" 0 "" 0</Bp20>
+        <Bp21>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\App_WDAQ\bq76xx_dev.c}.296.5" 0 0 1 "" 0 "" 0</Bp21>
+        <Bp22>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\App_RF_Rx_V02\app_rf_rx_v02.c}.43.1" 0 0 1 "" 0 "" 0</Bp22>
+        <Bp23>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\Drivers\dev_bc3601.c}.1160.3" 0 0 1 "" 0 "" 0</Bp23>
+        <Bp24>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\Drivers\dev_bc3601.c}.1226.3" 0 0 1 "" 0 "" 0</Bp24>
+        <Bp25>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\App_BQ76952\app_bq76952.c}.45.3" 0 0 1 "" 0 "" 0</Bp25>
+        <Bp26>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\App_BQ76952\app_bq76952.c}.191.9" 0 0 1 "" 0 "" 0</Bp26>
+        <Bp27>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\App_BQ76952\app_bq76952.c}.120.7" 0 0 1 "" 0 "" 0</Bp27>
+        <Bp28>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\App_BQ76952\app_bq76952.c}.132.7" 0 0 1 "" 0 "" 0</Bp28>
+        <Bp29>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\Drivers\dev_bc3601.c}.1175.3" 0 0 1 "" 0 "" 0</Bp29>
+        <Bp30>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\Drivers\dev_bc3601.c}.604.3" 0 0 1 "" 0 "" 0</Bp30>
+        <Bp31>_ 0 "EMUL_CODE" "{$PROJ_DIR$\source\App_WDAQ\task_ad.c}.233.5" 0 0 1 "" 0 "" 0</Bp31>
+        <Bp32>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\..\ylib\protocol\bin_protocol\bin_protocol.c}.65.9" 0 0 1 "" 0 "" 0</Bp32>
+        <Bp33>_ 1 "EMUL_CODE" "{$PROJ_DIR$\source\App_RF_Rx_V02\app_rf_rx_v02.c}.1539.7" 0 0 1 "" 0 "" 0</Bp33>
+        <Count>34</Count>
     </Breakpoints2>
     <Aliases>
         <Count>0</Count>

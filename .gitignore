@@ -1,0 +1,104 @@
+# Compiled object files and executables
+*.o
+*.obj
+*.elf
+*.hex
+*.bin
+*.asm
+
+# IAR Embedded Workbench build outputs
+Debug/
+BQ76952_Modifier/Exe/
+BQ76952_Modifier/List/
+BQ76952_Modifier/Obj/
+PPMU_V01/Exe/
+PPMU_V01/List/
+PPMU_V01/Obj/
+RF_RX_V01/Exe/
+RF_RX_V01/List/
+RF_RX_V01/Obj/
+RF_RX_V02/Exe/
+RF_RX_V02/List/
+RF_RX_V02/Obj/
+RF_TX_V02/Exe/
+RF_TX_V02/List/
+RF_TX_V02/Obj/
+Switch_48LQFP/Exe/
+Switch_48LQFP/List/
+Switch_48LQFP/Obj/
+Transmitter_V01/Exe/
+Transmitter_V01/List/
+Transmitter_V01/Obj/
+WDAQ/Exe/
+WDAQ/List/
+WDAQ/Obj/
+board/Module/Exe/
+board/Module/List/
+board/Module/Obj/
+board/PPMU/Exe/
+board/PPMU/List/
+board/PPMU/Obj/
+board/RF_CTRL_RECEIVER/Exe/
+board/RF_CTRL_RECEIVER/List/
+board/RF_CTRL_RECEIVER/Obj/
+board/RF_HANDHELD/Exe/
+board/RF_HANDHELD/List/
+board/RF_HANDHELD/Obj/
+board/RF_RX_V02/Exe/
+board/RF_RX_V02/List/
+board/RF_RX_V02/Obj/
+board/RF_SWITCH/Exe/
+board/RF_SWITCH/List/
+board/RF_SWITCH/Obj/
+board/RF_TX_V02/Exe/
+board/RF_TX_V02/List/
+board/RF_TX_V02/Obj/
+board/WDAQ/Exe/
+board/WDAQ/List/
+board/WDAQ/Obj/
+
+# .NET/MAUI build outputs
+bin/
+obj/
+*.dll
+*.pdb
+*.cache
+*.dll.so
+*.so
+*.dylib
+*.exe
+*.app
+
+# .NET user-specific files
+*.user
+*.suo
+*.sln.docstates
+
+# Visual Studio cache/options
+.vs/
+.vscode/
+*.code-workspace
+
+# User-specific IAR settings
+WS_*.custom_argvars
+*.ewt
+
+# IDE and editor artifacts
+.idea/
+*.swp
+*.swo
+*~
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+*.lnk
+
+# Temporary files
+_tmp_*/
+*.tmp
+*.temp
+*.bak
+
+# MSIX/Package artifacts
+AppPackages/

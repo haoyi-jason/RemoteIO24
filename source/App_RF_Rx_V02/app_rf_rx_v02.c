@@ -21,6 +21,9 @@
 
 #define LINE_TX_ACT     PAL_LINE(GPIOC,6)
 #define LINE_LBT_ACT     PAL_LINE(GPIOC,7)
+
+//#define LINE_TX_ACT2     PAL_LINE(GPIOC,8)
+//#define LINE_LBT_ACT2     PAL_LINE(GPIOC,9)
 //#define VR_POWER_LINE   PAL_LINE(GPIOB,11)
 
 #define VR_POWER_DIS()  palSetLine(VR_POWER_LINE)
@@ -43,8 +46,8 @@
 
 #define BOARD_B2
 
-#define MODE_TX
-//#define MODE_RX
+//#define MODE_TX
+#define MODE_RX
 
 static void tx_control_loop();
 static void rx_control_loop();
@@ -192,9 +195,9 @@ static _txPacket rxPacket;
 typedef struct{
   uint16_t srcAddr;
   uint16_t dstAddr;
-  uint16_t dio; // bit 0~9 for action, bit 15 for switch
+  uint16_t dio; // bit 0~9 for action, bit 15 for switch, bit 14 for tx_ana
   uint16_t advalue[4];
-  uint8_t rsv1;
+  uint8_t tx_mode; // 0: io, 1: analog, 0x80: turtle
   uint8_t checksum;
 }_rfPacket;
 
@@ -207,23 +210,22 @@ static void load_settings()
       
       db_write_df_u16(DEVICE_ADDR,0x01);
       db_write_df_u16(DEST_ADDR,0x01);
+      db_write_df_u8(OP_MODE,OP_MODE_RX | OP_MODE_CONTROL | GEAR_TYPE(GEAR_SERVO) | VALVE_TYPE(VALVE_IO));
 #ifdef MODE_RX
-//      db_write_df_u8(OP_MODE,0x27);
       db_write_df_u8(OP_MODE,OP_MODE_RX | OP_MODE_CONTROL | GEAR_TYPE(GEAR_SERVO) | VALVE_TYPE(VALVE_IO));
 #endif
 #ifdef MODE_TX
-//      db_write_df_u8(OP_MODE,0x12);
       db_write_df_u8(OP_MODE,OP_MODE_TX | OP_MODE_CONTROL);
 #endif
       db_write_df_u8(TX_INTERVAL_MS,50);
       db_write_df_u16(TIMEOUT_MS,2000);
       //db_write_df_u16(TX_COUNTS,90);
       
-      db_write_df_u8(RF_DATA_RATE_CODE, 2);
+      db_write_df_u8(RF_DATA_RATE_CODE, 1);
       db_write_df_f32(RF_BASE_FREQUENCY,915.00);
       db_write_df_u8(RF_TX_POWER,1);
       
-      db_write_df_u16(TX_DIO_MASK, 0xC000);
+      db_write_df_u16(TX_DIO_MASK, 0x0000);
       db_write_df_u16(BLINK_PERIOD_MS,500);
       
       db_write_df_u16(VR_ANGLE_PT_1,0);
@@ -260,8 +262,17 @@ static void load_settings()
       db_write_df_u16(TX_LBT_LOW_BOUND,5000);
       db_write_df_u16(TX_LBT_HIGH_BOUND,5100);
 
-      db_write_df_u16(DIO_ON_MASK,0x0200);
+      db_write_df_u16(DIO_ON_MASK,0x0000);
       
+      db_write_df_u16(PWM_MAP_4X_RAW_PT_1,200);
+      db_write_df_u16(PWM_MAP_4X_RAW_PT_2,3300);
+      db_write_df_u16(PWM_MAP_4X_RAW_PT_3,3800);
+      db_write_df_u16(PWM_MAP_4X_RAW_PT_4,4000);
+      db_write_df_u16(PWM_MAP_4X_COUNTER_PT_1,125);
+      db_write_df_u16(PWM_MAP_4X_COUNTER_PT_2,250);
+      db_write_df_u16(PWM_MAP_4X_COUNTER_PT_3,300);
+      db_write_df_u16(PWM_MAP_4X_COUNTER_PT_4,500);
+
       //db_enable_save_on_write(true);
       db_write_df_u8(APP_SIGNATURE + APP_SIGNATURE_OFFSET, APP_SIGNATURE_KEY);
       
@@ -292,6 +303,8 @@ static THD_WORKING_AREA(waShell,SHELL_WA_SIZE);
 
 static adcsample_t samples[ADC_GRP1_NUM_CHANNELS*ADC_GRP1_BUF_DEPTH];
 static adcsample_t samples_tx2[ADC_GRP1_NUM_CHANNELS_TX2*ADC_GRP1_BUF_DEPTH];
+static uint16_t tx2_filtered[ADC_GRP1_NUM_CHANNELS_TX2];
+static bool tx2_filter_initialized = false;
 
 static void adccallback(ADCDriver *adcp);
 
@@ -335,18 +348,18 @@ static const ADCConversionGroup adcgrpcfg_tx2 = {
   0,
   ADC_CR2_SWSTART,
   0,
-  ADC_SMPR2_SMP_AN0(ADC_SAMPLE_239P5) | ADC_SMPR2_SMP_AN1(ADC_SAMPLE_239P5) |
-  ADC_SMPR2_SMP_AN2(ADC_SAMPLE_239P5) | ADC_SMPR2_SMP_AN3(ADC_SAMPLE_239P5) |
-  ADC_SMPR2_SMP_AN4(ADC_SAMPLE_239P5),
+  ADC_SMPR2_SMP_AN1(ADC_SAMPLE_239P5) |
+  ADC_SMPR2_SMP_AN6(ADC_SAMPLE_239P5) | ADC_SMPR2_SMP_AN7(ADC_SAMPLE_239P5) |
+  ADC_SMPR2_SMP_AN8(ADC_SAMPLE_239P5) | ADC_SMPR2_SMP_AN9(ADC_SAMPLE_239P5),
   ADC_SQR1_NUM_CH(ADC_GRP1_NUM_CHANNELS_TX2),
   0,
 #ifdef BOARD_A2
   ADC_SQR3_SQ1_N(ADC_CHANNEL_IN8) | ADC_SQR3_SQ2_N(ADC_CHANNEL_IN9)
 #endif
 #ifdef BOARD_B2
-  ADC_SQR3_SQ1_N(ADC_CHANNEL_IN1) | ADC_SQR3_SQ2_N(ADC_CHANNEL_IN6) |
-  ADC_SQR3_SQ1_N(ADC_CHANNEL_IN7) | ADC_SQR3_SQ2_N(ADC_CHANNEL_IN8) |
-  ADC_SQR3_SQ1_N(ADC_CHANNEL_IN9) 
+  ADC_SQR3_SQ1_N(ADC_CHANNEL_IN1) | ADC_SQR3_SQ2_N(ADC_CHANNEL_IN9) |
+  ADC_SQR3_SQ3_N(ADC_CHANNEL_IN8) | ADC_SQR3_SQ4_N(ADC_CHANNEL_IN7) |
+  ADC_SQR3_SQ5_N(ADC_CHANNEL_IN6) 
 #endif
 };
 
@@ -429,20 +442,21 @@ static _gpio_def_t digital_out_tx[] = {
   {GPIOC,7},    
 };
 static _gpio_def_t digital_in_tx_ana[] = {
-  {GPIOB,9},
-  {GPIOB,8},
-  {GPIOB,7},
-  {GPIOB,6},
-  {GPIOA,2},
-  {GPIOA,3},
-  {GPIOC,7},
-  {GPIOC,6},
+  {GPIOC,9}, // U4
+  {GPIOC,8}, // L4
+  {GPIOA,3}, // U3
+  {GPIOA,2}, // L3
+  {GPIOB,6}, // L2
+  {GPIOB,7}, // U2
+  {GPIOB,8}, // L1
+  {GPIOB,9}, // U1
+  {GPIOA,12}, // buzzer
   {GPIOA,11}, // turtle
 };
 static _gpio_def_t digital_out_tx_ana[] = {
-  {GPIOC,9},
-  {GPIOC,8},
-  {GPIOA,12},    
+  {GPIOC,7}, // LBT
+  {GPIOC,6}, // RF ACT
+//  {GPIOA,12},// Unused    
 };
 
 #undef VR_POWER_LINE
@@ -466,7 +480,10 @@ static void blink_cb(void *arg)
  //virtual_timer_t *vt = (virtual_timer_t*)arg;
   chSysLockFromISR();
   palToggleLine(LINE_TX_ACT);
-  chVTSetI(&vt_blink,TIME_MS2I(db_read_df_u16(BLINK_PERIOD_MS)),blink_cb,NULL);
+  if(palReadLine(LINE_TX_ACT) == PAL_HIGH)
+    chVTSetI(&vt_blink,TIME_MS2I(db_read_df_u16(BLINK_PERIOD_MS)>>2),blink_cb,NULL);
+  else
+    chVTSetI(&vt_blink,TIME_MS2I(db_read_df_u16(BLINK_PERIOD_MS)<<1),blink_cb,NULL);
   chSysUnlockFromISR();
 }
 
@@ -531,12 +548,13 @@ static void process_ctrl_tx()
   }
   else if(input_type == TX_ADC){
     uint16_t ch_sum[5] = {0,0};
+    uint8_t tx_mode = 0x01;
     for(uint8_t i=0;i<ADC_GRP1_BUF_DEPTH;i++){
-      ch_sum[0] += samples[i*5];
-      ch_sum[1] += samples[i*5+1];
-      ch_sum[2] += samples[i*5+2];
-      ch_sum[3] += samples[i*5+3];
-      ch_sum[4] += samples[i*5+4];
+      ch_sum[0] += samples_tx2[i*5];
+      ch_sum[1] += samples_tx2[i*5+1];
+      ch_sum[2] += samples_tx2[i*5+2];
+      ch_sum[3] += samples_tx2[i*5+3];
+      ch_sum[4] += samples_tx2[i*5+4];
     }
     
     ch_sum[0] /= ADC_GRP1_BUF_DEPTH;
@@ -545,7 +563,20 @@ static void process_ctrl_tx()
     ch_sum[3] /= ADC_GRP1_BUF_DEPTH;
     ch_sum[4] /= ADC_GRP1_BUF_DEPTH;
 
-    runTime.bat_mv = (ch_sum[0]*2*3300)>>12 ;
+    if(!tx2_filter_initialized){
+      for(uint8_t i=0;i<ADC_GRP1_NUM_CHANNELS_TX2;i++){
+        tx2_filtered[i] = ch_sum[i];
+      }
+      tx2_filter_initialized = true;
+    }
+    else{
+      for(uint8_t i=0;i<ADC_GRP1_NUM_CHANNELS_TX2;i++){
+        int32_t diff = (int32_t)ch_sum[i] - (int32_t)tx2_filtered[i];
+        tx2_filtered[i] = (uint16_t)((int32_t)tx2_filtered[i] + (diff >> 2)); // alpha = 1/4
+      }
+    }
+
+    runTime.bat_mv = (tx2_filtered[0]*2*3300)>>12 ;
     runTime.bat_mv += 200;
     db_write_ld_u16(LIVE_DATA_BAT_MV,runTime.bat_mv);
     if(runTime.bat_mv < db_read_df_u16(TX_LBT_LOW_BOUND)){
@@ -556,10 +587,14 @@ static void process_ctrl_tx()
     }
     runTime.dio_state = read_keys(input_type);
     db_write_ld_u16(LIVE_DATA_DIO_STATE,runTime.dio_state);
-    db_write_ld_u16(LIVE_DATA_AIN_CH1,ch_sum[1]);
-    db_write_ld_u16(LIVE_DATA_AIN_CH2,ch_sum[2]);
-    db_write_ld_u16(LIVE_DATA_AIN_CH3,ch_sum[3]);
-    db_write_ld_u16(LIVE_DATA_AIN_CH4,ch_sum[4]);
+    db_write_ld_u16(LIVE_DATA_AIN_CH1,tx2_filtered[1]);
+    db_write_ld_u16(LIVE_DATA_AIN_CH2,tx2_filtered[2]);
+    db_write_ld_u16(LIVE_DATA_AIN_CH3,tx2_filtered[3]);
+    db_write_ld_u16(LIVE_DATA_AIN_CH4,tx2_filtered[4]);
+    if(palReadPad(digital_in_tx_ana[9].port,digital_in_tx_ana[9].line) == PAL_LOW){
+      tx_mode |= 0x80;
+    }
+    db_write_ld_u8(LIVD_DATA_TX_MODE,tx_mode);
   }
 }
 
@@ -568,13 +603,29 @@ static void process_switch_tx()
   
 }
 
-static void process_rxv01(uint16_t value, int16_t adcv)
+//static void process_rxv01(uint16_t value, int16_t adcv)
+static void process_rxv01()
 {
+  uint16_t value;
+  uint16_t adcvs[4];
+  uint8_t tx_mode;
+  uint16_t adcv = 0x0;
   uint16_t mask;
   pwmcnt_t width = 0;
   pwmcnt_t pwm_servo = 5000; // servo control, reversed
   uint8_t opMode = db_read_df_u8(OP_MODE);
   float fv = 0;
+  
+  tx_mode = db_read_ld_u8(LIVD_DATA_TX_MODE);
+  uint8_t nof_axis = ((tx_mode & 0x01)==0)?1:4;
+  uint8_t turtle = (tx_mode & 0x80);
+  
+  value = db_read_ld_u16(LIVE_DATA_DIO_STATE);
+  for(uint8_t i=0; i<4;i++){
+    adcvs[i] = db_read_ld_u16(LIVE_DATA_AIN_CH1 + i);
+    if(adcvs[i] > adcv) adcv = adcvs[i];
+  }
+  
   
   uint8_t gear_type = TYPE_OF_GEAR(opMode);
   uint8_t valve_type = TYPE_OF_VALVE(opMode);
@@ -668,6 +719,7 @@ static void process_rxv01(uint16_t value, int16_t adcv)
       //value |= dio_mask;
     }
     
+    if(turtle != 0) pwm_servo = 0; // turtle mode, no gear
       switch(TYPE_OF_GEAR(opMode)){
       case GEAR_SERVO:
         pwm_servo = PWM_PERIOD_COUNT - pwm_servo;
@@ -729,32 +781,67 @@ static void process_rxv01(uint16_t value, int16_t adcv)
       }
     }
   
-    if(adcv < db_read_df_u16(PWM_MAP_RAW_PT_1)){
-      width = db_read_df_u16(PWM_MAP_COUNTER_PT_1);
-    }
-    else if(adcv < db_read_df_u16(PWM_MAP_RAW_PT_2)){
-      fv = (db_read_df_u16(PWM_MAP_COUNTER_PT_2) - db_read_df_u16(PWM_MAP_COUNTER_PT_1));
-      fv /= (db_read_df_u16(PWM_MAP_RAW_PT_2) - db_read_df_u16(PWM_MAP_RAW_PT_1));
-      fv *= (adcv - db_read_df_u16(PWM_MAP_RAW_PT_1));
-      width = (uint16_t)(fv + db_read_df_u16(PWM_MAP_COUNTER_PT_1));
-    }
-    else if(adcv < db_read_df_u16(PWM_MAP_RAW_PT_3)){
-      fv = (db_read_df_u16(PWM_MAP_COUNTER_PT_3) - db_read_df_u16(PWM_MAP_COUNTER_PT_2));
-      fv /= (db_read_df_u16(PWM_MAP_RAW_PT_3) - db_read_df_u16(PWM_MAP_RAW_PT_2));
-      fv *= (adcv - db_read_df_u16(PWM_MAP_RAW_PT_2));
-      width = (uint16_t)(fv + db_read_df_u16(PWM_MAP_COUNTER_PT_2));
-    }
-    else if(adcv < db_read_df_u16(PWM_MAP_RAW_PT_4)){
-      fv = (db_read_df_u16(PWM_MAP_COUNTER_PT_4) - db_read_df_u16(PWM_MAP_COUNTER_PT_3));
-      fv /= (db_read_df_u16(PWM_MAP_RAW_PT_4) - db_read_df_u16(PWM_MAP_RAW_PT_3));
-      fv *= (adcv - db_read_df_u16(PWM_MAP_RAW_PT_3));
-      width = (uint16_t)(fv + db_read_df_u16(PWM_MAP_COUNTER_PT_3));
+    if(nof_axis == 1){
+      if(adcv < db_read_df_u16(PWM_MAP_RAW_PT_1)){
+        width = db_read_df_u16(PWM_MAP_COUNTER_PT_1);
+      }
+      else if(adcv < db_read_df_u16(PWM_MAP_RAW_PT_2)){
+        fv = (db_read_df_u16(PWM_MAP_COUNTER_PT_2) - db_read_df_u16(PWM_MAP_COUNTER_PT_1));
+        fv /= (db_read_df_u16(PWM_MAP_RAW_PT_2) - db_read_df_u16(PWM_MAP_RAW_PT_1));
+        fv *= (adcv - db_read_df_u16(PWM_MAP_RAW_PT_1));
+        width = (uint16_t)(fv + db_read_df_u16(PWM_MAP_COUNTER_PT_1));
+      }
+      else if(adcv < db_read_df_u16(PWM_MAP_RAW_PT_3)){
+        fv = (db_read_df_u16(PWM_MAP_COUNTER_PT_3) - db_read_df_u16(PWM_MAP_COUNTER_PT_2));
+        fv /= (db_read_df_u16(PWM_MAP_RAW_PT_3) - db_read_df_u16(PWM_MAP_RAW_PT_2));
+        fv *= (adcv - db_read_df_u16(PWM_MAP_RAW_PT_2));
+        width = (uint16_t)(fv + db_read_df_u16(PWM_MAP_COUNTER_PT_2));
+      }
+      else if(adcv < db_read_df_u16(PWM_MAP_RAW_PT_4)){
+        fv = (db_read_df_u16(PWM_MAP_COUNTER_PT_4) - db_read_df_u16(PWM_MAP_COUNTER_PT_3));
+        fv /= (db_read_df_u16(PWM_MAP_RAW_PT_4) - db_read_df_u16(PWM_MAP_RAW_PT_3));
+        fv *= (adcv - db_read_df_u16(PWM_MAP_RAW_PT_3));
+        width = (uint16_t)(fv + db_read_df_u16(PWM_MAP_COUNTER_PT_3));
+      }
+      else{
+        width = db_read_df_u16(PWM_MAP_COUNTER_PT_4);
+      }
+      db_write_ld_u32(LIVE_DATA_VALVE_CONTROL,width);
+      db_write_ld_u32(LIVE_DATA_VALVE_CONTROL_2,width);
+      db_write_ld_u32(LIVE_DATA_VALVE_CONTROL_3,width);
+      db_write_ld_u32(LIVE_DATA_VALVE_CONTROL_4,width);
     }
     else{
-      width = db_read_df_u16(PWM_MAP_COUNTER_PT_4);
+      for(uint8_t i=0;i<nof_axis;i++){
+        adcv = adcvs[i];
+        if(adcv < db_read_df_u16(PWM_MAP_4X_RAW_PT_1)){
+          width = db_read_df_u16(PWM_MAP_4X_COUNTER_PT_1);
+        }
+        else if(adcv < db_read_df_u16(PWM_MAP_4X_RAW_PT_2)){
+          fv = (db_read_df_u16(PWM_MAP_4X_COUNTER_PT_2) - db_read_df_u16(PWM_MAP_4X_COUNTER_PT_1));
+          fv /= (db_read_df_u16(PWM_MAP_4X_RAW_PT_2) - db_read_df_u16(PWM_MAP_4X_RAW_PT_1));
+          fv *= (adcv - db_read_df_u16(PWM_MAP_4X_RAW_PT_1));
+          width = (uint16_t)(fv + db_read_df_u16(PWM_MAP_4X_COUNTER_PT_1));
+        }
+        else if(adcv < db_read_df_u16(PWM_MAP_4X_RAW_PT_3)){
+          fv = (db_read_df_u16(PWM_MAP_4X_COUNTER_PT_3) - db_read_df_u16(PWM_MAP_4X_COUNTER_PT_2));
+          fv /= (db_read_df_u16(PWM_MAP_4X_RAW_PT_3) - db_read_df_u16(PWM_MAP_4X_RAW_PT_2));
+          fv *= (adcv - db_read_df_u16(PWM_MAP_4X_RAW_PT_2));
+          width = (uint16_t)(fv + db_read_df_u16(PWM_MAP_4X_COUNTER_PT_2));
+        }
+        else if(adcv < db_read_df_u16(PWM_MAP_4X_RAW_PT_4)){
+          fv = (db_read_df_u16(PWM_MAP_4X_COUNTER_PT_4) - db_read_df_u16(PWM_MAP_4X_COUNTER_PT_3));
+          fv /= (db_read_df_u16(PWM_MAP_4X_RAW_PT_4) - db_read_df_u16(PWM_MAP_4X_RAW_PT_3));
+          fv *= (adcv - db_read_df_u16(PWM_MAP_4X_RAW_PT_3));
+          width = (uint16_t)(fv + db_read_df_u16(PWM_MAP_4X_COUNTER_PT_3));
+        }
+        else{
+          width = db_read_df_u16(PWM_MAP_4X_COUNTER_PT_4);
+        }
+      
+        db_write_ld_u32(LIVE_DATA_VALVE_CONTROL+i,width);
+      }
     }
-  
-    db_write_ld_u32(LIVE_DATA_VALVE_CONTROL,width);
 
     for(uint8_t i=0;i<4;i++){
   //    if((newDirection[i] != 0) && (newDirection[i] != runTime.pwmDirection[i]) && (runTime.pwmDirection[i] != 0)){
@@ -772,15 +859,16 @@ static void process_rxv01(uint16_t value, int16_t adcv)
       }
     }
     
+    
     if(runTime.pwmDirection[0] == 0){
       pwmEnableChannel(&PWMD3,0,PWM_VALVE_IDLE_OUTPUT);
       pwmEnableChannel(&PWMD3,1,PWM_VALVE_IDLE_OUTPUT);
     }
     else if(runTime.pwmDirection[0] == 1){
-      pwmEnableChannel(&PWMD3,0,width);
+      pwmEnableChannel(&PWMD3,0,db_read_ld_u32(LIVE_DATA_VALVE_CONTROL));
     }
     else if(runTime.pwmDirection[0] == -1){
-      pwmEnableChannel(&PWMD3,1,width);
+      pwmEnableChannel(&PWMD3,1,db_read_ld_u32(LIVE_DATA_VALVE_CONTROL));
     }
    
     if(runTime.pwmDirection[1] == 0){
@@ -788,10 +876,10 @@ static void process_rxv01(uint16_t value, int16_t adcv)
       pwmEnableChannel(&PWMD3,3,PWM_VALVE_IDLE_OUTPUT);
     }
     else if(runTime.pwmDirection[1] == 1){
-      pwmEnableChannel(&PWMD3,2,width);
+      pwmEnableChannel(&PWMD3,2,db_read_ld_u32(LIVE_DATA_VALVE_CONTROL_2));
     } 
     else if(runTime.pwmDirection[1] == -1){
-      pwmEnableChannel(&PWMD3,3,width);
+      pwmEnableChannel(&PWMD3,3,db_read_ld_u32(LIVE_DATA_VALVE_CONTROL_2));
     }
    
 
@@ -800,10 +888,10 @@ static void process_rxv01(uint16_t value, int16_t adcv)
       pwmEnableChannel(&PWMD4,2,PWM_VALVE_IDLE_OUTPUT);
     }
     else if(runTime.pwmDirection[2] == 1){
-      pwmEnableChannel(&PWMD4,3,width);
+      pwmEnableChannel(&PWMD4,3,db_read_ld_u32(LIVE_DATA_VALVE_CONTROL_3));
     }
     else if(runTime.pwmDirection[2] == -1){
-      pwmEnableChannel(&PWMD4,2,width);
+      pwmEnableChannel(&PWMD4,2,db_read_ld_u32(LIVE_DATA_VALVE_CONTROL_3));
     }
    
     if(runTime.pwmDirection[3] == 0){
@@ -811,10 +899,10 @@ static void process_rxv01(uint16_t value, int16_t adcv)
       pwmEnableChannel(&PWMD4,0,PWM_VALVE_IDLE_OUTPUT);
     }
     else if(runTime.pwmDirection[3] == 1){
-      pwmEnableChannel(&PWMD4,1,width);
+      pwmEnableChannel(&PWMD4,1,db_read_ld_u32(LIVE_DATA_VALVE_CONTROL_4));
     } 
     else if(runTime.pwmDirection[3] == -1){
-      pwmEnableChannel(&PWMD4,0,width);
+      pwmEnableChannel(&PWMD4,0,db_read_ld_u32(LIVE_DATA_VALVE_CONTROL_4));
     } 
   }
   else{
@@ -858,12 +946,19 @@ static void gpio_init()
       palSetPadMode(digital_out_tx[2].port, digital_out_tx[2].line, PAL_MODE_OUTPUT_PUSHPULL);
     }
     else{
+      runTime.userMode = 1; // no enter sleep
       palSetPadMode(GPIOA,1,PAL_MODE_INPUT_ANALOG);
-      palSetPadMode(GPIOA,2,PAL_MODE_INPUT_ANALOG);
+      //palSetPadMode(GPIOA,2,PAL_MODE_INPUT_ANALOG);
       palSetPadMode(GPIOA,6,PAL_MODE_INPUT_ANALOG);
       palSetPadMode(GPIOA,7,PAL_MODE_INPUT_ANALOG);
       palSetPadMode(GPIOB,0,PAL_MODE_INPUT_ANALOG);
       palSetPadMode(GPIOB,1,PAL_MODE_INPUT_ANALOG);
+      for(i=0;i<9;i++){
+        palSetPadMode(digital_in_tx_ana[i].port, digital_in_tx_ana[i].line, PAL_MODE_INPUT_PULLUP);
+      }
+      for(i=0;i<3;i++){
+        palSetPadMode(digital_out_tx_ana[i].port, digital_out_tx_ana[i].line, PAL_MODE_OUTPUT_PUSHPULL);
+      }
       
     }
   }
@@ -947,6 +1042,7 @@ static void gpio_init()
         palSetPadMode(digital_out_rx[7].port, digital_out_rx[7].line, PAL_MODE_OUTPUT_PUSHPULL);
         palSetPadMode(digital_out_rx[8].port, digital_out_rx[8].line, PAL_MODE_OUTPUT_PUSHPULL);
         palSetPadMode(digital_out_rx[9].port, digital_out_rx[9].line, PAL_MODE_OUTPUT_PUSHPULL);
+        palSetPadMode(digital_out_rx[10].port, digital_out_rx[10].line, PAL_MODE_OUTPUT_PUSHPULL);
       }
     }
     else{
@@ -997,9 +1093,10 @@ static THD_FUNCTION(procOperation ,p)
   uint8_t *ptr = data.buf;
   while(!bStop)
   {
-    runTime.dio_state = db_read_ld_u16(LIVE_DATA_DIO_STATE);
-    runTime.ain_value = db_read_ld_u16(LIVE_DATA_AIN_CH1);
-    process_rxv01(runTime.dio_state,runTime.ain_value);
+    //runTime.dio_state = db_read_ld_u16(LIVE_DATA_DIO_STATE);
+    //runTime.ain_value = db_read_ld_u16(LIVE_DATA_AIN_CH1);
+    //process_rxv01(runTime.dio_state,runTime.ain_value);
+    process_rxv01();
     chThdSleepMilliseconds(50);
   }
 }
@@ -1166,17 +1263,17 @@ int main()
   uint8_t opMode = db_read_df_u8(OP_MODE);
 
   // 2 TX mode
-  //opMode = OP_MODE_TX | OP_MODE_CONTROL | TX_TYPE(TX_IO); //OK
+//  opMode = OP_MODE_TX | OP_MODE_CONTROL | TX_TYPE(TX_IO); //OK
 //  opMode = OP_MODE_TX | OP_MODE_CONTROL | TX_TYPE(TX_ADC);
 //  
-//  opMode = OP_MODE_RX | OP_MODE_CONTROL | GEAR_TYPE(GEAR_STEPPER) | VALVE_TYPE(VALVE_IO); //OK
-//  opMode = OP_MODE_RX | OP_MODE_CONTROL | GEAR_TYPE(GEAR_STEPPER) | VALVE_TYPE(VALVE_PWM);
 //
+//  opMode = OP_MODE_RX | OP_MODE_CONTROL | GEAR_TYPE(GEAR_STEPPER) | VALVE_TYPE(VALVE_IO); //OK
 //  opMode = OP_MODE_RX | OP_MODE_CONTROL | GEAR_TYPE(GEAR_SERVO) | VALVE_TYPE(VALVE_IO); // OK
 //  opMode = OP_MODE_RX | OP_MODE_CONTROL | GEAR_TYPE(GEAR_DAC) | VALVE_TYPE(VALVE_IO); //OK
 //  opMode = OP_MODE_RX | OP_MODE_CONTROL | GEAR_TYPE(GEAR_PWM) | VALVE_TYPE(VALVE_IO);
 //  opMode = OP_MODE_RX | OP_MODE_CONTROL | GEAR_TYPE(GEAR_STEPPER_DAC) | VALVE_TYPE(VALVE_IO);//OK
 //
+//  opMode = OP_MODE_RX | OP_MODE_CONTROL | GEAR_TYPE(GEAR_STEPPER) | VALVE_TYPE(VALVE_PWM);
 //  opMode = OP_MODE_RX | OP_MODE_CONTROL | GEAR_TYPE(GEAR_SERVO) | VALVE_TYPE(VALVE_PWM);//ok
 //  opMode = OP_MODE_RX | OP_MODE_CONTROL | GEAR_TYPE(GEAR_DAC) | VALVE_TYPE(VALVE_PWM); //ok
 //  opMode = OP_MODE_RX | OP_MODE_CONTROL | GEAR_TYPE(GEAR_PWM) | VALVE_TYPE(VALVE_PWM);
@@ -1212,7 +1309,9 @@ int main()
   }
   
   if((opMode & OP_MODE_MASK) == OP_MODE_TX){
-    VR_POWER_EN();
+    uint8_t tx_type = TYPE_OF_TX(opMode);
+    if(tx_type == TX_IO)
+      VR_POWER_EN();
   }
 
   while(!bStop)
@@ -1235,7 +1334,7 @@ int main()
       }
     }
     
-    if(opMode & OP_MODE_RX){
+    if((opMode & OP_MODE_MASK) == OP_MODE_RX){
       if(evt & EV_RX_PACKET){
         rxFailStart = chVTGetSystemTimeX();
       }
@@ -1273,41 +1372,45 @@ int main()
     }
   }
   
-  if(opMode & OP_MODE_RX){
+  if((opMode & OP_MODE_MASK) == OP_MODE_RX){
     stop_rx_process();
   }
   
-  if(opMode & OP_MODE_TX){
-    VR_POWER_DIS();
-    // enter sleep mode
-    /*
-      config exti PA0 falling edge trigger to wakeup 
-    */
-    EXTI->PR = EXTI_INTEN_LN0;
-    EXTI->IMR = EXTI_INTEN_LN0;
-    EXTI->EMR = EXTI_EVTEN_LN0;
-    EXTI->FTSR = EXTI_FTRSEL_LN0;
-    EXTI->RTSR = EXTI_FTRSEL_LN0;
-    AFIO->EXTICR[0] &= 0x0FFF;
-    AFIO->EXTICR[0] |= AFIO_EXTIC1_EXTINT0_PTA;
+  if((opMode & OP_MODE_MASK) == OP_MODE_TX){
+    uint8_t tx_type = TYPE_OF_TX(opMode);
+    if(tx_type == TX_IO){
+      
+      VR_POWER_DIS();
+      // enter sleep mode
+      /*
+        config exti PA0 falling edge trigger to wakeup 
+      */
+      EXTI->PR = EXTI_INTEN_LN0;
+      EXTI->IMR = EXTI_INTEN_LN0;
+      EXTI->EMR = EXTI_EVTEN_LN0;
+      EXTI->FTSR = EXTI_FTRSEL_LN0;
+      EXTI->RTSR = EXTI_FTRSEL_LN0;
+      AFIO->EXTICR[0] &= 0x0FFF;
+      AFIO->EXTICR[0] |= AFIO_EXTIC1_EXTINT0_PTA;
 
-    PWR->CR |= PWR_CR_CLWUF | PWR_CR_CLSBF;
-    PWR->CR &= ~PWR_CR_PVDS;
+      PWR->CR |= PWR_CR_CLWUF | PWR_CR_CLSBF;
+      PWR->CR &= ~PWR_CR_PVDS;
 
-    PWR->CR |= (PWR_CR_PDDS); //Standby(0), Sleep(1)
-    PWR->CSR |= PWR_CRSTS_WUPEN;
-    SCB->SCR |= (SCB_SCR_SLEEPDEEP_Msk);
+      PWR->CR |= (PWR_CR_PDDS); //Standby(0), Sleep(1)
+      PWR->CSR |= PWR_CRSTS_WUPEN;
+      SCB->SCR |= (SCB_SCR_SLEEPDEEP_Msk);
 
-    chSysDisable();
-    __disable_irq();
+      chSysDisable();
+      __disable_irq();
 
-    __SEV();
-    __WFE();  
-    __WFE();  
+      __SEV();
+      __WFE();  
+      __WFE();  
 
-    // wakeup... 
-    __enable_irq();
-    NVIC_SystemReset(); 
+      // wakeup... 
+      __enable_irq();
+      NVIC_SystemReset(); 
+    }
   }
   
 
@@ -1344,8 +1447,9 @@ static void tx_control_loop()
 //  bc3601.destAddr = nvmParam2.device_config.destAddr;
   bc3601.txPower = db_read_df_u8(RF_TX_POWER);
   bc3601.dataRate = db_read_df_u8(RF_DATA_RATE_CODE);
-  bc3601.dataRate = 2; 
+  //bc3601.dataRate = 2; 
   bc3601.frequency = db_read_df_f32(RF_BASE_FREQUENCY)+ (db_read_df_u16(DEVICE_ADDR)%32)*0.5;
+  //bc3601.frequency = 918.0;
   bc3601.destAddr = db_read_df_u16(DEST_ADDR);
   
   
@@ -1359,6 +1463,11 @@ static void tx_control_loop()
   rfp->srcAddr = db_read_df_u16(DEVICE_ADDR);
   rfp->dstAddr = db_read_df_u16(DEST_ADDR);
   rfp->checksum = checksum((uint8_t*)&rfp,sizeof(_rfPacket)-1);
+  
+//  if(input_type == TX_ADC){
+//    rfp->tx_mode = 1;  
+//  }
+  
   uint8_t reg;
   uint8_t pktSz = sizeof(_rfPacket);
   //uint16_t cycles = 0;
@@ -1399,6 +1508,7 @@ static void tx_control_loop()
     rfp->advalue[1] = db_read_ld_u16(LIVE_DATA_AIN_CH2);
     rfp->advalue[2] = db_read_ld_u16(LIVE_DATA_AIN_CH3);
     rfp->advalue[3] = db_read_ld_u16(LIVE_DATA_AIN_CH4);
+    rfp->tx_mode = db_read_ld_u8(LIVD_DATA_TX_MODE);
     rfp->checksum = checksum((uint8_t*)rfp,sizeof(_rfPacket)-1);
 
     switch(runTime.stage){
@@ -1410,7 +1520,7 @@ static void tx_control_loop()
       //BC3601_SET_TX_PAYLOAD_WIDTH(dev,&pktSz);
       BC3601_FIFO_WRITE(dev,(uint8_t*)&txPacket,txPacket.sz);
       BC3601_TX_MODE(dev);
-      runTime.stage = 1;
+      runTime.stage = 0;
       prevTxStamp = now;
       break;
     case 1:
@@ -1450,8 +1560,8 @@ static void tx_control_loop()
     }
     
     
-//    chThdSleepMilliseconds(db_read_df_u8(TX_INTERVAL_MS));
-    chThdSleepMilliseconds(5);
+    chThdSleepMilliseconds(db_read_df_u8(TX_INTERVAL_MS));
+//    chThdSleepMilliseconds(5);
     if(chThdShouldTerminateX() && (runTime.userMode == 0)){
       bStop = true;
     }
@@ -1473,7 +1583,7 @@ static void rx_control_loop()
 
   bc3601.txPower = db_read_df_u8(RF_TX_POWER);
   bc3601.dataRate = db_read_df_u8(RF_DATA_RATE_CODE);
-  bc3601.dataRate = 2; 
+  //bc3601.dataRate = 2; 
   bc3601.frequency = db_read_df_f32(RF_BASE_FREQUENCY)+ (db_read_df_u16(DEVICE_ADDR)%32)*0.5;
   bc3601.destAddr = db_read_df_u16(DEST_ADDR);
   
@@ -1534,6 +1644,12 @@ static void rx_control_loop()
                       runTime.rxLost = 0;
                       db_write_ld_u16(LIVE_DATA_DIO_STATE,rfp->dio);
                       db_write_ld_u16(LIVE_DATA_AIN_CH1,rfp->advalue[0]);
+                      db_write_ld_u8(LIVD_DATA_TX_MODE,rfp->tx_mode);
+                      if((rfp->tx_mode & 0x01) == 0x01){ // 4-axis
+                        db_write_ld_u16(LIVE_DATA_AIN_CH2,rfp->advalue[1]);
+                        db_write_ld_u16(LIVE_DATA_AIN_CH3,rfp->advalue[2]);
+                        db_write_ld_u16(LIVE_DATA_AIN_CH4,rfp->advalue[3]);
+                      }
                       chEvtSignal(runTime.mainThread, EV_RX_PACKET);
                       runTime.rfLinkFail = 0;
                     }

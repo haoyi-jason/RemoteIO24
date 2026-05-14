@@ -41,3 +41,37 @@ Please review FIRMWARE_COMM_CHANGE_PROPOSAL.md before changing firmware communic
 1. Confirm firmware migration approach (new command set vs dual protocol support).
 2. Complete full DF/LD ID table from firmware headers to host catalog.
 3. Implement Android Bluetooth transport if Android host is required.
+
+## Windows package signing and one-click build
+
+This repository now supports fixed certificate signing for Windows MSIX packaging.
+
+- Signing certificate subject: `CN=RemoteIO`
+- Default certificate thumbprint: `B8D8D01EE5D106F76CD12FA269BDAD4EE1B14B5A`
+- Public certificate for installation on target PCs: `host/certs/RemoteIO.cer`
+
+### Prerequisites
+
+1. The signing certificate private key must exist in `Cert:\CurrentUser\My` on the build machine.
+2. .NET SDK (matching project target) must be installed.
+
+### Build signed MSIX
+
+Run from `host/`:
+
+```powershell
+.\package-windows.ps1
+```
+
+Optional parameters:
+
+```powershell
+.\package-windows.ps1 -Configuration Release -CertThumbprint <thumbprint> -Clean
+```
+
+The script validates certificate presence/private key/expiry and then runs `dotnet publish` with:
+
+- `WindowsPackageType=MSIX`
+- `GenerateAppxPackageOnBuild=true`
+- `AppxPackageSigningEnabled=true`
+- `PackageCertificateThumbprint=<thumbprint>`

@@ -71,6 +71,37 @@
 
             <Border StrokeShape="RoundRectangle 8" Padding="10">
                 <VerticalStackLayout Spacing="8">
+                    <Label Text="比例閥對應表(烏龜模式)" FontAttributes="Bold" />
+                    <Grid ColumnDefinitions="Auto,*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="6">
+                        <Label Grid.Row="0" Grid.Column="0" Text="編號" FontAttributes="Bold" />
+                        <Label Grid.Row="0" Grid.Column="1" Text="VR數值(0~4000)" FontAttributes="Bold" />
+                        <Label Grid.Row="0" Grid.Column="2" Text="輸出數值(0~5000)" FontAttributes="Bold" />
+
+                        <Label Grid.Row="1" Grid.Column="0" Text="1" />
+                        <Entry x:Name="PwmTurtlePt1XEntry" Grid.Row="1" Grid.Column="1" Keyboard="Numeric" />
+                        <Entry x:Name="PwmTurtlePt1YEntry" Grid.Row="1" Grid.Column="2" Keyboard="Numeric" />
+
+                        <Label Grid.Row="2" Grid.Column="0" Text="2" />
+                        <Entry x:Name="PwmTurtlePt2XEntry" Grid.Row="2" Grid.Column="1" Keyboard="Numeric" />
+                        <Entry x:Name="PwmTurtlePt2YEntry" Grid.Row="2" Grid.Column="2" Keyboard="Numeric" />
+
+                        <Label Grid.Row="3" Grid.Column="0" Text="3" />
+                        <Entry x:Name="PwmTurtlePt3XEntry" Grid.Row="3" Grid.Column="1" Keyboard="Numeric" />
+                        <Entry x:Name="PwmTurtlePt3YEntry" Grid.Row="3" Grid.Column="2" Keyboard="Numeric" />
+
+                        <Label Grid.Row="4" Grid.Column="0" Text="4" />
+                        <Entry x:Name="PwmTurtlePt4XEntry" Grid.Row="4" Grid.Column="1" Keyboard="Numeric" />
+                        <Entry x:Name="PwmTurtlePt4YEntry" Grid.Row="4" Grid.Column="2" Keyboard="Numeric" />
+                    </Grid>
+                    <HorizontalStackLayout Spacing="8">
+                        <Button Text="讀取比例閥(烏龜)參數" Clicked="OnReadPwmTurtleGroupClicked" />
+                        <Button Text="寫入比例閥(烏龜)參數" Clicked="OnWritePwmTurtleGroupClicked" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border StrokeShape="RoundRectangle 8" Padding="10">
+                <VerticalStackLayout Spacing="8">
                     <Label Text="伺服機/電腦對應表(VR->輸出值)" FontAttributes="Bold" />
                     <Grid ColumnDefinitions="Auto,*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="6">
                         <Label Grid.Row="0" Grid.Column="0" Text="編號" FontAttributes="Bold" />

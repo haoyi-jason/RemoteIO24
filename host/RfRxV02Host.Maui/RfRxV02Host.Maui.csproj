@@ -18,6 +18,15 @@
     <ApplicationIcon Condition="Exists('Assets\\RFConfiguration.ico')">Assets\RFConfiguration.ico</ApplicationIcon>
   </PropertyGroup>
 
+  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+    <GenerateAppxPackageOnBuild Condition="'$(GenerateAppxPackageOnBuild)' == ''">false</GenerateAppxPackageOnBuild>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <WindowsAppSdkBootstrapInitialize>false</WindowsAppSdkBootstrapInitialize>
+    <WindowsAppSdkDeploymentManagerInitialize>false</WindowsAppSdkDeploymentManagerInitialize>
+    <AppxPackageSigningEnabled>true</AppxPackageSigningEnabled>
+    <PackageCertificateThumbprint Condition="'$(PackageCertificateThumbprint)' == ''">B8D8D01EE5D106F76CD12FA269BDAD4EE1B14B5A</PackageCertificateThumbprint>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\RfRxV02Host.Core\RfRxV02Host.Core.csproj" />
   </ItemGroup>
