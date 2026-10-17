@@ -25,7 +25,8 @@ enum GEAR_TYPE_E{
 #define TYPE_OF_GEAR(x)         (x & 0x7)
 enum VALVE_TYPE_E{
   VALVE_IO,
-  VALVE_PWM
+  VALVE_PWM,
+  VALVE_IO8_PWM1,
 };
 
 // bit [4:3] for VALVE TYPE

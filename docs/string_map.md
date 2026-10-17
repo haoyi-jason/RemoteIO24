@@ -96,6 +96,7 @@
 | TX_ADC | 發射機-四軸 |
 | VALVE_IO | 開關閥 |
 | VALVE_PWM | 比例閥 |
+| VALVE_IO8_PWM1 | 8數+1PWM |
 | VR |  |
 | PWM |  |
 | SERVO |  |

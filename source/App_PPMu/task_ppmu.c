@@ -246,6 +246,11 @@ void pmu_init()
 
   // update dac immediate
   palClearPad(GPIOA,3);
+  
+  // enable clamp by default
+  for(uint8_t i=0;i<TOTAL_PMU_CHANNEL;i++){
+    pmu_set_clamp(i,1);
+  }
 
   // test output 
 //  for(uint8_t j=0;j<4;j++)
@@ -516,10 +521,10 @@ void pmu_set_clh_output(uint8_t channel, uint16_t value)
   _pmu_config_t *pmu = &runTime.ad5522[id].PMU[pmu_id];
   switch(pmu->force){
   case PMU_PMU_REG_FORCE_FVMI:
-    pmu_set_dac_output(channel,DAC_ID_V_CLH,value);
+    pmu_set_dac_output(channel,DAC_ID_I_CLH,value);
     break;
   case PMU_PMU_REG_FORCE_FIMV:
-    pmu_set_dac_output(channel,DAC_ID_I_CLH,value);
+    pmu_set_dac_output(channel,DAC_ID_V_CLH,value);
     break;
   case PMU_PMU_REG_FORCE_FVHZ:
     break;
@@ -676,9 +681,16 @@ void pmu_set_clamp(uint8_t channel, uint8_t value)
   if(!ASSERT_CHANNEL(channel)) return;
   uint8_t id = channel / NOF_CHANNEL_PER_PMU;
   uint8_t pmu_id = ch_map[channel % NOF_CHANNEL_PER_PMU];
-  if(value & 0x80)
+  if((value & 0x01) == 0x01)
     runTime.ad5522[id].PMU[pmu_id].clamp_enable = 1;
-  runTime.ad5522[id].PMU[pmu_id].cmp_out = (value & 0x01);
+  else
+    runTime.ad5522[id].PMU[pmu_id].clamp_enable = 0;
+    
+  if((value & 0x80) == 0x80)
+    runTime.ad5522[id].PMU[pmu_id].cmp_out = 1;
+  else
+    runTime.ad5522[id].PMU[pmu_id].cmp_out = 0;
+  pmu_reg_flush(channel);
 }
 uint8_t pmu_get_clamp(uint8_t channel)
 {
@@ -686,8 +698,8 @@ uint8_t pmu_get_clamp(uint8_t channel)
   if(!ASSERT_CHANNEL(channel)) return 0xFF;
   uint8_t id = channel / NOF_CHANNEL_PER_PMU;
   uint8_t pmu_id = ch_map[channel % NOF_CHANNEL_PER_PMU];
-  uint8_t ret = runTime.ad5522[id].PMU[pmu_id].cmp_out;
-  if(runTime.ad5522[id].PMU[pmu_id].clamp_enable){
+  uint8_t ret = runTime.ad5522[id].PMU[pmu_id].clamp_enable;
+  if(runTime.ad5522[id].PMU[pmu_id].cmp_out){
     ret |= 0x80;
   }
   return ret; 
@@ -784,6 +796,16 @@ void pmu_reg_set(uint8_t channel, uint32_t value)
   cfg->sf = ((value & mask) >> 10);
   mask = (1 << 9);
   cfg->clamp_enable = ((value & mask) >> 9);
+  // set syscfg register's CL 0 ~ 3 to avoid clamp clear by writing sysconfig
+  mask = (1 << (18 + pmu_id));
+  
+  if(cfg->clamp_enable == 1){
+    runTime.ad5522[id].sys_config |= mask;
+  }
+  else{
+    runTime.ad5522[id].sys_config &= ~mask;
+  }
+  
   mask = (1 << 8);
   cfg->cpolh = ((value & mask) >> 8);
   mask = (1 << 7);

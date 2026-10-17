@@ -4,7 +4,7 @@
 #include "encryption/crc16/crc16-ccitt.h"
 #include <string.h>
 #include "at32_flash/nvm.h"
-#include "app_defs.h"
+//#include "app_defs.h"
 
 #define NVM_READ        nvm_flash_read
 #define NVM_WRITE       nvm_flash_write

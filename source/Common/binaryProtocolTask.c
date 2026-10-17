@@ -25,6 +25,7 @@ enum HOST_CMD_e{
   HOST_CMD_READ_LIVE   = 0x03,
   HOST_CMD_WRITE_LIVE  = 0x04,
   HOST_CMD_RESET_MCU   = 0x05,
+  HANDHELD_CMD_PACKET  = 0x10,
   HOST_CMD_ACK         = 0xF0,
   HOST_CMD_NAK         = 0xF1
 };
@@ -264,6 +265,9 @@ static void host_dispatch_frame(const uint8_t *frame)
   case HOST_CMD_RESET_MCU:
     host_handle_reset_mcu(data, data_len);
     break;
+  case HANDHELD_CMD_PACKET:
+    
+    break;
   default:
     if(data_len >= 2){
       host_send_nak(be_u16(data));
@@ -386,3 +390,20 @@ void bp_send_packet(uint8_t *data, uint8_t size)
 {
   send_packet(data, size);
 }
+
+void config_channel(uint8_t channel)
+{
+  
+}
+
+void config_address(uint16_t address)
+{
+  
+}
+
+void send_command(uint16_t address, uint8_t channel, uint16_t adcv, uint16_t dio)
+{
+  
+}
+
+

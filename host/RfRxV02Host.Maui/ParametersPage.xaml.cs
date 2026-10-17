@@ -16,7 +16,7 @@ public partial class ParametersPage : ContentPage
     private static readonly string[] OpControlItems = ["控制器", "過捲"];
     private static readonly string[] OpGearItems = ["步進馬達", "伺服馬達", "行車電腦", "比例閥", "步進馬達/行車電腦"];
     private static readonly string[] OpTxTypeItems = ["發射機-單軸", "發射機-四軸"];
-    private static readonly string[] OpValveTypeItems = ["開關閥", "比例閥"];
+    private static readonly string[] OpValveTypeItems = ["開關閥", "比例閥", "8數+1PWM"];
 
     public ParametersPage(ITransportClient transport)
     {
@@ -277,7 +277,7 @@ public partial class ParametersPage : ContentPage
 
         UpdateOpModeTypeItems();
         int typeIndex = (value >> 3) & 0x03;
-        OpModeTypePicker.SelectedIndex = typeIndex is 0 or 1 ? typeIndex : 0;
+        OpModeTypePicker.SelectedIndex = typeIndex is 0 or 1 or 2 ? typeIndex : 0;
 
         _isUpdatingOpModeUi = false;
         UpdateOpModePreview();

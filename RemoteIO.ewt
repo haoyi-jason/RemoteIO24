@@ -13970,6 +13970,15 @@
             </file>
         </group>
         <group>
+            <name>E35-2G4</name>
+            <file>
+                <name>$PROJ_DIR$\source\App_RF_Rx_V02\e35_bsp.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\source\App_RF_Rx_V02\e35_bsp.h</name>
+            </file>
+        </group>
+        <group>
             <name>NVM</name>
             <file>
                 <name>$PROJ_DIR$\source\Drivers\nvm.c</name>
@@ -14026,7 +14035,7 @@
                 </file>
             </group>
             <file>
-                <name>$PROJ_DIR$\source\App_RF_Rx_V02\app_defs.h</name>
+                <name>$PROJ_DIR$\source\app_rf_rx_v02\app_defs.h</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\source\App_RF_Rx_V02\app_rf_rx_v02.c</name>

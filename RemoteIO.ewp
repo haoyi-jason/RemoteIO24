@@ -5725,6 +5725,7 @@
                     <state>$PROJ_DIR$\</state>
                     <state>$PROJ_DIR$\board\PPMU</state>
                     <state>$PROJ_DIR$\include\PPMU_V01</state>
+                    <state>$PROJ_DIR$\source\app_ppmu</state>
                     <state>$PROJ_DIR$\source\at32_comm</state>
                     <state>D:\SourceRespo\ChibiOS\chibios203\os\common\abstractions\cmsis_os</state>
                     <state>D:\SourceRespo\ChibiOS\chibios203\os\common\ext\ARM\CMSIS\Core\Include</state>
@@ -6077,7 +6078,7 @@
                 </option>
                 <option>
                     <name>OOCOutputFile</name>
-                    <state>PPMU_V01_25061001.hex</state>
+                    <state>PPMU_V01_26061701.hex</state>
                 </option>
                 <option>
                     <name>OOCCommandLineProducer</name>
@@ -9341,7 +9342,7 @@
                 </option>
                 <option>
                     <name>OOCOutputFile</name>
-                    <state>RemoteIO_260513_B2_RX.hex</state>
+                    <state>RemoteIO_260727_B2_RX_ORG.hex</state>
                 </option>
                 <option>
                     <name>OOCCommandLineProducer</name>
@@ -12050,6 +12051,7 @@
         <group>
             <name>WDAQ</name>
             <excluded>
+                <configuration>PPMU_V01</configuration>
                 <configuration>RF_RX_V02</configuration>
             </excluded>
             <file>
@@ -12824,6 +12826,7 @@
         <group>
             <name>APP_BQ76952</name>
             <excluded>
+                <configuration>PPMU_V01</configuration>
                 <configuration>RF_RX_V02</configuration>
                 <configuration>WDAQ</configuration>
             </excluded>
@@ -12996,6 +12999,7 @@
         <group>
             <name>APP_WDAQ</name>
             <excluded>
+                <configuration>PPMU_V01</configuration>
                 <configuration>RF_RX_V02</configuration>
                 <configuration>BQ76952_Modifier</configuration>
             </excluded>
@@ -13059,6 +13063,15 @@
             </file>
             <file>
                 <name>$PROJ_DIR$\source\Common\grididea_global.h</name>
+            </file>
+        </group>
+        <group>
+            <name>E35-2G4</name>
+            <file>
+                <name>$PROJ_DIR$\source\App_RF_Rx_V02\e35_bsp.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\source\App_RF_Rx_V02\e35_bsp.h</name>
             </file>
         </group>
         <group>
@@ -13136,7 +13149,7 @@
                 </file>
             </group>
             <file>
-                <name>$PROJ_DIR$\source\App_RF_Rx_V02\app_defs.h</name>
+                <name>$PROJ_DIR$\source\app_rf_rx_v02\app_defs.h</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\source\App_RF_Rx_V02\app_rf_rx_v02.c</name>
@@ -13288,6 +13301,7 @@
             <file>
                 <name>$extsource$\ylib\expansion\pca9555.c</name>
                 <excluded>
+                    <configuration>PPMU_V01</configuration>
                     <configuration>RF_RX_V02</configuration>
                 </excluded>
             </file>

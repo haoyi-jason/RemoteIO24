@@ -750,7 +750,7 @@ static void process_rxv01()
   }
 
 //  if(opMode & RX_VALVE_PWM){
-  if(TYPE_OF_VALVE(opMode) == VALVE_PWM){
+  if(valve_type == VALVE_PWM){
     if(value != 0x0){
       if(value & 0x100){
         palSetPad(digital_out_rx[8].port,digital_out_rx[8].line);
@@ -905,7 +905,62 @@ static void process_rxv01()
       pwmEnableChannel(&PWMD4,0,db_read_ld_u32(LIVE_DATA_VALVE_CONTROL_4));
     } 
   }
-  else{
+  else if(valve_type == VALVE_IO8_PWM1){
+    for(uint8_t i=0;i<8;i++){
+      mask = (1 << i);
+      if((mask & value) == 0){
+        palClearPad(digital_out_rx[i].port,digital_out_rx[i].line);
+      }
+      else{
+        palSetPad(digital_out_rx[i].port,digital_out_rx[i].line);
+      }
+    }
+
+    if(value != 0x0){
+      palSetPad(digital_out_rx[9].port,digital_out_rx[9].line);
+//      if(value & 0x200){
+//        palSetPad(digital_out_rx[9].port,digital_out_rx[9].line);
+//      }
+//      else{
+//        palClearPad(digital_out_rx[9].port,digital_out_rx[9].line);
+//      }
+    }
+    else{
+      palClearPad(digital_out_rx[9].port,digital_out_rx[9].line);
+      adcv = 0;
+    }
+    // update PWM
+    if(adcv < db_read_df_u16(PWM_MAP_RAW_PT_1)){
+      width = db_read_df_u16(PWM_MAP_COUNTER_PT_1);
+    }
+    else if(adcv < db_read_df_u16(PWM_MAP_RAW_PT_2)){
+      fv = (db_read_df_u16(PWM_MAP_COUNTER_PT_2) - db_read_df_u16(PWM_MAP_COUNTER_PT_1));
+      fv /= (db_read_df_u16(PWM_MAP_RAW_PT_2) - db_read_df_u16(PWM_MAP_RAW_PT_1));
+      fv *= (adcv - db_read_df_u16(PWM_MAP_RAW_PT_1));
+      width = (uint16_t)(fv + db_read_df_u16(PWM_MAP_COUNTER_PT_1));
+    }
+    else if(adcv < db_read_df_u16(PWM_MAP_RAW_PT_3)){
+      fv = (db_read_df_u16(PWM_MAP_COUNTER_PT_3) - db_read_df_u16(PWM_MAP_COUNTER_PT_2));
+      fv /= (db_read_df_u16(PWM_MAP_RAW_PT_3) - db_read_df_u16(PWM_MAP_RAW_PT_2));
+      fv *= (adcv - db_read_df_u16(PWM_MAP_RAW_PT_2));
+      width = (uint16_t)(fv + db_read_df_u16(PWM_MAP_COUNTER_PT_2));
+    }
+    else if(adcv < db_read_df_u16(PWM_MAP_RAW_PT_4)){
+      fv = (db_read_df_u16(PWM_MAP_COUNTER_PT_4) - db_read_df_u16(PWM_MAP_COUNTER_PT_3));
+      fv /= (db_read_df_u16(PWM_MAP_RAW_PT_4) - db_read_df_u16(PWM_MAP_RAW_PT_3));
+      fv *= (adcv - db_read_df_u16(PWM_MAP_RAW_PT_3));
+      width = (uint16_t)(fv + db_read_df_u16(PWM_MAP_COUNTER_PT_3));
+    }
+    else{
+      width = db_read_df_u16(PWM_MAP_COUNTER_PT_4);
+    }
+    //if(value == 0x0) width = 0;
+    db_write_ld_u32(LIVE_DATA_VALVE_CONTROL,width);
+    
+    // updata output, T3.3
+    pwmEnableChannel(&PWMD3,3,db_read_ld_u32(LIVE_DATA_VALVE_CONTROL));
+  }
+  else if(valve_type == VALVE_IO){
     for(uint8_t i=0;i<10;i++){
       mask = (1 << i);
       if((mask & value) == 0){
@@ -917,11 +972,6 @@ static void process_rxv01()
     }
 
   }
-  
-
-
-
-  
   
 }
 
@@ -984,7 +1034,10 @@ static void gpio_init()
       case GEAR_DAC:{
         // PA3 for PWM servo control
         palSetPadMode(GPIOA, 3, PAL_MODE_STM32_ALTERNATE_PUSHPULL);
-        palSetPadMode(GPIOC, 6, PAL_MODE_STM32_ALTERNATE_PUSHPULL);// TIM8.CH1
+        palSetPadMode(GPIOC, 6, PAL_MODE_OUTPUT_OPENDRAIN);
+        palSetPadMode(GPIOC, 7, PAL_MODE_OUTPUT_OPENDRAIN);
+        palSetPadMode(GPIOC, 8, PAL_MODE_OUTPUT_OPENDRAIN);
+        //palSetPadMode(GPIOC, 6, PAL_MODE_STM32_ALTERNATE_PUSHPULL);// TIM8.CH1
       }break;
       case GEAR_PWM:{
         
@@ -1024,14 +1077,15 @@ static void gpio_init()
         palSetPadMode(digital_out_rx[6].port, digital_out_rx[6].line, PAL_MODE_STM32_ALTERNATE_PUSHPULL);
         palSetPadMode(digital_out_rx[7].port, digital_out_rx[7].line, PAL_MODE_STM32_ALTERNATE_PUSHPULL);
         palSetPadMode(digital_out_rx[8].port, digital_out_rx[8].line, PAL_MODE_OUTPUT_PUSHPULL);
-        if(gear_type == GEAR_PWM){
-          palSetPadMode(GPIOC, 9, PAL_MODE_STM32_ALTERNATE_PUSHPULL);// TIM3.4
-        }
-        else{
-          palSetPadMode(digital_out_rx[9].port, digital_out_rx[9].line, PAL_MODE_OUTPUT_PUSHPULL);
-        }
+        palSetPadMode(digital_out_rx[9].port, digital_out_rx[9].line, PAL_MODE_OUTPUT_PUSHPULL); //AUX
+//        if(gear_type == GEAR_PWM){
+//          palSetPadMode(GPIOC, 9, PAL_MODE_STM32_ALTERNATE_PUSHPULL);// TIM3.4
+//        }
+//        else{
+//          palSetPadMode(digital_out_rx[9].port, digital_out_rx[9].line, PAL_MODE_OUTPUT_PUSHPULL);
+//        }
       }
-      else{
+      else if(valve_type == VALVE_IO){
         palSetPadMode(digital_out_rx[0].port, digital_out_rx[0].line, PAL_MODE_OUTPUT_PUSHPULL);
         palSetPadMode(digital_out_rx[1].port, digital_out_rx[1].line, PAL_MODE_OUTPUT_PUSHPULL);
         palSetPadMode(digital_out_rx[2].port, digital_out_rx[2].line, PAL_MODE_OUTPUT_PUSHPULL);
@@ -1042,7 +1096,20 @@ static void gpio_init()
         palSetPadMode(digital_out_rx[7].port, digital_out_rx[7].line, PAL_MODE_OUTPUT_PUSHPULL);
         palSetPadMode(digital_out_rx[8].port, digital_out_rx[8].line, PAL_MODE_OUTPUT_PUSHPULL);
         palSetPadMode(digital_out_rx[9].port, digital_out_rx[9].line, PAL_MODE_OUTPUT_PUSHPULL);
-        palSetPadMode(digital_out_rx[10].port, digital_out_rx[10].line, PAL_MODE_OUTPUT_PUSHPULL);
+      }
+      else if(valve_type == VALVE_IO8_PWM1){
+        palSetPadMode(digital_out_rx[0].port, digital_out_rx[0].line, PAL_MODE_OUTPUT_PUSHPULL);
+        palSetPadMode(digital_out_rx[1].port, digital_out_rx[1].line, PAL_MODE_OUTPUT_PUSHPULL);
+        palSetPadMode(digital_out_rx[2].port, digital_out_rx[2].line, PAL_MODE_OUTPUT_PUSHPULL);
+        palSetPadMode(digital_out_rx[3].port, digital_out_rx[3].line, PAL_MODE_OUTPUT_PUSHPULL);
+        palSetPadMode(digital_out_rx[4].port, digital_out_rx[4].line, PAL_MODE_OUTPUT_PUSHPULL);
+        palSetPadMode(digital_out_rx[5].port, digital_out_rx[5].line, PAL_MODE_OUTPUT_PUSHPULL);
+        palSetPadMode(digital_out_rx[6].port, digital_out_rx[6].line, PAL_MODE_OUTPUT_PUSHPULL);
+        palSetPadMode(digital_out_rx[7].port, digital_out_rx[7].line, PAL_MODE_OUTPUT_PUSHPULL);
+        palSetPadMode(digital_out_rx[8].port, digital_out_rx[8].line, PAL_MODE_STM32_ALTERNATE_PUSHPULL);// GPIOC.9 TIM3.4
+        palSetPadMode(digital_out_rx[9].port, digital_out_rx[9].line, PAL_MODE_OUTPUT_PUSHPULL); //AUX
+        
+        AFIO->MAPR |=AFIO_MAP_TIM3_REMAP_FULLREMAP;  
       }
     }
     else{
@@ -1115,6 +1182,9 @@ void start_rx_process()
       runTime.pwmDirection[2] = 0;
       runTime.pwmDirection[3] = 0;
     }
+    else if(valve_type == VALVE_IO8_PWM1){
+      pwmStart(&PWMD3,&pwm_config_3);
+    }
     
     if(gear_type == GEAR_SERVO){
       pwmStart(&PWMD2,&pwm_config_2);
@@ -1160,6 +1230,7 @@ void stop_rx_process()
 {
   if(runTime.rxThread){
     uint8_t opMode = db_read_df_u8(OP_MODE);
+    uint8_t valve_type = TYPE_OF_VALVE(opMode);
     chThdTerminate(runTime.opThread);
     chThdWait(runTime.opThread);
     runTime.opThread = NULL;
@@ -1177,6 +1248,10 @@ void stop_rx_process()
         pwmStop(&PWMD2);
       }
       else if(gear_type == GEAR_PWM){
+        pwmStop(&PWMD3);
+      }
+      
+      if(valve_type == VALVE_IO8_PWM1){
         pwmStop(&PWMD3);
       }
     }
@@ -1258,7 +1333,7 @@ int main()
 
   
   database_init();
-
+g
   load_settings();
   uint8_t opMode = db_read_df_u8(OP_MODE);
 
@@ -1279,7 +1354,9 @@ int main()
 //  opMode = OP_MODE_RX | OP_MODE_CONTROL | GEAR_TYPE(GEAR_PWM) | VALVE_TYPE(VALVE_PWM);
 //  opMode = OP_MODE_RX | OP_MODE_CONTROL | GEAR_TYPE(GEAR_STEPPER_DAC) | VALVE_TYPE(VALVE_PWM);//ok
 
-//  db_write_df_u8(OP_MODE,opMode);
+//  opMode = OP_MODE_RX | OP_MODE_CONTROL | GEAR_TYPE(GEAR_STEPPER_DAC) | VALVE_TYPE(VALVE_IO8_PWM1);
+
+//    db_write_df_u8(OP_MODE,opMode);
 //  
 //  db_write_df_u16(SERVO_MAP_RAW_PT_1,200);
 //  db_write_df_u16(SERVO_MAP_RAW_PT_2,3300);
@@ -1449,6 +1526,7 @@ static void tx_control_loop()
   bc3601.dataRate = db_read_df_u8(RF_DATA_RATE_CODE);
   //bc3601.dataRate = 2; 
   bc3601.frequency = db_read_df_f32(RF_BASE_FREQUENCY)+ (db_read_df_u16(DEVICE_ADDR)%32)*0.5;
+  //bc3601.frequency = db_read_df_f32(RF_BASE_FREQUENCY)+ (db_read_df_u16(DEVICE_ADDR)%64)*1.0;
   //bc3601.frequency = 918.0;
   bc3601.destAddr = db_read_df_u16(DEST_ADDR);
   
@@ -1584,6 +1662,7 @@ static void rx_control_loop()
   bc3601.txPower = db_read_df_u8(RF_TX_POWER);
   bc3601.dataRate = db_read_df_u8(RF_DATA_RATE_CODE);
   //bc3601.dataRate = 2; 
+//  bc3601.frequency = db_read_df_f32(RF_BASE_FREQUENCY)+ (db_read_df_u16(DEVICE_ADDR)%64)*1.0;
   bc3601.frequency = db_read_df_f32(RF_BASE_FREQUENCY)+ (db_read_df_u16(DEVICE_ADDR)%32)*0.5;
   bc3601.destAddr = db_read_df_u16(DEST_ADDR);
   
